@@ -1,5 +1,5 @@
-import { DashboardClient } from '@/components/dashboard-client';
+import { AdminLoginClient } from '@/components/admin-login-client';
 
 export default function Home() {
-  return <DashboardClient />;
+  return <AdminLoginClient />;
 }

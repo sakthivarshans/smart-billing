@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useBillStore } from '@/lib/store';
+import { useBillStore, useAdminStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -24,6 +24,7 @@ export function DashboardClient() {
   const router = useRouter();
   const { toast } = useToast();
   const { items, total, phoneNumber, addItem, setPhoneNumber, resetBill } = useBillStore();
+  const { storeDetails } = useAdminStore();
 
   const handleItemScanned = (rfid: string) => {
     const item = mockItems.find(i => i.id === rfid.trim());
@@ -76,7 +77,7 @@ export function DashboardClient() {
         <CardHeader className="relative">
           <div className="text-center">
             <CardTitle className="text-4xl md:text-5xl font-headline font-bold tracking-tight text-accent">
-              ABC CLOTHINGS
+              {storeDetails.storeName}
             </CardTitle>
             <CardDescription className="text-lg">
               Smart Billing System

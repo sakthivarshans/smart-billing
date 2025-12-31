@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { LogOut, Save } from 'lucide-react';
+import { LogOut, Save, ShoppingCart } from 'lucide-react';
 import type { StoreDetails, ApiKeys } from '@/lib/store';
 
 export function AdminDashboardClient() {
@@ -83,6 +83,10 @@ export function AdminDashboardClient() {
     }
   };
 
+  const handleGoToBilling = () => {
+    router.push('/billing');
+  }
+
   if (!isAuthenticated) {
     return null;
   }
@@ -96,10 +100,16 @@ export function AdminDashboardClient() {
               <CardTitle className="text-2xl">Admin Dashboard</CardTitle>
               <CardDescription>Update your store's information and API keys here.</CardDescription>
             </div>
-            <Button variant="ghost" size="sm" onClick={handleLogout}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handleGoToBilling}>
+                <ShoppingCart className="mr-2 h-4 w-4" />
+                Go to Billing
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
