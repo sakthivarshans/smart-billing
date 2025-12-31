@@ -32,7 +32,7 @@ export function PaymentClient() {
     console.log('Razorpay success response:', response);
     toast({
       title: "Payment Successful!",
-      description: "You can now send the receipt via WhatsApp.",
+      description: "Redirecting to WhatsApp to send the receipt.",
       action: <CheckCircle className="text-green-500" />,
     });
     setPaymentId(response.razorpay_payment_id);
@@ -96,20 +96,15 @@ export function PaymentClient() {
     rzp.open();
   };
   
-  const handleAction = async () => {
-    if (paymentDone && paymentId) {
-      const whatsappUrl = createWhatsAppMessage(phoneNumber, items, total, paymentId);
-      window.open(whatsappUrl, '_blank');
-      resetBill();
-      router.push('/');
-    } else if (orderId) {
+  const handlePayAction = () => {
+    if (orderId) {
       openRazorpayCheckout(orderId);
     }
   }
 
 
   useEffect(() => {
-    if (total === 0) {
+    if (total === 0 && !paymentDone) {
       router.push('/');
       return;
     }
@@ -140,10 +135,22 @@ export function PaymentClient() {
         setIsProcessing(false);
       }
     };
-
-    createOrder();
+    
+    if (total > 0) {
+        createOrder();
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [total, router]);
+
+  useEffect(() => {
+    if (paymentDone && paymentId) {
+      const whatsappUrl = createWhatsAppMessage(phoneNumber, items, total, paymentId);
+      window.open(whatsappUrl, '_blank');
+      resetBill();
+      router.push('/');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paymentDone, paymentId]);
   
   const content = () => {
       if (isProcessing && !orderId) {
@@ -173,7 +180,7 @@ export function PaymentClient() {
               <CheckCircle size={64} className="text-green-500"/>
               <p className="font-medium text-lg">Payment Successful!</p>
               <p className="text-muted-foreground text-sm">
-                  Click the button below to send the receipt via WhatsApp.
+                  Redirecting to WhatsApp...
               </p>
           </div>
         )
@@ -198,8 +205,8 @@ export function PaymentClient() {
       if (paymentDone) {
           return (
               <>
-                <Send className="mr-2 h-4 w-4" />
-                Send Receipt via WhatsApp
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Redirecting...
               </>
           )
       }
@@ -240,9 +247,8 @@ export function PaymentClient() {
           <Button 
             className="w-full" 
             size="lg" 
-            onClick={handleAction}
-            disabled={isProcessing || (!orderId && !paymentDone)}
-            variant={paymentDone ? 'default' : 'default'}
+            onClick={handlePayAction}
+            disabled={isProcessing || !orderId || paymentDone}
           >
             {getButtonContent()}
           </Button>
