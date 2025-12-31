@@ -5,6 +5,7 @@ export type BillItem = {
   name: string;
   price: number;
   timestamp: string;
+  rfid: string;
 };
 
 type BillState = {

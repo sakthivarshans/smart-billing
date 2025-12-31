@@ -7,27 +7,38 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ScanLine, IndianRupee, ShoppingCart, Smartphone, Trash2 } from 'lucide-react';
+import { IndianRupee, ShoppingCart, Smartphone, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { RFIDScanner } from './rfid-scanner';
 
 const mockItems = [
-  { name: 'Modern T-Shirt', price: 499 },
-  { name: 'Slim Fit Jeans', price: 1299 },
-  { name: 'Denim Jacket', price: 2499 },
-  { name: 'Crew Socks (3-pack)', price: 299 },
-  { name: 'Baseball Cap', price: 399 },
+  { id: 'rfid-tshirt-001', name: 'Modern T-Shirt', price: 499 },
+  { id: 'rfid-jeans-002', name: 'Slim Fit Jeans', price: 1299 },
+  { id: 'rfid-jacket-003', name: 'Denim Jacket', price: 2499 },
+  { id: 'rfid-socks-004', name: 'Crew Socks (3-pack)', price: 299 },
+  { id: 'rfid-cap-005', name: 'Baseball Cap', price: 399 },
 ];
 
 export function DashboardClient() {
   const router = useRouter();
   const { toast } = useToast();
   const { items, total, whatsappNumber, addItem, setWhatsappNumber, resetBill } = useBillStore();
-  const [lastScannedIndex, setLastScannedIndex] = useState(-1);
 
-  const handleScanItem = () => {
-    const nextIndex = (lastScannedIndex + 1) % mockItems.length;
-    addItem(mockItems[nextIndex]);
-    setLastScannedIndex(nextIndex);
+  const handleItemScanned = (rfid: string) => {
+    const item = mockItems.find(i => i.id === rfid.trim());
+    if (item) {
+        addItem(item);
+        toast({
+            title: 'Item Added',
+            description: `${item.name} has been added to the bill.`,
+        });
+    } else {
+        toast({
+            variant: 'destructive',
+            title: 'Unknown Item',
+            description: `No item found with RFID tag: ${rfid}`,
+        });
+    }
   };
 
   const handleProceedToPayment = () => {
@@ -52,7 +63,6 @@ export function DashboardClient() {
 
   const handleClearBill = () => {
     resetBill();
-    setLastScannedIndex(-1);
     toast({
       title: 'Cart Cleared',
       description: 'All items have been removed from the bill.',
@@ -72,10 +82,7 @@ export function DashboardClient() {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex justify-end gap-2">
-            <Button onClick={handleScanItem}>
-              <ScanLine className="mr-2 h-4 w-4" />
-              Simulate Item Scan
-            </Button>
+            <RFIDScanner onScan={handleItemScanned} />
             <Button variant="destructive" onClick={handleClearBill} disabled={items.length === 0}>
                 <Trash2 className="mr-2 h-4 w-4" />
                 Clear
