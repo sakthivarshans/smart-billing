@@ -2,12 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { useBillStore } from '@/lib/store';
-import { sendReceipt } from '@/lib/messaging';
+import { createWhatsAppMessage } from '@/lib/messaging';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { IndianRupee, CheckCircle, Loader2, AlertTriangle, CreditCard } from 'lucide-react';
+import { IndianRupee, CheckCircle, Loader2, AlertTriangle, CreditCard, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { initiateRazorpayOrder } from '@/ai/flows/razorpay-flow';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -23,37 +22,21 @@ export function PaymentClient() {
   const { toast } = useToast();
   const { total, items, phoneNumber, resetBill } = useBillStore();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentDone, setPaymentDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [paymentId, setPaymentId] = useState<string | null>(null);
+
 
   const handlePaymentSuccess = async (response: any) => {
     console.log('Razorpay success response:', response);
-    setIsProcessing(true);
-    setError(null);
-    try {
-      await sendReceipt(phoneNumber, items, total, response.razorpay_payment_id);
-
-      toast({
-        title: "Payment Successful!",
-        description: "The receipt has been sent via SMS.",
-        action: <CheckCircle className="text-green-500" />,
-      });
-      
-      resetBill();
-      
-      setTimeout(() => {
-        router.push('/');
-      }, 3000);
-
-    } catch (error: any) {
-      console.error("Post-payment processing failed:", error);
-      toast({
-        variant: "destructive",
-        title: "Oh no! Something went wrong.",
-        description: error.message || "Could not send receipt. Please contact support.",
-      });
-      setIsProcessing(false);
-    }
+    toast({
+      title: "Payment Successful!",
+      description: "You can now send the receipt via WhatsApp.",
+      action: <CheckCircle className="text-green-500" />,
+    });
+    setPaymentId(response.razorpay_payment_id);
+    setPaymentDone(true);
   };
 
   const openRazorpayCheckout = (orderId: string) => {
@@ -112,11 +95,16 @@ export function PaymentClient() {
     });
     rzp.open();
   };
-
-  const handlePay = async () => {
-      if(orderId) {
-        openRazorpayCheckout(orderId);
-      }
+  
+  const handleAction = async () => {
+    if (paymentDone && paymentId) {
+      const whatsappUrl = createWhatsAppMessage(phoneNumber, items, total, paymentId);
+      window.open(whatsappUrl, '_blank');
+      resetBill();
+      router.push('/');
+    } else if (orderId) {
+      openRazorpayCheckout(orderId);
+    }
   }
 
 
@@ -179,6 +167,18 @@ export function PaymentClient() {
           )
       }
       
+      if (paymentDone) {
+        return (
+          <div className="flex flex-col items-center gap-4 text-center">
+              <CheckCircle size={64} className="text-green-500"/>
+              <p className="font-medium text-lg">Payment Successful!</p>
+              <p className="text-muted-foreground text-sm">
+                  Click the button below to send the receipt via WhatsApp.
+              </p>
+          </div>
+        )
+      }
+      
       if(orderId) {
           return (
             <div className="flex flex-col items-center gap-4 text-center">
@@ -192,6 +192,31 @@ export function PaymentClient() {
       }
       
       return null;
+  }
+  
+  const getButtonContent = () => {
+      if (paymentDone) {
+          return (
+              <>
+                <Send className="mr-2 h-4 w-4" />
+                Send Receipt via WhatsApp
+              </>
+          )
+      }
+      if (isProcessing && !orderId) {
+          return (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Preparing...
+              </>
+          )
+      }
+      return (
+        <>
+            <CreditCard className="mr-2 h-4 w-4" />
+            Pay with Razorpay
+        </>
+      )
   }
 
 
@@ -215,15 +240,11 @@ export function PaymentClient() {
           <Button 
             className="w-full" 
             size="lg" 
-            onClick={handlePay}
-            disabled={isProcessing || !orderId}
+            onClick={handleAction}
+            disabled={isProcessing || (!orderId && !paymentDone)}
+            variant={paymentDone ? 'default' : 'default'}
           >
-            {isProcessing && !orderId ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-                <CreditCard className="mr-2 h-4 w-4" />
-            )}
-            {isProcessing && !orderId ? 'Preparing...' : 'Pay with Razorpay'}
+            {getButtonContent()}
           </Button>
         </CardFooter>
       </Card>

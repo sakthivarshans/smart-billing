@@ -1,9 +1,8 @@
 'use client';
 
 import type { BillItem } from '@/lib/store';
-import { sendSms } from '@/ai/flows/sms-flow';
 
-export async function sendReceipt(number: string, items: BillItem[], total: number, paymentId: string) {
+export function createWhatsAppMessage(number: string, items: BillItem[], total: number, paymentId: string): string {
   const billNumber = Math.floor(100000 + Math.random() * 900000);
   const now = new Date();
   
@@ -32,20 +31,9 @@ Visit Again!
 `;
   
   const message = receiptHeader + itemLines + receiptFooter;
-
-  try {
-    const result = await sendSms({
-        message,
-        number,
-    });
-
-    if (!result.success) {
-        throw new Error(result.message);
-    }
-    
-    return result;
-  } catch (error) {
-    console.error("Failed to send SMS:", error);
-    throw error;
-  }
+  
+  const internationalNumber = `91${number}`;
+  const encodedMessage = encodeURIComponent(message);
+  
+  return `https://wa.me/${internationalNumber}?text=${encodedMessage}`;
 }
