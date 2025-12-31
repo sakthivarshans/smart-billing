@@ -40,6 +40,7 @@ export function PaymentClient() {
 
   const handlePaymentSuccess = async (response: any) => {
     console.log('Razorpay success response:', response);
+    setIsProcessing(false);
     toast({
       title: "Payment Successful!",
       description: "You can now download the invoice or send the receipt.",
@@ -70,6 +71,16 @@ export function PaymentClient() {
       theme: {
         color: "#3f007f",
       },
+      modal: {
+        ondismiss: () => {
+            setIsProcessing(false);
+            toast({
+                variant: "destructive",
+                title: "Payment Cancelled",
+                description: "The payment process was not completed.",
+            });
+        }
+      },
       config: {
         display: {
           blocks: {
@@ -96,6 +107,7 @@ export function PaymentClient() {
     const rzp = new window.Razorpay(options);
     rzp.on('payment.failed', function (response: any) {
         console.error('Razorpay payment failed:', response);
+        setIsProcessing(false);
         toast({
             variant: "destructive",
             title: "Payment Failed",
@@ -106,9 +118,29 @@ export function PaymentClient() {
     rzp.open();
   };
   
-  const handlePayAction = () => {
-    if (orderId) {
-      openRazorpayCheckout(orderId);
+  const handlePayAction = async () => {
+    setIsProcessing(true);
+    setError(null);
+    try {
+      const result = await initiateRazorpayOrder({
+        amount: Math.round(total * 100), // Razorpay expects amount in paisa
+        merchantTransactionId: `TXN_${Date.now()}`,
+      });
+
+      if (result.success && result.orderId) {
+        openRazorpayCheckout(result.orderId);
+      } else {
+        throw new Error(result.message || 'Failed to create Razorpay order.');
+      }
+    } catch (err: any) {
+      console.error("Failed to create order:", err);
+      setError(err.message || 'Could not connect to payment gateway.');
+      toast({
+        variant: "destructive",
+        title: "Payment Gateway Error",
+        description: err.message || "Could not initiate the payment process.",
+      });
+      setIsProcessing(false);
     }
   }
 
@@ -189,46 +221,15 @@ export function PaymentClient() {
       router.push('/');
       return;
     }
-
-    const createOrder = async () => {
-      setIsProcessing(true);
-      setError(null);
-      try {
-        const result = await initiateRazorpayOrder({
-          amount: Math.round(total * 100), // Razorpay expects amount in paisa
-          merchantTransactionId: `TXN_${Date.now()}`,
-        });
-
-        if (result.success && result.orderId) {
-          setOrderId(result.orderId);
-        } else {
-          throw new Error(result.message || 'Failed to create Razorpay order.');
-        }
-      } catch (err: any) {
-        console.error("Failed to create order:", err);
-        setError(err.message || 'Could not connect to payment gateway.');
-        toast({
-          variant: "destructive",
-          title: "Payment Gateway Error",
-          description: err.message || "Could not initiate the payment process.",
-        });
-      } finally {
-        setIsProcessing(false);
-      }
-    };
-    
-    if (total > 0 && !orderId) {
-        createOrder();
-    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [total, router]);
+  }, [total, router, paymentDone]);
   
   const content = () => {
-      if (isProcessing && !orderId) {
+      if (isProcessing && !paymentDone) {
           return (
               <div className="flex flex-col items-center gap-4 text-center">
                   <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                  <p className="text-muted-foreground">Contacting Payment Gateway...</p>
+                  <p className="text-muted-foreground">Connecting to Razorpay...</p>
               </div>
           )
       }
@@ -239,7 +240,7 @@ export function PaymentClient() {
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>Connection Failed</AlertTitle>
                 <AlertDescription>
-                    {error}
+                    {error} Please try again.
                 </AlertDescription>
             </Alert>
           )
@@ -257,19 +258,15 @@ export function PaymentClient() {
         )
       }
       
-      if(orderId) {
-          return (
-            <div className="flex flex-col items-center gap-4 text-center">
-                <CreditCard size={64} className="text-primary"/>
-                <p className="font-medium text-lg">Your order is ready.</p>
-                <p className="text-muted-foreground text-sm">
-                    Click the button below to open the secure payment page.
-                </p>
-            </div>
-          )
-      }
-      
-      return null;
+      return (
+        <div className="flex flex-col items-center gap-4 text-center">
+            <CreditCard size={64} className="text-primary"/>
+            <p className="font-medium text-lg">Your bill is ready.</p>
+            <p className="text-muted-foreground text-sm">
+                Click the button below to open the secure payment page.
+            </p>
+        </div>
+      )
   }
 
   return (
@@ -294,9 +291,9 @@ export function PaymentClient() {
                     className="w-full" 
                     size="lg" 
                     onClick={handlePayAction}
-                    disabled={(isProcessing || !orderId)}
+                    disabled={isProcessing}
                 >
-                    {(isProcessing && !orderId) ? (
+                    {isProcessing ? (
                         <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Preparing...</>
                     ) : (
                         <><CreditCard className="mr-2 h-4 w-4" /> Pay with Razorpay</>
