@@ -39,7 +39,7 @@ export const useBillStore = create<BillState>((set) => ({
 }));
 
 
-type StoreDetails = {
+export type StoreDetails = {
     storeName: string;
     gstin: string;
     address: string;
@@ -48,24 +48,37 @@ type StoreDetails = {
 
 type AdminState = {
     isAuthenticated: boolean;
+    password: string | null;
+    hasBeenSetup: boolean;
     storeDetails: StoreDetails;
-    login: () => void;
+    login: (password: string) => boolean;
     logout: () => void;
+    setPassword: (password: string) => void;
     updateStoreDetails: (details: Partial<StoreDetails>) => void;
 };
 
 export const useAdminStore = create<AdminState>()(
     persist(
-      (set) => ({
+      (set, get) => ({
         isAuthenticated: false,
+        password: null,
+        hasBeenSetup: false,
         storeDetails: {
           storeName: 'Zudio Store',
           gstin: '27ABCDE1234F1Z5',
           address: 'ABC Clothings Store',
           phoneNumber: '9876543210'
         },
-        login: () => set({ isAuthenticated: true }),
+        login: (password: string) => {
+            const storedPassword = get().password;
+            if (storedPassword && password === storedPassword) {
+                set({ isAuthenticated: true });
+                return true;
+            }
+            return false;
+        },
         logout: () => set({ isAuthenticated: false }),
+        setPassword: (password: string) => set({ password: password, hasBeenSetup: true }),
         updateStoreDetails: (details) =>
           set((state) => ({
             storeDetails: { ...state.storeDetails, ...details },
@@ -73,7 +86,7 @@ export const useAdminStore = create<AdminState>()(
       }),
       {
         name: 'admin-storage', 
-        storage: createJSONStorage(() => sessionStorage), 
+        storage: createJSONStorage(() => localStorage), 
       }
     )
   );
