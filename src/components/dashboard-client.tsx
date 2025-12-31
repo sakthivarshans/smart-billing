@@ -12,11 +12,11 @@ import { useToast } from '@/hooks/use-toast';
 import { RFIDScanner } from './rfid-scanner';
 
 const mockItems = [
-  { id: 'rfid-tshirt-001', name: 'Modern T-Shirt', price: 499 },
-  { id: 'rfid-jeans-002', name: 'Slim Fit Jeans', price: 1299 },
-  { id: 'rfid-jacket-003', name: 'Denim Jacket', price: 2499 },
-  { id: 'rfid-socks-004', name: 'Crew Socks (3-pack)', price: 299 },
-  { id: 'rfid-cap-005', name: 'Baseball Cap', price: 399 },
+  { id: 'rfid-tshirt-001', name: 'Modern T-Shirt', price: 4.99 },
+  { id: 'rfid-jeans-002', name: 'Slim Fit Jeans', price: 3.99 },
+  { id: 'rfid-jacket-003', name: 'Denim Jacket', price: 2.99 },
+  { id: 'rfid-socks-004', name: 'Crew Socks (3-pack)', price: 1.99 },
+  { id: 'rfid-cap-005', name: 'Baseball Cap', price: 4.50 },
 ];
 
 export function DashboardClient() {
