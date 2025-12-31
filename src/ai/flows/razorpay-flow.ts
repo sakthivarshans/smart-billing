@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A flow to create a Razorpay order.
@@ -12,7 +13,7 @@ import {
   type RazorpayOrderOutput,
 } from './razorpay-flow-types';
 import Razorpay from 'razorpay';
-import 'dotenv/config';
+import { useAdminStore } from '@/lib/store';
 
 
 export async function initiateRazorpayOrder(input: RazorpayOrderInput): Promise<RazorpayOrderOutput> {
@@ -26,11 +27,15 @@ const razorpayOrderFlow = ai.defineFlow(
     outputSchema: RazorpayOrderOutputSchema,
   },
   async (input) => {
-    const keyId = process.env.RAZORPAY_KEY_ID;
-    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    const { apiKeys } = useAdminStore.getState();
+    const keyId = apiKeys.razorpayKeyId;
+    const keySecret = apiKeys.razorpayKeySecret;
 
     if (!keyId || !keySecret) {
-      throw new Error('Razorpay Key ID or Key Secret is not configured in environment variables.');
+      return {
+          success: false,
+          message: 'Razorpay Key ID or Key Secret is not configured in the admin dashboard.',
+      };
     }
 
     try {

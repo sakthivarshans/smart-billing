@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -29,12 +30,11 @@ export function PaymentClient() {
   const router = useRouter();
   const { toast } = useToast();
   const { total, items, phoneNumber, resetBill } = useBillStore();
-  const { storeDetails } = useAdminStore();
+  const { storeDetails, apiKeys } = useAdminStore();
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentDone, setPaymentDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [orderId, setOrderId] = useState<string | null>(null);
   const [paymentId, setPaymentId] = useState<string | null>(null);
 
 
@@ -51,7 +51,7 @@ export function PaymentClient() {
   };
 
   const openRazorpayCheckout = (orderId: string) => {
-    const razorpayKeyId = 'rzp_test_RyETUyYsV3wYnQ'; 
+    const razorpayKeyId = apiKeys.razorpayKeyId; 
 
     const options = {
       key: razorpayKeyId,
@@ -104,6 +104,16 @@ export function PaymentClient() {
       },
     };
 
+    if (!window.Razorpay) {
+        toast({
+            variant: "destructive",
+            title: "Razorpay SDK not loaded",
+            description: "Please check your internet connection and try again.",
+        });
+        setIsProcessing(false);
+        return;
+    }
+    
     const rzp = new window.Razorpay(options);
     rzp.on('payment.failed', function (response: any) {
         console.error('Razorpay payment failed:', response);
@@ -291,7 +301,7 @@ export function PaymentClient() {
                     className="w-full" 
                     size="lg" 
                     onClick={handlePayAction}
-                    disabled={isProcessing}
+                    disabled={isProcessing || !apiKeys.razorpayKeyId}
                 >
                     {isProcessing ? (
                         <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Preparing...</>

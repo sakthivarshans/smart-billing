@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -7,45 +8,61 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { LogOut, Save } from 'lucide-react';
-import type { StoreDetails } from '@/lib/store';
+import type { StoreDetails, ApiKeys } from '@/lib/store';
 
 export function AdminDashboardClient() {
   const router = useRouter();
-  const { isAuthenticated, logout, storeDetails, updateStoreDetails } = useAdminStore();
+  const { 
+    isAuthenticated, 
+    logout, 
+    storeDetails, 
+    updateStoreDetails,
+    apiKeys,
+    updateApiKeys
+  } = useAdminStore();
   const { toast } = useToast();
 
-  const [formState, setFormState] = useState<StoreDetails>(storeDetails);
+  const [storeFormState, setStoreFormState] = useState<StoreDetails>(storeDetails);
+  const [apiKeysFormState, setApiKeysFormState] = useState<ApiKeys>(apiKeys);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    // If not authenticated, redirect to login page.
-    // This provides client-side protection.
     if (!isAuthenticated) {
       router.replace('/admin/login');
     }
   }, [isAuthenticated, router]);
 
   useEffect(() => {
-    // Keep form in sync if global state changes
-    setFormState(storeDetails);
+    setStoreFormState(storeDetails);
   }, [storeDetails]);
 
+  useEffect(() => {
+    setApiKeysFormState(apiKeys);
+    }, [apiKeys]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+
+  const handleStoreInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormState(prevState => ({ ...prevState, [name]: value }));
+    setStoreFormState(prevState => ({ ...prevState, [name]: value }));
+  };
+  
+  const handleApiKeysInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setApiKeysFormState(prevState => ({ ...prevState, [name]: value }));
   };
 
   const handleSaveChanges = () => {
     setIsSaving(true);
     // Simulate saving to a backend
     setTimeout(() => {
-      updateStoreDetails(formState);
+      updateStoreDetails(storeFormState);
+      updateApiKeys(apiKeysFormState);
       toast({
         title: 'Changes Saved',
-        description: 'Your store details have been updated.',
+        description: 'Your settings have been updated.',
       });
       setIsSaving(false);
     }, 500);
@@ -60,7 +77,6 @@ export function AdminDashboardClient() {
     router.push('/admin/login');
   };
 
-  // Render a loading state or null while checking for authentication
   if (!isAuthenticated) {
     return null;
   }
@@ -72,7 +88,7 @@ export function AdminDashboardClient() {
           <div className="flex justify-between items-start">
             <div>
               <CardTitle className="text-2xl">Admin Dashboard</CardTitle>
-              <CardDescription>Update your store's information here.</CardDescription>
+              <CardDescription>Update your store's information and API keys here.</CardDescription>
             </div>
             <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
@@ -80,26 +96,48 @@ export function AdminDashboardClient() {
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="storeName">Store Name</Label>
-            <Input id="storeName" name="storeName" value={formState.storeName} onChange={handleInputChange} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="gstin">GSTIN</Label>
-            <Input id="gstin" name="gstin" value={formState.gstin} onChange={handleInputChange} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="address">Store Address</Label>
-            <Input id="address" name="address" value={formState.address} onChange={handleInputChange} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="phoneNumber">Store Phone Number</Label>
-            <Input id="phoneNumber" name="phoneNumber" value={formState.phoneNumber} onChange={handleInputChange} />
-          </div>
-          <Button onClick={handleSaveChanges} disabled={isSaving} className="w-full">
-            {isSaving ? 'Saving...' : <><Save className="mr-2 h-4 w-4" /> Save Changes</>}
-          </Button>
+        <CardContent>
+            <Tabs defaultValue="store-details">
+                <TabsList className="grid w-full grid-cols-2 mb-6">
+                    <TabsTrigger value="store-details">Store Details</TabsTrigger>
+                    <TabsTrigger value="api-keys">API Keys</TabsTrigger>
+                </TabsList>
+                <TabsContent value="store-details" className="space-y-6">
+                    <div className="space-y-2">
+                        <Label htmlFor="storeName">Store Name</Label>
+                        <Input id="storeName" name="storeName" value={storeFormState.storeName} onChange={handleStoreInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="gstin">GSTIN</Label>
+                        <Input id="gstin" name="gstin" value={storeFormState.gstin} onChange={handleStoreInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="address">Store Address</Label>
+                        <Input id="address" name="address" value={storeFormState.address} onChange={handleStoreInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="phoneNumber">Store Phone Number</Label>
+                        <Input id="phoneNumber" name="phoneNumber" value={storeFormState.phoneNumber} onChange={handleStoreInputChange} />
+                    </div>
+                </TabsContent>
+                <TabsContent value="api-keys" className="space-y-6">
+                    <div className="space-y-2">
+                        <Label htmlFor="whatsappApiKey">WhatsApp Business API Key</Label>
+                        <Input id="whatsappApiKey" name="whatsappApiKey" type="password" value={apiKeysFormState.whatsappApiKey} onChange={handleApiKeysInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="razorpayKeyId">Razorpay Key ID</Label>
+                        <Input id="razorpayKeyId" name="razorpayKeyId" value={apiKeysFormState.razorpayKeyId} onChange={handleApiKeysInputChange} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="razorpayKeySecret">Razorpay Key Secret</Label>
+                        <Input id="razorpayKeySecret" name="razorpayKeySecret" type="password" value={apiKeysFormState.razorpayKeySecret} onChange={handleApiKeysInputChange} />
+                    </div>
+                </TabsContent>
+            </Tabs>
+            <Button onClick={handleSaveChanges} disabled={isSaving} className="w-full mt-6">
+                {isSaving ? 'Saving...' : <><Save className="mr-2 h-4 w-4" /> Save All Changes</>}
+            </Button>
         </CardContent>
       </Card>
     </div>

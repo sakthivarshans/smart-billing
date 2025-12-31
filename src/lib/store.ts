@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware'
 
@@ -46,15 +47,23 @@ export type StoreDetails = {
     phoneNumber: string;
 };
 
+export type ApiKeys = {
+    whatsappApiKey: string;
+    razorpayKeyId: string;
+    razorpayKeySecret: string;
+};
+
 type AdminState = {
     isAuthenticated: boolean;
     password: string | null;
     hasBeenSetup: boolean;
     storeDetails: StoreDetails;
+    apiKeys: ApiKeys;
     login: (password: string) => boolean;
     logout: () => void;
     setPassword: (password: string) => void;
     updateStoreDetails: (details: Partial<StoreDetails>) => void;
+    updateApiKeys: (keys: Partial<ApiKeys>) => void;
 };
 
 export const useAdminStore = create<AdminState>()(
@@ -68,6 +77,11 @@ export const useAdminStore = create<AdminState>()(
           gstin: '27ABCDE1234F1Z5',
           address: 'ABC Clothings Store',
           phoneNumber: '9876543210'
+        },
+        apiKeys: {
+            whatsappApiKey: '',
+            razorpayKeyId: 'rzp_test_RyETUyYsV3wYnQ', // Default test key
+            razorpayKeySecret: '',
         },
         login: (password: string) => {
             const storedPassword = get().password;
@@ -83,6 +97,10 @@ export const useAdminStore = create<AdminState>()(
           set((state) => ({
             storeDetails: { ...state.storeDetails, ...details },
           })),
+        updateApiKeys: (keys) =>
+            set((state) => ({
+                apiKeys: { ...state.apiKeys, ...keys },
+            })),
       }),
       {
         name: 'admin-storage', 
