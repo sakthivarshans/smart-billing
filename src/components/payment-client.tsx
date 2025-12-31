@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useBillStore } from '@/lib/store';
-import { sendWhatsAppReceipt } from '@/lib/whatsapp';
+import { sendSmsReceipt } from '@/lib/messaging';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { IndianRupee, CheckCircle, Loader2 } from 'lucide-react';
@@ -17,7 +17,7 @@ type PaymentClientProps = {
 export function PaymentClient({ qrCodeImageUrl }: PaymentClientProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const { total, items, whatsappNumber, resetBill } = useBillStore();
+  const { total, items, phoneNumber, resetBill } = useBillStore();
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handlePaymentSuccess = async () => {
@@ -28,11 +28,11 @@ export function PaymentClient({ qrCodeImageUrl }: PaymentClientProps) {
     
     setIsProcessing(true);
     try {
-      await sendWhatsAppReceipt(whatsappNumber, items, total);
+      await sendSmsReceipt(phoneNumber, items, total);
 
       toast({
         title: "Payment Successful!",
-        description: "A receipt has been sent via WhatsApp.",
+        description: "Your messaging app should open with the receipt.",
         action: <CheckCircle className="text-green-500" />,
       });
       

@@ -10,16 +10,16 @@ export type BillItem = {
 
 type BillState = {
   items: BillItem[];
-  whatsappNumber: string;
+  phoneNumber: string;
   total: number;
   addItem: (item: Omit<BillItem, 'id' | 'timestamp'>) => void;
-  setWhatsappNumber: (number: string) => void;
+  setPhoneNumber: (number: string) => void;
   resetBill: () => void;
 };
 
 export const useBillStore = create<BillState>((set) => ({
   items: [],
-  whatsappNumber: '',
+  phoneNumber: '',
   total: 0,
   addItem: (item) =>
     set((state) => {
@@ -33,6 +33,6 @@ export const useBillStore = create<BillState>((set) => ({
         total: state.total + item.price,
       };
     }),
-  setWhatsappNumber: (number) => set({ whatsappNumber: number }),
-  resetBill: () => set({ items: [], total: 0, whatsappNumber: '' }),
+  setPhoneNumber: (number) => set({ phoneNumber: number }),
+  resetBill: () => set({ items: [], total: 0, phoneNumber: '' }),
 }));

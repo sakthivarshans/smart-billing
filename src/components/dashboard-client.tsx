@@ -22,7 +22,7 @@ const mockItems = [
 export function DashboardClient() {
   const router = useRouter();
   const { toast } = useToast();
-  const { items, total, whatsappNumber, addItem, setWhatsappNumber, resetBill } = useBillStore();
+  const { items, total, phoneNumber, addItem, setPhoneNumber, resetBill } = useBillStore();
 
   const handleItemScanned = (rfid: string) => {
     const item = mockItems.find(i => i.id === rfid.trim());
@@ -50,11 +50,11 @@ export function DashboardClient() {
       });
       return;
     }
-    if (!whatsappNumber || !/^\d{10}$/.test(whatsappNumber)) {
+    if (!phoneNumber || !/^\d{10}$/.test(phoneNumber)) {
       toast({
         variant: 'destructive',
         title: 'Invalid Number',
-        description: 'Please enter a valid 10-digit WhatsApp number.',
+        description: 'Please enter a valid 10-digit phone number.',
       });
       return;
     }
@@ -133,10 +133,10 @@ export function DashboardClient() {
                 <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                     type="tel"
-                    placeholder="Enter 10-digit WhatsApp Number"
+                    placeholder="Enter 10-digit Phone Number"
                     className="pl-10"
-                    value={whatsappNumber}
-                    onChange={(e) => setWhatsappNumber(e.target.value)}
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
                     maxLength={10}
                 />
             </div>
