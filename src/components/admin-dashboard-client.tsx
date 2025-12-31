@@ -77,6 +77,12 @@ export function AdminDashboardClient() {
     router.push('/admin/login');
   };
 
+  const handleTabChange = (value: string) => {
+    if (value === 'sales-dashboard') {
+      router.push('/admin/sales');
+    }
+  };
+
   if (!isAuthenticated) {
     return null;
   }
@@ -97,10 +103,11 @@ export function AdminDashboardClient() {
           </div>
         </CardHeader>
         <CardContent>
-            <Tabs defaultValue="store-details">
-                <TabsList className="grid w-full grid-cols-2 mb-6">
+            <Tabs defaultValue="store-details" onValueChange={handleTabChange}>
+                <TabsList className="grid w-full grid-cols-3 mb-6">
                     <TabsTrigger value="store-details">Store Details</TabsTrigger>
                     <TabsTrigger value="api-keys">API Keys</TabsTrigger>
+                    <TabsTrigger value="sales-dashboard">Sales Dashboard</TabsTrigger>
                 </TabsList>
                 <TabsContent value="store-details" className="space-y-6">
                     <div className="space-y-2">
@@ -119,6 +126,9 @@ export function AdminDashboardClient() {
                         <Label htmlFor="phoneNumber">Store Phone Number</Label>
                         <Input id="phoneNumber" name="phoneNumber" value={storeFormState.phoneNumber} onChange={handleStoreInputChange} />
                     </div>
+                    <Button onClick={handleSaveChanges} disabled={isSaving} className="w-full mt-6">
+                        {isSaving ? 'Saving...' : <><Save className="mr-2 h-4 w-4" /> Save Store Details</>}
+                    </Button>
                 </TabsContent>
                 <TabsContent value="api-keys" className="space-y-6">
                     <div className="space-y-2">
@@ -133,11 +143,14 @@ export function AdminDashboardClient() {
                         <Label htmlFor="razorpayKeySecret">Razorpay Key Secret</Label>
                         <Input id="razorpayKeySecret" name="razorpayKeySecret" type="password" value={apiKeysFormState.razorpayKeySecret} onChange={handleApiKeysInputChange} />
                     </div>
+                     <Button onClick={handleSaveChanges} disabled={isSaving} className="w-full mt-6">
+                        {isSaving ? 'Saving...' : <><Save className="mr-2 h-4 w-4" /> Save API Keys</>}
+                    </Button>
+                </TabsContent>
+                <TabsContent value="sales-dashboard">
+                    {/* Content is handled by navigation */}
                 </TabsContent>
             </Tabs>
-            <Button onClick={handleSaveChanges} disabled={isSaving} className="w-full mt-6">
-                {isSaving ? 'Saving...' : <><Save className="mr-2 h-4 w-4" /> Save All Changes</>}
-            </Button>
         </CardContent>
       </Card>
     </div>
