@@ -1,31 +1,66 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useBillStore } from '@/lib/store';
 import { sendSmsReceipt } from '@/lib/messaging';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { IndianRupee, CheckCircle, Loader2 } from 'lucide-react';
+import { IndianRupee, CheckCircle, Loader2, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { initiatePhonePePayment } from '@/ai/flows/phonepe-flow';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-type PaymentClientProps = {
-  qrCodeImageUrl: string;
-};
-
-export function PaymentClient({ qrCodeImageUrl }: PaymentClientProps) {
+export function PaymentClient() {
   const router = useRouter();
   const { toast } = useToast();
   const { total, items, phoneNumber, resetBill } = useBillStore();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (total === 0) {
+      router.push('/');
+      return;
+    }
+
+    const startPayment = async () => {
+      setIsProcessing(true);
+      setError(null);
+      try {
+        const result = await initiatePhonePePayment({
+          amount: total,
+          merchantTransactionId: `TXN_${Date.now()}`,
+          customerPhoneNumber: phoneNumber,
+        });
+
+        if (result.success && result.redirectUrl) {
+          // In a real scenario, you'd redirect the user to this URL.
+          // For simulation, we'll just confirm we received it and enable the success button.
+          console.log('PhonePe Redirect URL:', result.redirectUrl);
+          setPaymentUrl(result.redirectUrl);
+        } else {
+          throw new Error(result.message || 'Failed to initiate payment.');
+        }
+      } catch (err: any) {
+        console.error("Failed to initiate payment:", err);
+        setError(err.message || 'Could not connect to payment gateway.');
+        toast({
+          variant: "destructive",
+          title: "Payment Gateway Error",
+          description: "Could not initiate the payment process.",
+        });
+      } finally {
+        setIsProcessing(false);
+      }
+    };
+
+    startPayment();
+  }, [total, phoneNumber, router, toast]);
 
   const handlePaymentSuccess = async () => {
-    if (total === 0) {
-        router.push('/');
-        return;
-    }
-    
     setIsProcessing(true);
     try {
       await sendSmsReceipt(phoneNumber, items, total);
@@ -52,6 +87,45 @@ export function PaymentClient({ qrCodeImageUrl }: PaymentClientProps) {
       setIsProcessing(false);
     }
   };
+  
+  const content = () => {
+      if (isProcessing && !paymentUrl) {
+          return (
+              <div className="flex flex-col items-center gap-4 text-center">
+                  <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                  <p className="text-muted-foreground">Connecting to PhonePe...</p>
+              </div>
+          )
+      }
+
+      if (error) {
+          return (
+            <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Connection Failed</AlertTitle>
+                <AlertDescription>
+                    {error} Please try returning to the previous page.
+                </AlertDescription>
+            </Alert>
+          )
+      }
+      
+      if(paymentUrl) {
+          return (
+            <div className="flex flex-col items-center gap-4 text-center">
+                <p className="text-muted-foreground text-sm font-medium">
+                    In a real app, you would be redirected to PhonePe to complete the payment.
+                </p>
+                <p className="text-muted-foreground text-sm">
+                    Click the button below to simulate a successful payment confirmation.
+                </p>
+            </div>
+          )
+      }
+      
+      return null;
+  }
+
 
   return (
     <div className="flex items-center justify-center min-h-screen p-4 bg-background">
@@ -66,28 +140,15 @@ export function PaymentClient({ qrCodeImageUrl }: PaymentClientProps) {
             {total.toFixed(2)}
           </div>
         </CardHeader>
-        <CardContent className="flex flex-col items-center gap-4">
-            <div className="p-2 bg-white rounded-lg">
-                <Image
-                    src={qrCodeImageUrl}
-                    alt="Payment QR Code"
-                    width={250}
-                    height={250}
-                    data-ai-hint="qr code"
-                    className="rounded-md"
-                    priority
-                />
-            </div>
-          <p className="text-muted-foreground text-sm font-medium">
-            Scan and Pay using PhonePe / UPI
-          </p>
+        <CardContent className="flex flex-col items-center gap-4 min-h-[120px] justify-center">
+            {content()}
         </CardContent>
         <CardFooter>
           <Button 
             className="w-full" 
             size="lg" 
             onClick={handlePaymentSuccess}
-            disabled={isProcessing}
+            disabled={isProcessing || !paymentUrl}
           >
             {isProcessing ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
