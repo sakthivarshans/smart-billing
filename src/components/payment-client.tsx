@@ -135,6 +135,8 @@ export function PaymentClient() {
       const result = await initiateRazorpayOrder({
         amount: Math.round(total * 100), // Razorpay expects amount in paisa
         merchantTransactionId: `TXN_${Date.now()}`,
+        keyId: apiKeys.razorpayKeyId,
+        keySecret: apiKeys.razorpayKeySecret,
       });
 
       if (result.success && result.orderId) {
@@ -227,17 +229,6 @@ export function PaymentClient() {
   }
 
   useEffect(() => {
-    if (paymentDone && phoneNumber && paymentId) {
-      const whatsappUrl = createWhatsAppMessage(phoneNumber, items, total, paymentId);
-      window.open(whatsappUrl, '_blank');
-      resetBill();
-      router.push('/');
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paymentDone, paymentId]);
-
-
-  useEffect(() => {
     if (total === 0 && !paymentDone) {
       router.push('/');
       return;
@@ -273,7 +264,7 @@ export function PaymentClient() {
               <CheckCircle size={64} className="text-green-500"/>
               <p className="font-medium text-lg">Payment Successful!</p>
               <p className="text-muted-foreground text-sm">
-                  Redirecting to WhatsApp to send the receipt...
+                  You can now download the invoice or send the receipt to the customer.
               </p>
           </div>
         )

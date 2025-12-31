@@ -9,6 +9,8 @@ import { z } from 'zod';
 export const RazorpayOrderInputSchema = z.object({
   amount: z.number().describe('The total amount of the transaction in paisa.'),
   merchantTransactionId: z.string().describe('A unique ID for the transaction.'),
+  keyId: z.string().describe('The Razorpay Key ID.'),
+  keySecret: z.string().describe('The Razorpay Key Secret.'),
 });
 export type RazorpayOrderInput = z.infer<typeof RazorpayOrderInputSchema>;
 

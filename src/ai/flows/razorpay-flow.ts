@@ -13,7 +13,6 @@ import {
   type RazorpayOrderOutput,
 } from './razorpay-flow-types';
 import Razorpay from 'razorpay';
-import { useAdminStore } from '@/lib/store';
 
 
 export async function initiateRazorpayOrder(input: RazorpayOrderInput): Promise<RazorpayOrderOutput> {
@@ -27,9 +26,7 @@ const razorpayOrderFlow = ai.defineFlow(
     outputSchema: RazorpayOrderOutputSchema,
   },
   async (input) => {
-    const { apiKeys } = useAdminStore.getState();
-    const keyId = apiKeys.razorpayKeyId;
-    const keySecret = apiKeys.razorpayKeySecret;
+    const { keyId, keySecret } = input;
 
     if (!keyId || !keySecret) {
       return {
