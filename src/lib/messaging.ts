@@ -1,28 +1,51 @@
 'use client';
 
 import type { BillItem } from '@/lib/store';
+import { sendSms } from '@/ai/flows/sms-flow';
 
-export function sendWhatsAppReceipt(number: string, items: BillItem[], total: number) {
-  // This function uses the `https://wa.me/` link to open WhatsApp with a pre-filled message.
+export async function sendReceipt(number: string, items: BillItem[], total: number, paymentId: string) {
+  const billNumber = Math.floor(100000 + Math.random() * 900000);
+  const now = new Date();
   
-  const receiptHeader = "Thanks for shopping at ABC Clothings!\n\nHere is your receipt:\n";
-  
+  const receiptHeader = 
+`ABC CLOTHINGS
+GSTIN: 27ABCDE1234F1Z5
+INVOICE
+
+Bill No: ${billNumber}
+Date: ${now.toLocaleDateString()}
+Time: ${now.toLocaleTimeString()}
+Payment ID: ${paymentId.replace('pay_', '')}
+---------------------
+`;
+
   const itemLines = items.map(item => 
-    `- ${item.name}: Rs${item.price.toFixed(2)}`
+    `${item.name.padEnd(15)} Rs${item.price.toFixed(2)}`
   ).join('\n');
   
-  const receiptFooter = `\n\n*Total: Rs${total.toFixed(2)}*\n\nHave a great day!`;
-  
-  const message = encodeURIComponent(receiptHeader + itemLines + receiptFooter);
-  
-  // Construct the WhatsApp "click to chat" URL.
-  // Note: The phone number should be in international format without '+' or '00'. 
-  // For this example, we'll assume a 10-digit Indian number and prefix it with 91.
-  const whatsappUrl = `https://wa.me/91${number}?text=${message}`;
+  const receiptFooter = 
+`---------------------
+TOTAL: Rs${total.toFixed(2)}
 
-  // Open the WhatsApp link.
-  window.open(whatsappUrl, '_blank');
+Thank You!
+Visit Again!
+`;
+  
+  const message = receiptHeader + itemLines + receiptFooter;
 
-  // We can return a resolved promise to maintain compatibility with the calling component.
-  return Promise.resolve();
+  try {
+    const result = await sendSms({
+        message,
+        number,
+    });
+
+    if (!result.success) {
+        throw new Error(result.message);
+    }
+    
+    return result;
+  } catch (error) {
+    console.error("Failed to send SMS:", error);
+    throw error;
+  }
 }

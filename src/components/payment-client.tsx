@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useBillStore } from '@/lib/store';
-import { sendWhatsAppReceipt } from '@/lib/messaging';
+import { sendReceipt } from '@/lib/messaging';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { IndianRupee, CheckCircle, Loader2, AlertTriangle, CreditCard } from 'lucide-react';
@@ -28,15 +29,13 @@ export function PaymentClient() {
   const handlePaymentSuccess = async (response: any) => {
     console.log('Razorpay success response:', response);
     setIsProcessing(true);
+    setError(null);
     try {
-      // Here you would typically verify the payment signature on your backend
-      // For this simulation, we'll proceed directly.
-
-      await sendWhatsAppReceipt(phoneNumber, items, total);
+      await sendReceipt(phoneNumber, items, total, response.razorpay_payment_id);
 
       toast({
         title: "Payment Successful!",
-        description: "Your WhatsApp should open with the receipt.",
+        description: "The receipt has been sent via SMS.",
         action: <CheckCircle className="text-green-500" />,
       });
       
@@ -44,26 +43,25 @@ export function PaymentClient() {
       
       setTimeout(() => {
         router.push('/');
-      }, 2000);
+      }, 3000);
 
-    } catch (error) {
-      console.error("Payment processing failed:", error);
+    } catch (error: any) {
+      console.error("Post-payment processing failed:", error);
       toast({
         variant: "destructive",
         title: "Oh no! Something went wrong.",
-        description: "Could not process payment. Please try again.",
+        description: error.message || "Could not send receipt. Please contact support.",
       });
       setIsProcessing(false);
     }
   };
 
   const openRazorpayCheckout = (orderId: string) => {
-    // IMPORTANT: Replace with your actual Razorpay Key ID
     const razorpayKeyId = 'rzp_test_RyETUyYsV3wYnQ'; 
 
     const options = {
       key: razorpayKeyId,
-      amount: total * 100, // Amount is in currency subunits. For INR, it's paisa.
+      amount: total * 100,
       currency: "INR",
       name: "ABC Clothings",
       description: "Smart Bill Payment",
@@ -71,15 +69,33 @@ export function PaymentClient() {
       handler: handlePaymentSuccess,
       prefill: {
         contact: phoneNumber,
-        method: {
-            upi: true
-        }
       },
       notes: {
         address: "ABC Clothings Store",
       },
       theme: {
-        color: "#3f007f", // Corresponds to --primary HSL
+        color: "#3f007f",
+      },
+      config: {
+        display: {
+          blocks: {
+            upi: {
+              name: 'Pay with UPI',
+              instruments: [
+                {
+                    method: 'upi'
+                },
+                {
+                    method: 'qr'
+                },
+              ],
+            },
+          },
+          sequence: ['block.upi'],
+          preferences: {
+            show_default_blocks: true,
+          },
+        },
       },
     };
 
@@ -120,7 +136,6 @@ export function PaymentClient() {
 
         if (result.success && result.orderId) {
           setOrderId(result.orderId);
-          console.log('Razorpay Order ID:', result.orderId);
         } else {
           throw new Error(result.message || 'Failed to create Razorpay order.');
         }
@@ -138,14 +153,15 @@ export function PaymentClient() {
     };
 
     createOrder();
-  }, [total, router, toast]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [total, router]);
   
   const content = () => {
       if (isProcessing && !orderId) {
           return (
               <div className="flex flex-col items-center gap-4 text-center">
                   <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                  <p className="text-muted-foreground">Creating payment order...</p>
+                  <p className="text-muted-foreground">Contacting Payment Gateway...</p>
               </div>
           )
       }
@@ -206,7 +222,7 @@ export function PaymentClient() {
             ) : (
                 <CreditCard className="mr-2 h-4 w-4" />
             )}
-            {isProcessing ? 'Processing...' : 'Pay with Razorpay'}
+            {isProcessing && !orderId ? 'Preparing...' : 'Pay with Razorpay'}
           </Button>
         </CardFooter>
       </Card>
