@@ -1,71 +1,37 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useBillStore } from '@/lib/store';
 import { sendWhatsAppReceipt } from '@/lib/messaging';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { IndianRupee, CheckCircle, Loader2, AlertTriangle } from 'lucide-react';
+import { IndianRupee, CheckCircle, Loader2, AlertTriangle, CreditCard } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { initiatePhonePePayment } from '@/ai/flows/phonepe-flow';
+import { initiateRazorpayOrder } from '@/ai/flows/razorpay-flow';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
+
+declare global {
+    interface Window {
+        Razorpay: any;
+    }
+}
 
 export function PaymentClient() {
   const router = useRouter();
   const { toast } = useToast();
   const { total, items, phoneNumber, resetBill } = useBillStore();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const qrCodePlaceholder = PlaceHolderImages.find(img => img.id === 'qr-code');
+  const [orderId, setOrderId] = useState<string | null>(null);
 
-
-  useEffect(() => {
-    if (total === 0) {
-      router.push('/');
-      return;
-    }
-
-    const startPayment = async () => {
-      setIsProcessing(true);
-      setError(null);
-      try {
-        const result = await initiatePhonePePayment({
-          amount: total,
-          merchantTransactionId: `TXN_${Date.now()}`,
-          customerPhoneNumber: phoneNumber,
-        });
-
-        if (result.success && result.redirectUrl) {
-          // In a real scenario, you'd redirect the user to this URL.
-          // For simulation, we'll just confirm we received it and enable the success button.
-          console.log('PhonePe Redirect URL:', result.redirectUrl);
-          setPaymentUrl(result.redirectUrl);
-        } else {
-          throw new Error(result.message || 'Failed to initiate payment.');
-        }
-      } catch (err: any) {
-        console.error("Failed to initiate payment:", err);
-        setError(err.message || 'Could not connect to payment gateway.');
-        toast({
-          variant: "destructive",
-          title: "Payment Gateway Error",
-          description: "Could not initiate the payment process.",
-        });
-      } finally {
-        setIsProcessing(false);
-      }
-    };
-
-    startPayment();
-  }, [total, phoneNumber, router, toast]);
-
-  const handlePaymentSuccess = async () => {
+  const handlePaymentSuccess = async (response: any) => {
+    console.log('Razorpay success response:', response);
     setIsProcessing(true);
     try {
+      // Here you would typically verify the payment signature on your backend
+      // For this simulation, we'll proceed directly.
+
       await sendWhatsAppReceipt(phoneNumber, items, total);
 
       toast({
@@ -90,13 +56,97 @@ export function PaymentClient() {
       setIsProcessing(false);
     }
   };
+
+  const openRazorpayCheckout = (orderId: string) => {
+    // IMPORTANT: Replace with your actual Razorpay Key ID
+    const razorpayKeyId = 'rzp_test_your_key_id'; 
+    if (razorpayKeyId === 'rzp_test_your_key_id') {
+      console.warn("Using placeholder Razorpay Key ID. Please replace with your actual key.");
+    }
+
+    const options = {
+      key: razorpayKeyId,
+      amount: total * 100, // Amount is in currency subunits. For INR, it's paisa.
+      currency: "INR",
+      name: "ABC Clothings",
+      description: "Smart Bill Payment",
+      order_id: orderId,
+      handler: handlePaymentSuccess,
+      prefill: {
+        // We can prefill customer's contact number
+        contact: phoneNumber,
+      },
+      notes: {
+        address: "ABC Clothings Store",
+      },
+      theme: {
+        color: "#3f007f", // Corresponds to --primary HSL
+      },
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.on('payment.failed', function (response: any) {
+        console.error('Razorpay payment failed:', response);
+        toast({
+            variant: "destructive",
+            title: "Payment Failed",
+            description: response.error.description || "Your payment was not successful.",
+        });
+        setError("Payment failed. Please try again.");
+    });
+    rzp.open();
+  };
+
+  const handlePay = async () => {
+      if(orderId) {
+        openRazorpayCheckout(orderId);
+      }
+  }
+
+
+  useEffect(() => {
+    if (total === 0) {
+      router.push('/');
+      return;
+    }
+
+    const createOrder = async () => {
+      setIsProcessing(true);
+      setError(null);
+      try {
+        const result = await initiateRazorpayOrder({
+          amount: total * 100, // Razorpay expects amount in paisa
+          merchantTransactionId: `TXN_${Date.now()}`,
+        });
+
+        if (result.success && result.orderId) {
+          setOrderId(result.orderId);
+          console.log('Razorpay Order ID:', result.orderId);
+        } else {
+          throw new Error(result.message || 'Failed to create Razorpay order.');
+        }
+      } catch (err: any) {
+        console.error("Failed to create order:", err);
+        setError(err.message || 'Could not connect to payment gateway.');
+        toast({
+          variant: "destructive",
+          title: "Payment Gateway Error",
+          description: "Could not initiate the payment process.",
+        });
+      } finally {
+        setIsProcessing(false);
+      }
+    };
+
+    createOrder();
+  }, [total, router, toast]);
   
   const content = () => {
-      if (isProcessing && !paymentUrl) {
+      if (isProcessing && !orderId) {
           return (
               <div className="flex flex-col items-center gap-4 text-center">
                   <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                  <p className="text-muted-foreground">Connecting to PhonePe...</p>
+                  <p className="text-muted-foreground">Creating payment order...</p>
               </div>
           )
       }
@@ -113,22 +163,13 @@ export function PaymentClient() {
           )
       }
       
-      if(paymentUrl && qrCodePlaceholder) {
+      if(orderId) {
           return (
             <div className="flex flex-col items-center gap-4 text-center">
-                <p className="font-medium">Scan to Pay</p>
-                <div className="p-2 border-4 border-primary rounded-lg">
-                    <Image 
-                        src={qrCodePlaceholder.imageUrl}
-                        alt={qrCodePlaceholder.description}
-                        width={150}
-                        height={150}
-                        data-ai-hint={qrCodePlaceholder.imageHint}
-                        className="rounded-sm"
-                    />
-                </div>
+                <CreditCard size={64} className="text-primary"/>
+                <p className="font-medium text-lg">Your order is ready.</p>
                 <p className="text-muted-foreground text-sm">
-                    After scanning, click below to simulate a successful payment.
+                    Click the button below to open the secure payment page.
                 </p>
             </div>
           )
@@ -151,22 +192,22 @@ export function PaymentClient() {
             {total.toFixed(2)}
           </div>
         </CardHeader>
-        <CardContent className="flex flex-col items-center gap-4 min-h-[280px] justify-center">
+        <CardContent className="flex flex-col items-center gap-4 min-h-[200px] justify-center">
             {content()}
         </CardContent>
         <CardFooter>
           <Button 
             className="w-full" 
             size="lg" 
-            onClick={handlePaymentSuccess}
-            disabled={isProcessing || !paymentUrl}
+            onClick={handlePay}
+            disabled={isProcessing || !orderId}
           >
             {isProcessing ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
-                <CheckCircle className="mr-2 h-4 w-4" />
+                <CreditCard className="mr-2 h-4 w-4" />
             )}
-            {isProcessing ? 'Processing...' : 'Simulate Successful Payment'}
+            {isProcessing ? 'Processing...' : 'Pay with Razorpay'}
           </Button>
         </CardFooter>
       </Card>
