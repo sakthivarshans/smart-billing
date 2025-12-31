@@ -54,7 +54,7 @@ export function DashboardClient() {
       toast({
         variant: 'destructive',
         title: 'Invalid Number',
-        description: 'Please enter a valid 10-digit phone number.',
+        description: 'Please enter a valid 10-digit WhatsApp number.',
       });
       return;
     }
@@ -133,7 +133,7 @@ export function DashboardClient() {
                 <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                     type="tel"
-                    placeholder="Enter 10-digit Phone Number"
+                    placeholder="Enter 10-digit WhatsApp Number"
                     className="pl-10"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
