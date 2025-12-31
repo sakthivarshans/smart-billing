@@ -227,6 +227,17 @@ export function PaymentClient() {
   }
 
   useEffect(() => {
+    if (paymentDone && phoneNumber && paymentId) {
+      const whatsappUrl = createWhatsAppMessage(phoneNumber, items, total, paymentId);
+      window.open(whatsappUrl, '_blank');
+      resetBill();
+      router.push('/');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paymentDone, paymentId]);
+
+
+  useEffect(() => {
     if (total === 0 && !paymentDone) {
       router.push('/');
       return;
@@ -262,7 +273,7 @@ export function PaymentClient() {
               <CheckCircle size={64} className="text-green-500"/>
               <p className="font-medium text-lg">Payment Successful!</p>
               <p className="text-muted-foreground text-sm">
-                  Download the PDF invoice or send the receipt to WhatsApp.
+                  Redirecting to WhatsApp to send the receipt...
               </p>
           </div>
         )
@@ -301,7 +312,7 @@ export function PaymentClient() {
                     className="w-full" 
                     size="lg" 
                     onClick={handlePayAction}
-                    disabled={isProcessing || !apiKeys.razorpayKeyId}
+                    disabled={isProcessing || !apiKeys.razorpayKeyId || !apiKeys.razorpayKeySecret}
                 >
                     {isProcessing ? (
                         <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Preparing...</>
@@ -335,3 +346,5 @@ export function PaymentClient() {
     </div>
   );
 }
+
+    
