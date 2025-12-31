@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ScanLine, IndianRupee, ShoppingCart, Smartphone } from 'lucide-react';
+import { ScanLine, IndianRupee, ShoppingCart, Smartphone, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const mockItems = [
@@ -21,7 +21,7 @@ const mockItems = [
 export function DashboardClient() {
   const router = useRouter();
   const { toast } = useToast();
-  const { items, total, whatsappNumber, addItem, setWhatsappNumber } = useBillStore();
+  const { items, total, whatsappNumber, addItem, setWhatsappNumber, resetBill } = useBillStore();
   const [lastScannedIndex, setLastScannedIndex] = useState(-1);
 
   const handleScanItem = () => {
@@ -50,6 +50,15 @@ export function DashboardClient() {
     router.push('/payment');
   };
 
+  const handleClearBill = () => {
+    resetBill();
+    setLastScannedIndex(-1);
+    toast({
+      title: 'Cart Cleared',
+      description: 'All items have been removed from the bill.',
+    });
+  }
+
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8">
       <Card className="w-full max-w-4xl mx-auto shadow-2xl">
@@ -62,10 +71,14 @@ export function DashboardClient() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
             <Button onClick={handleScanItem}>
               <ScanLine className="mr-2 h-4 w-4" />
               Simulate Item Scan
+            </Button>
+            <Button variant="destructive" onClick={handleClearBill} disabled={items.length === 0}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Clear
             </Button>
           </div>
           <div className="border rounded-lg overflow-hidden">
