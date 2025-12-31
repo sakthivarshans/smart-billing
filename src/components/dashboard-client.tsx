@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ScanLine, IndianRupee, ShoppingCart, Whatsapp } from 'lucide-react';
+import { ScanLine, IndianRupee, ShoppingCart, Smartphone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const mockItems = [
@@ -110,7 +110,7 @@ export function DashboardClient() {
         </CardContent>
         <CardFooter className="flex flex-col sm:flex-row items-center gap-4 bg-muted/50 p-6 rounded-b-lg">
             <div className="w-full sm:w-1/2 relative">
-                <Whatsapp className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                     type="tel"
                     placeholder="Enter 10-digit WhatsApp Number"
