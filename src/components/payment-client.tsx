@@ -11,6 +11,7 @@ import { IndianRupee, CheckCircle, Loader2, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { initiatePhonePePayment } from '@/ai/flows/phonepe-flow';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export function PaymentClient() {
   const router = useRouter();
@@ -19,6 +20,8 @@ export function PaymentClient() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const qrCodePlaceholder = PlaceHolderImages.find(img => img.id === 'qr-code');
+
 
   useEffect(() => {
     if (total === 0) {
@@ -110,14 +113,22 @@ export function PaymentClient() {
           )
       }
       
-      if(paymentUrl) {
+      if(paymentUrl && qrCodePlaceholder) {
           return (
             <div className="flex flex-col items-center gap-4 text-center">
-                <p className="text-muted-foreground text-sm font-medium">
-                    In a real app, you would be redirected to PhonePe to complete the payment.
-                </p>
+                <p className="font-medium">Scan to Pay</p>
+                <div className="p-2 border-4 border-primary rounded-lg">
+                    <Image 
+                        src={qrCodePlaceholder.imageUrl}
+                        alt={qrCodePlaceholder.description}
+                        width={150}
+                        height={150}
+                        data-ai-hint={qrCodePlaceholder.imageHint}
+                        className="rounded-sm"
+                    />
+                </div>
                 <p className="text-muted-foreground text-sm">
-                    Click the button below to simulate a successful payment confirmation.
+                    After scanning, click below to simulate a successful payment.
                 </p>
             </div>
           )
@@ -140,7 +151,7 @@ export function PaymentClient() {
             {total.toFixed(2)}
           </div>
         </CardHeader>
-        <CardContent className="flex flex-col items-center gap-4 min-h-[120px] justify-center">
+        <CardContent className="flex flex-col items-center gap-4 min-h-[280px] justify-center">
             {content()}
         </CardContent>
         <CardFooter>
