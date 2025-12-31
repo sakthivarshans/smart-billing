@@ -7,7 +7,7 @@ export function createWhatsAppMessage(number: string, items: BillItem[], total: 
   const now = new Date();
   
   const receiptHeader = 
-`ABC CLOTHINGS
+`Zudio Store
 GSTIN: 27ABCDE1234F1Z5
 INVOICE
 
@@ -30,7 +30,7 @@ Thank You!
 Visit Again!
 `;
   
-  const message = receiptHeader + itemLines + receiptFooter;
+  const message = '```\n' + receiptHeader + itemLines + receiptFooter + '```';
   
   const internationalNumber = `91${number}`;
   const encodedMessage = encodeURIComponent(message);
