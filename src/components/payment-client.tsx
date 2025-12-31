@@ -2,14 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useBillStore } from '@/lib/store';
+import { useBillStore, useAdminStore } from '@/lib/store';
 import { createWhatsAppMessage } from '@/lib/messaging';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { IndianRupee, CheckCircle, Loader2, AlertTriangle, CreditCard, Send } from 'lucide-react';
+import { IndianRupee, CheckCircle, Loader2, AlertTriangle, CreditCard, Send, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { initiateRazorpayOrder } from '@/ai/flows/razorpay-flow';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 declare global {
     interface Window {
@@ -17,10 +19,18 @@ declare global {
     }
 }
 
+// Extend jsPDF with autoTable
+interface jsPDFWithAutoTable extends jsPDF {
+  autoTable: (options: any) => jsPDFWithAutoTable;
+}
+
+
 export function PaymentClient() {
   const router = useRouter();
   const { toast } = useToast();
   const { total, items, phoneNumber, resetBill } = useBillStore();
+  const { storeDetails } = useAdminStore();
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentDone, setPaymentDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +42,7 @@ export function PaymentClient() {
     console.log('Razorpay success response:', response);
     toast({
       title: "Payment Successful!",
-      description: "You can now send the receipt via WhatsApp.",
+      description: "You can now download the invoice or send the receipt.",
       action: <CheckCircle className="text-green-500" />,
     });
     setPaymentId(response.razorpay_payment_id);
@@ -44,7 +54,7 @@ export function PaymentClient() {
 
     const options = {
       key: razorpayKeyId,
-      amount: total * 100,
+      amount: Math.round(total * 100),
       currency: "INR",
       name: "ABC Clothings",
       description: "Smart Bill Payment",
@@ -111,6 +121,68 @@ export function PaymentClient() {
     }
   };
 
+  const generateAndDownloadPDF = () => {
+    if (!paymentId) return;
+  
+    const doc = new jsPDF() as jsPDFWithAutoTable;
+    const billNumber = Math.floor(100000 + Math.random() * 900000);
+    const now = new Date();
+
+    // Header
+    doc.setFontSize(20);
+    doc.text(storeDetails.storeName, 105, 20, { align: 'center' });
+    doc.setFontSize(10);
+    doc.text(storeDetails.address, 105, 28, { align: 'center' });
+    doc.text(`GSTIN: ${storeDetails.gstin}`, 105, 34, { align: 'center' });
+    doc.text(`Phone: ${storeDetails.phoneNumber}`, 105, 40, { align: 'center' });
+
+    doc.setFontSize(14);
+    doc.text('INVOICE', 105, 50, { align: 'center' });
+    
+    // Bill Details
+    doc.setFontSize(10);
+    doc.text(`Bill No: ${billNumber}`, 14, 60);
+    doc.text(`Date: ${now.toLocaleDateString()}`, 14, 65);
+    doc.text(`Time: ${now.toLocaleTimeString()}`, 14, 70);
+    doc.text(`Payment ID: ${paymentId.replace('pay_', '')}`, 14, 75);
+    
+    // Table
+    const tableColumn = ["S.No", "Item Name", "Price (INR)"];
+    const tableRows: (string | number)[][] = [];
+  
+    items.forEach(item => {
+      const itemData = [
+        item.id,
+        item.name,
+        item.price.toFixed(2),
+      ];
+      tableRows.push(itemData);
+    });
+  
+    doc.autoTable({
+        head: [tableColumn],
+        body: tableRows,
+        startY: 85,
+        theme: 'striped',
+        headStyles: { fillColor: [63, 0, 127] }
+    });
+
+    const finalY = doc.autoTable.previous.finalY;
+  
+    // Total
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`TOTAL: Rs ${total.toFixed(2)}`, 14, finalY + 15);
+  
+    // Footer
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text("Thank You! Visit Again!", 105, finalY + 25, { align: 'center' });
+    
+    doc.save(`invoice-${billNumber}.pdf`);
+    resetBill();
+    router.push('/');
+  }
 
   useEffect(() => {
     if (total === 0 && !paymentDone) {
@@ -179,7 +251,7 @@ export function PaymentClient() {
               <CheckCircle size={64} className="text-green-500"/>
               <p className="font-medium text-lg">Payment Successful!</p>
               <p className="text-muted-foreground text-sm">
-                  Click the button below to send the receipt to WhatsApp.
+                  Download the PDF invoice or send the receipt to WhatsApp.
               </p>
           </div>
         )
@@ -199,39 +271,6 @@ export function PaymentClient() {
       
       return null;
   }
-  
-  const getButtonAction = () => {
-    if (paymentDone) {
-        return handleSendReceipt;
-    }
-    return handlePayAction;
-  }
-
-  const getButtonContent = () => {
-      if (paymentDone) {
-          return (
-              <>
-                <Send className="mr-2 h-4 w-4" />
-                Send Receipt
-              </>
-          )
-      }
-      if (isProcessing && !orderId) {
-          return (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Preparing...
-              </>
-          )
-      }
-      return (
-        <>
-            <CreditCard className="mr-2 h-4 w-4" />
-            Pay with Razorpay
-        </>
-      )
-  }
-
 
   return (
     <div className="flex items-center justify-center min-h-screen p-4 bg-background">
@@ -249,15 +288,41 @@ export function PaymentClient() {
         <CardContent className="flex flex-col items-center gap-4 min-h-[200px] justify-center">
             {content()}
         </CardContent>
-        <CardFooter>
-          <Button 
-            className="w-full" 
-            size="lg" 
-            onClick={getButtonAction()}
-            disabled={(isProcessing || !orderId) && !paymentDone}
-          >
-            {getButtonContent()}
-          </Button>
+        <CardFooter className="flex flex-col gap-2">
+            {!paymentDone ? (
+                <Button 
+                    className="w-full" 
+                    size="lg" 
+                    onClick={handlePayAction}
+                    disabled={(isProcessing || !orderId)}
+                >
+                    {(isProcessing && !orderId) ? (
+                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Preparing...</>
+                    ) : (
+                        <><CreditCard className="mr-2 h-4 w-4" /> Pay with Razorpay</>
+                    )}
+                </Button>
+            ) : (
+                <>
+                    <Button 
+                        className="w-full" 
+                        size="lg" 
+                        onClick={generateAndDownloadPDF}
+                    >
+                        <Download className="mr-2 h-4 w-4" />
+                        Download PDF
+                    </Button>
+                    <Button 
+                        className="w-full" 
+                        size="lg" 
+                        variant="secondary"
+                        onClick={handleSendReceipt}
+                    >
+                        <Send className="mr-2 h-4 w-4" />
+                        Send via WhatsApp
+                    </Button>
+                </>
+            )}
         </CardFooter>
       </Card>
     </div>
