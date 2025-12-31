@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAdminStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,12 +10,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { LogIn, UserPlus } from 'lucide-react';
+import { LogIn, UserPlus, ArrowLeft } from 'lucide-react';
 
 export function AdminLoginClient() {
   const router = useRouter();
   const { toast } = useToast();
-  const { password: storedPassword, hasBeenSetup, login, setPassword: setAdminPassword, isAuthenticated } = useAdminStore();
+  const { hasBeenSetup, login, setPassword: setAdminPassword, isAuthenticated } = useAdminStore();
   
   const [activeTab, setActiveTab] = useState(hasBeenSetup ? 'signin' : 'signup');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -104,6 +105,14 @@ export function AdminLoginClient() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
       <Card className="w-full max-w-sm shadow-2xl">
+        <CardHeader>
+             <Link href="/" passHref>
+                <Button variant="ghost" size="sm" className="absolute top-4 left-4">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Home
+                </Button>
+            </Link>
+        </CardHeader>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="signin" disabled={!hasBeenSetup}>Sign In</TabsTrigger>

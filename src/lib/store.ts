@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware'
 
@@ -104,6 +103,54 @@ export const useAdminStore = create<AdminState>()(
       }),
       {
         name: 'admin-storage', 
+        storage: createJSONStorage(() => localStorage), 
+      }
+    )
+  );
+
+type CustomerUser = {
+  mobileNumber: string;
+  passwordHash: string;
+}
+
+type CustomerState = {
+    isAuthenticated: boolean;
+    phoneNumber: string;
+    users: CustomerUser[];
+    login: (mobileNumber: string, password: string) => boolean;
+    logout: () => void;
+    signup: (mobileNumber: string, password: string) => void;
+};
+
+export const useCustomerStore = create<CustomerState>()(
+    persist(
+      (set, get) => ({
+        isAuthenticated: false,
+        phoneNumber: '',
+        users: [{ mobileNumber: '1234567890', passwordHash: 'password123' }], // Mock user for testing
+        login: (mobileNumber, password) => {
+            const user = get().users.find(u => u.mobileNumber === mobileNumber);
+            // In a real app, you would compare a hashed password.
+            // For this mock, we are doing a plain text comparison.
+            if (user && password === user.passwordHash) {
+                set({ isAuthenticated: true, phoneNumber: mobileNumber });
+                return true;
+            }
+            return false;
+        },
+        logout: () => set({ isAuthenticated: false, phoneNumber: '' }),
+        signup: (mobileNumber, password) => {
+            const newUser: CustomerUser = {
+                mobileNumber: mobileNumber,
+                passwordHash: password, // In a real app, hash this password!
+            };
+            set((state) => ({
+                users: [...state.users, newUser],
+            }));
+        },
+      }),
+      {
+        name: 'customer-storage', 
         storage: createJSONStorage(() => localStorage), 
       }
     )

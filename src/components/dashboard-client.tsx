@@ -3,12 +3,12 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useBillStore, useAdminStore } from '@/lib/store';
+import { useBillStore, useAdminStore, useCustomerStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { IndianRupee, ShoppingCart, Smartphone, Trash2, UserCog } from 'lucide-react';
+import { IndianRupee, ShoppingCart, Smartphone, Trash2, UserCog, LogOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { RFIDScanner } from './rfid-scanner';
 
@@ -23,7 +23,8 @@ const mockItems = [
 export function DashboardClient() {
   const router = useRouter();
   const { toast } = useToast();
-  const { items, total, phoneNumber, addItem, setPhoneNumber, resetBill } = useBillStore();
+  const { items, total, addItem, setPhoneNumber, resetBill } = useBillStore();
+  const { phoneNumber, logout: customerLogout } = useCustomerStore();
   const { storeDetails } = useAdminStore();
 
   const handleItemScanned = (rfid: string) => {
@@ -52,14 +53,9 @@ export function DashboardClient() {
       });
       return;
     }
-    if (!phoneNumber || !/^\d{10}$/.test(phoneNumber)) {
-      toast({
-        variant: 'destructive',
-        title: 'Invalid Number',
-        description: 'Please enter a valid 10-digit WhatsApp number.',
-      });
-      return;
-    }
+    
+    // Use the logged-in customer's phone number
+    setPhoneNumber(phoneNumber);
     router.push('/payment');
   };
 
@@ -69,6 +65,16 @@ export function DashboardClient() {
       title: 'Cart Cleared',
       description: 'All items have been removed from the bill.',
     });
+  }
+
+  const handleLogout = () => {
+    customerLogout();
+    resetBill();
+    toast({
+      title: 'Logged Out',
+      description: 'You have been successfully logged out.',
+    });
+    router.push('/');
   }
 
   return (
@@ -83,12 +89,15 @@ export function DashboardClient() {
               Smart Billing System
             </CardDescription>
           </div>
-          <div className="absolute top-4 right-4">
+          <div className="absolute top-4 right-4 flex items-center gap-2">
             <Link href="/admin/login" passHref>
                 <Button variant="ghost" size="icon" aria-label="Admin Login">
                     <UserCog className="h-6 w-6" />
                 </Button>
             </Link>
+            <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Logout">
+              <LogOut className="h-6 w-6" />
+            </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -144,11 +153,11 @@ export function DashboardClient() {
                 <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                     type="tel"
-                    placeholder="Enter 10-digit WhatsApp Number"
+                    placeholder="Customer's WhatsApp Number"
                     className="pl-10"
                     value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    maxLength={10}
+                    readOnly
+                    disabled
                 />
             </div>
             <Button size="lg" className="w-full sm:w-1/2" onClick={handleProceedToPayment}>

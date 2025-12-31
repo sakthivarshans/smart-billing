@@ -1,5 +1,5 @@
-import { AdminLoginClient } from '@/components/admin-login-client';
+import { CustomerLoginClient } from '@/components/customer-login-client';
 
-export default function Home() {
-  return <AdminLoginClient />;
+export default function LoginPage() {
+  return <CustomerLoginClient />;
 }
