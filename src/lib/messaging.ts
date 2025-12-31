@@ -1,14 +1,18 @@
 'use client';
 
 import type { BillItem } from '@/lib/store';
+import { useAdminStore } from '@/lib/store';
 
 export function createWhatsAppMessage(number: string, items: BillItem[], total: number, paymentId: string): string {
+  const { storeDetails } = useAdminStore.getState();
   const billNumber = Math.floor(100000 + Math.random() * 900000);
   const now = new Date();
   
   const receiptHeader = 
-`Zudio Store
-GSTIN: 27ABCDE1234F1Z5
+`${storeDetails.storeName}
+${storeDetails.address}
+GSTIN: ${storeDetails.gstin}
+Phone: ${storeDetails.phoneNumber}
 INVOICE
 
 Bill No: ${billNumber}

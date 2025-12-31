@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware'
 
 export type BillItem = {
   id: number;
@@ -36,3 +37,43 @@ export const useBillStore = create<BillState>((set) => ({
   setPhoneNumber: (number) => set({ phoneNumber: number }),
   resetBill: () => set({ items: [], total: 0, phoneNumber: '' }),
 }));
+
+
+type StoreDetails = {
+    storeName: string;
+    gstin: string;
+    address: string;
+    phoneNumber: string;
+};
+
+type AdminState = {
+    isAuthenticated: boolean;
+    storeDetails: StoreDetails;
+    login: () => void;
+    logout: () => void;
+    updateStoreDetails: (details: Partial<StoreDetails>) => void;
+};
+
+export const useAdminStore = create<AdminState>()(
+    persist(
+      (set) => ({
+        isAuthenticated: false,
+        storeDetails: {
+          storeName: 'Zudio Store',
+          gstin: '27ABCDE1234F1Z5',
+          address: 'ABC Clothings Store',
+          phoneNumber: '9876543210'
+        },
+        login: () => set({ isAuthenticated: true }),
+        logout: () => set({ isAuthenticated: false }),
+        updateStoreDetails: (details) =>
+          set((state) => ({
+            storeDetails: { ...state.storeDetails, ...details },
+          })),
+      }),
+      {
+        name: 'admin-storage', 
+        storage: createJSONStorage(() => sessionStorage), 
+      }
+    )
+  );
