@@ -61,9 +61,10 @@ const razorpayOrderFlow = ai.defineFlow(
       };
     } catch (error: any) {
         console.error('Razorpay API error:', error);
+        const errorMessage = error?.error?.description || error.message || 'An unknown error occurred';
         return {
             success: false,
-            message: `Failed to create Razorpay order: ${error.message || 'Unknown error'}`,
+            message: `Failed to create Razorpay order: ${errorMessage}`,
         };
     }
   }

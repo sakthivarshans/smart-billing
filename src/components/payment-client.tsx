@@ -69,6 +69,7 @@ export function PaymentClient() {
       handler: handlePaymentSuccess,
       prefill: {
         contact: phoneNumber,
+        method: "upi",
       },
       notes: {
         address: "ABC Clothings Store",
@@ -145,7 +146,7 @@ export function PaymentClient() {
         toast({
           variant: "destructive",
           title: "Payment Gateway Error",
-          description: "Could not initiate the payment process.",
+          description: err.message || "Could not initiate the payment process.",
         });
       } finally {
         setIsProcessing(false);
@@ -172,7 +173,7 @@ export function PaymentClient() {
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>Connection Failed</AlertTitle>
                 <AlertDescription>
-                    {error} Please try returning to the previous page.
+                    {error}
                 </AlertDescription>
             </Alert>
           )
@@ -217,7 +218,7 @@ export function PaymentClient() {
             onClick={handlePay}
             disabled={isProcessing || !orderId}
           >
-            {isProcessing ? (
+            {isProcessing && !orderId ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
                 <CreditCard className="mr-2 h-4 w-4" />
