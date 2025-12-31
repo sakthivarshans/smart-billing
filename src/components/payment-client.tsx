@@ -131,7 +131,7 @@ export function PaymentClient() {
       setError(null);
       try {
         const result = await initiateRazorpayOrder({
-          amount: total * 100, // Razorpay expects amount in paisa
+          amount: Math.round(total * 100), // Razorpay expects amount in paisa
           merchantTransactionId: `TXN_${Date.now()}`,
         });
 
