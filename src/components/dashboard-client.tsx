@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useBillStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { IndianRupee, ShoppingCart, Smartphone, Trash2 } from 'lucide-react';
+import { IndianRupee, ShoppingCart, Smartphone, Trash2, UserCog } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { RFIDScanner } from './rfid-scanner';
 
@@ -72,13 +73,22 @@ export function DashboardClient() {
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8">
       <Card className="w-full max-w-4xl mx-auto shadow-2xl">
-        <CardHeader className="text-center">
-          <CardTitle className="text-4xl md:text-5xl font-headline font-bold tracking-tight text-accent">
-            ABC CLOTHINGS
-          </CardTitle>
-          <CardDescription className="text-lg">
-            Smart Billing System
-          </CardDescription>
+        <CardHeader className="relative">
+          <div className="text-center">
+            <CardTitle className="text-4xl md:text-5xl font-headline font-bold tracking-tight text-accent">
+              ABC CLOTHINGS
+            </CardTitle>
+            <CardDescription className="text-lg">
+              Smart Billing System
+            </CardDescription>
+          </div>
+          <div className="absolute top-4 right-4">
+            <Link href="/admin/login" passHref>
+                <Button variant="ghost" size="icon" aria-label="Admin Login">
+                    <UserCog className="h-6 w-6" />
+                </Button>
+            </Link>
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex justify-end gap-2">
