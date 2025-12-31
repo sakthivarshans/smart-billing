@@ -60,9 +60,6 @@ export function PaymentClient() {
   const openRazorpayCheckout = (orderId: string) => {
     // IMPORTANT: Replace with your actual Razorpay Key ID
     const razorpayKeyId = 'rzp_test_RyETUyYsV3wYnQ'; 
-    if (razorpayKeyId === 'rzp_test_your_key_id') {
-      console.warn("Using placeholder Razorpay Key ID. Please replace with your actual key.");
-    }
 
     const options = {
       key: razorpayKeyId,
@@ -73,8 +70,10 @@ export function PaymentClient() {
       order_id: orderId,
       handler: handlePaymentSuccess,
       prefill: {
-        // We can prefill customer's contact number
         contact: phoneNumber,
+        method: {
+            upi: true
+        }
       },
       notes: {
         address: "ABC Clothings Store",
