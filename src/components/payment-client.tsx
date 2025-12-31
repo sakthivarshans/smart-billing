@@ -59,7 +59,7 @@ export function PaymentClient() {
 
   const openRazorpayCheckout = (orderId: string) => {
     // IMPORTANT: Replace with your actual Razorpay Key ID
-    const razorpayKeyId = 'rzp_test_your_key_id'; 
+    const razorpayKeyId = 'rzp_test_RyETUyYsV3wYnQ'; 
     if (razorpayKeyId === 'rzp_test_your_key_id') {
       console.warn("Using placeholder Razorpay Key ID. Please replace with your actual key.");
     }
