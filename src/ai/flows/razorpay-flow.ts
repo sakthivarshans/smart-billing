@@ -1,8 +1,8 @@
 'use server';
 /**
- * @fileOverview A flow to simulate a Razorpay payment integration.
+ * @fileOverview A flow to create a Razorpay order.
  *
- * - initiateRazorpayOrder - Simulates the server-side call to the Razorpay API to create an order.
+ * - initiateRazorpayOrder - Calls the Razorpay API to create an order.
  */
 import { ai } from '@/ai/genkit';
 import { 
@@ -11,6 +11,8 @@ import {
   type RazorpayOrderInput,
   type RazorpayOrderOutput,
 } from './razorpay-flow-types';
+import Razorpay from 'razorpay';
+import 'dotenv/config';
 
 
 export async function initiateRazorpayOrder(input: RazorpayOrderInput): Promise<RazorpayOrderOutput> {
@@ -24,31 +26,45 @@ const razorpayOrderFlow = ai.defineFlow(
     outputSchema: RazorpayOrderOutputSchema,
   },
   async (input) => {
-    console.log('Simulating Razorpay order creation with input:', input);
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
-    // In a real implementation, you would:
-    // 1. Get your RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET from environment variables.
-    // 2. Create a Razorpay instance: `const razorpay = new Razorpay({ key_id, key_secret })`
-    // 3. Call the orders API: `await razorpay.orders.create({ amount, currency: 'INR', receipt: merchantTransactionId })`
-    // 4. Return the `id` from the response as `orderId`.
+    if (!keyId || !keySecret) {
+      throw new Error('Razorpay Key ID or Key Secret is not configured in environment variables.');
+    }
 
-    const isSuccess = true; // Simulate success
+    try {
+      const razorpay = new Razorpay({
+        key_id: keyId,
+        key_secret: keySecret,
+      });
 
-    if (isSuccess) {
-      // Simulate the order ID that Razorpay would return.
-      const simulatedOrderId = `order_sim_${Date.now()}`;
+      const options = {
+        amount: input.amount,
+        currency: 'INR',
+        receipt: input.merchantTransactionId,
+      };
+      
+      const order = await razorpay.orders.create(options);
+
+      if (!order) {
+        return {
+            success: false,
+            message: 'Failed to create Razorpay order: No order returned.',
+        };
+      }
       
       return {
         success: true,
         message: 'Razorpay order created successfully.',
-        orderId: simulatedOrderId,
+        orderId: order.id,
       };
-    } else {
-      // Simulate a failure response.
-      return {
-        success: false,
-        message: 'Failed to create Razorpay order. Please try again.',
-      };
+    } catch (error: any) {
+        console.error('Razorpay API error:', error);
+        return {
+            success: false,
+            message: `Failed to create Razorpay order: ${error.message || 'Unknown error'}`,
+        };
     }
   }
 );
