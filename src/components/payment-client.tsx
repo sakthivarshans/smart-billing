@@ -134,6 +134,9 @@ export function PaymentClient() {
     setIsProcessing(true);
     setError(null);
     try {
+      if (!apiKeys.razorpayKeyId || !apiKeys.razorpayKeySecret) {
+        throw new Error("Razorpay Key ID or Key Secret is not configured in the admin dashboard.");
+      }
       const result = await initiateRazorpayOrder({
         amount: Math.round(total * 100), // Razorpay expects amount in paisa
         merchantTransactionId: `TXN_${Date.now()}`,
@@ -346,7 +349,7 @@ Thank you! Visit Again!
               <CheckCircle size={64} className="text-green-500"/>
               <p className="font-medium text-lg">Payment Successful!</p>
               <p className="text-muted-foreground text-sm">
-                  You can now download the invoice or send the receipt to the customer.
+                  You can now send the receipt to the customer.
               </p>
           </div>
         )
@@ -398,15 +401,6 @@ Thank you! Visit Again!
                     <Button 
                         className="w-full" 
                         size="lg" 
-                        onClick={generateAndDownloadPDF}
-                    >
-                        <Download className="mr-2 h-4 w-4" />
-                        Download PDF
-                    </Button>
-                    <Button 
-                        className="w-full" 
-                        size="lg" 
-                        variant="secondary"
                         onClick={handleSendReceipt}
                         disabled={isSending || !apiKeys.whatsappApiKey}
                     >
