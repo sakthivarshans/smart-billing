@@ -16,23 +16,23 @@ Phone: ${storeDetails.phoneNumber}
 
 *INVOICE*
 
-Bill No: ${billNumber}
+Bill No: *${billNumber}*
 Date: ${now.toLocaleDateString()}
 Time: ${now.toLocaleTimeString()}
-Payment ID: ${paymentId.replace('pay_', '')}
----------------------
+Payment ID: _${paymentId.replace('pay_', '')}_
+-------------------------------------
 `;
 
   const itemLines = items.map(item => 
-    `${item.name.padEnd(15)} Rs${item.price.toFixed(2)}`
+    `${item.name.padEnd(20, ' ')} *Rs${item.price.toFixed(2)}*`
   ).join('\n');
   
   const receiptFooter = 
-`---------------------
+`-------------------------------------
 *TOTAL: Rs${total.toFixed(2)}*
 
-Thank You!
-Visit Again!
+Thank You for your purchase!
+We look forward to seeing you again.
 `;
   
   const message = receiptHeader + itemLines + receiptFooter;

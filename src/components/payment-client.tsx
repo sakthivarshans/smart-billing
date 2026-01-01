@@ -7,7 +7,7 @@ import { useBillStore, useAdminStore } from '@/lib/store';
 import { createWhatsAppMessage } from '@/lib/messaging';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { IndianRupee, CheckCircle, Loader2, AlertTriangle, CreditCard, Send, Download } from 'lucide-react';
+import { IndianRupee, CheckCircle, Loader2, AlertTriangle, CreditCard, Send, Download, SkipForward } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { initiateRazorpayOrder } from '@/ai/flows/razorpay-flow';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -160,8 +160,7 @@ export function PaymentClient() {
     if (paymentId) {
       const whatsappUrl = createWhatsAppMessage(phoneNumber, items, total, paymentId);
       window.open(whatsappUrl, '_blank');
-      resetBill();
-      router.push('/billing');
+      resetBillAndReturn();
     }
   };
 
@@ -174,21 +173,29 @@ export function PaymentClient() {
 
     // Header
     doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
     doc.text(storeDetails.storeName, 105, 20, { align: 'center' });
     doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
     doc.text(storeDetails.address, 105, 28, { align: 'center' });
-    doc.text(`GSTIN: ${storeDetails.gstin}`, 105, 34, { align: 'center' });
-    doc.text(`Phone: ${storeDetails.phoneNumber}`, 105, 40, { align: 'center' });
+    doc.text(`GSTIN: ${storeDetails.gstin} | Phone: ${storeDetails.phoneNumber}`, 105, 34, { align: 'center' });
+
+    doc.setLineWidth(0.5);
+    doc.line(14, 40, 196, 40);
 
     doc.setFontSize(14);
-    doc.text('INVOICE', 105, 50, { align: 'center' });
+    doc.setFont('helvetica', 'bold');
+    doc.text('TAX INVOICE', 105, 50, { align: 'center' });
     
     // Bill Details
     doc.setFontSize(10);
-    doc.text(`Bill No: ${billNumber}`, 14, 60);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Invoice No: ${billNumber}`, 14, 60);
     doc.text(`Date: ${now.toLocaleDateString()}`, 14, 65);
     doc.text(`Time: ${now.toLocaleTimeString()}`, 14, 70);
-    doc.text(`Payment ID: ${paymentId.replace('pay_', '')}`, 14, 75);
+
+    doc.text(`Payment ID: ${paymentId.replace('pay_', '')}`, 196, 60, { align: 'right' });
+    doc.text(`Customer: ${phoneNumber}`, 196, 65, { align: 'right' });
     
     // Table
     const tableColumn = ["S.No", "Item Name", "Price (INR)"];
@@ -206,9 +213,15 @@ export function PaymentClient() {
     doc.autoTable({
         head: [tableColumn],
         body: tableRows,
-        startY: 85,
+        startY: 80,
         theme: 'striped',
-        headStyles: { fillColor: [63, 0, 127] }
+        headStyles: { fillColor: [63, 0, 127] },
+        styles: {
+            halign: 'left',
+        },
+        columnStyles: {
+            2: { halign: 'right' },
+        }
     });
 
     const finalY = doc.autoTable.previous.finalY;
@@ -216,14 +229,18 @@ export function PaymentClient() {
     // Total
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text(`TOTAL: Rs ${total.toFixed(2)}`, 14, finalY + 15);
+    doc.text(`TOTAL: Rs ${total.toFixed(2)}`, 196, finalY + 15, { align: 'right' });
   
     // Footer
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text("Thank You! Visit Again!", 105, finalY + 25, { align: 'center' });
+    doc.setFont('helvetica', 'italic');
+    doc.text("Thank You! Visit Again!", 105, finalY + 30, { align: 'center' });
     
     doc.save(`invoice-${billNumber}.pdf`);
+    resetBillAndReturn();
+  }
+
+  const resetBillAndReturn = () => {
     resetBill();
     router.push('/billing');
   }
@@ -330,6 +347,14 @@ export function PaymentClient() {
                         <Send className="mr-2 h-4 w-4" />
                         Send via WhatsApp
                     </Button>
+                    <Button
+                        className="w-full"
+                        variant="link"
+                        onClick={resetBillAndReturn}
+                    >
+                        <SkipForward className="mr-2 h-4 w-4" />
+                        Skip
+                    </Button>
                 </>
             )}
         </CardFooter>
@@ -337,5 +362,3 @@ export function PaymentClient() {
     </div>
   );
 }
-
-    
