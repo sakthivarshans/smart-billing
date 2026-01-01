@@ -8,7 +8,7 @@ import { useAdminStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Box, ScanLine } from 'lucide-react';
+import { ArrowLeft, Box, Download, ScanLine } from 'lucide-react';
 import { RFIDScanner } from './rfid-scanner';
 import { useToast } from '@/hooks/use-toast';
 import { mockItems } from '@/components/dashboard-client';
@@ -41,6 +41,41 @@ export function StockInwardClient() {
     }
   };
 
+  const handleExportToCSV = () => {
+    if (stock.length === 0) {
+        toast({
+            variant: 'destructive',
+            title: 'No Stock to Export',
+            description: 'Your inventory is currently empty.',
+        });
+        return;
+    }
+
+    const headers = ['Item Name', 'Quantity', 'Price', 'RFID'];
+    const csvContent = [
+        headers.join(','),
+        ...stock.map(item => [item.name, item.quantity, item.price, item.rfid].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.href) {
+        URL.revokeObjectURL(link.href);
+    }
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'stock_inventory.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+        title: 'Export Successful',
+        description: 'Your stock inventory has been downloaded as a CSV file.',
+    });
+  };
+
   if (!isAuthenticated) {
     return null;
   }
@@ -62,7 +97,11 @@ export function StockInwardClient() {
             </div>
         </CardHeader>
         <CardContent className="space-y-6">
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-2">
+                <Button onClick={handleExportToCSV}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Export to Excel
+                </Button>
                 <RFIDScanner onScan={handleItemScanned} />
             </div>
             <div className="border rounded-lg overflow-hidden">
