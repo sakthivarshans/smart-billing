@@ -104,16 +104,16 @@ export function AdminLoginClient() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
-      <Card className="w-full max-w-sm shadow-2xl">
-        <CardHeader>
-             <Link href="/" passHref>
-                <Button variant="ghost" size="sm" className="absolute top-4 left-4">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Home
-                </Button>
-            </Link>
-        </CardHeader>
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Card className="w-full max-w-sm shadow-2xl relative">
+        <div className="absolute top-4 left-4">
+          <Link href="/billing" passHref>
+              <Button variant="ghost" size="sm">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back to Billing
+              </Button>
+          </Link>
+        </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full pt-12">
             <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="signin" disabled={!hasBeenSetup}>Sign In</TabsTrigger>
                 <TabsTrigger value="signup" disabled={hasBeenSetup}>Sign Up</TabsTrigger>

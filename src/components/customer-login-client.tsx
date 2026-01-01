@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { LogIn, UserCog } from 'lucide-react';
+import { LogIn } from 'lucide-react';
 
 export function CustomerLoginClient() {
   const router = useRouter();
@@ -58,17 +58,9 @@ export function CustomerLoginClient() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background relative">
-       <div className="absolute top-4 right-4">
-            <Link href="/admin/login" passHref>
-                <Button variant="ghost" size="sm">
-                    <UserCog className="mr-2 h-4 w-4" />
-                    Admin
-                </Button>
-            </Link>
-        </div>
       <Card className="w-full max-w-sm shadow-2xl">
         <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Login</CardTitle>
+            <CardTitle className="text-2xl">Customer Login</CardTitle>
             <CardDescription>Enter your mobile number and password to begin.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
