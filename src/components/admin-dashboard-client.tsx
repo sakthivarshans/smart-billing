@@ -10,10 +10,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { LogOut, Save, ShoppingCart } from 'lucide-react';
+import { LogOut, Save } from 'lucide-react';
 import type { StoreDetails, ApiKeys } from '@/lib/store';
 
-export function AdminDashboardClient() {
+export function AdminDashboardClient({ activeTab = 'store-details' }: { activeTab?: string }) {
   const router = useRouter();
   const { 
     isAuthenticated, 
@@ -81,6 +81,12 @@ export function AdminDashboardClient() {
     if (value === 'sales-dashboard') {
       router.push('/admin/sales');
     }
+    if (value === 'stock-inward') {
+      router.push('/admin/stock-inward');
+    }
+    if(value === 'store-details' || value === 'api-keys') {
+        router.push('/admin/dashboard');
+    }
   };
 
   if (!isAuthenticated) {
@@ -105,11 +111,12 @@ export function AdminDashboardClient() {
           </div>
         </CardHeader>
         <CardContent>
-            <Tabs defaultValue="store-details" onValueChange={handleTabChange}>
-                <TabsList className="grid w-full grid-cols-3 mb-6">
+            <Tabs defaultValue={activeTab} onValueChange={handleTabChange} value={activeTab}>
+                <TabsList className="grid w-full grid-cols-4 mb-6">
                     <TabsTrigger value="store-details">Store Details</TabsTrigger>
                     <TabsTrigger value="api-keys">API Keys</TabsTrigger>
                     <TabsTrigger value="sales-dashboard">Sales Dashboard</TabsTrigger>
+                    <TabsTrigger value="stock-inward">Stock Inward</TabsTrigger>
                 </TabsList>
                 <TabsContent value="store-details" className="space-y-6">
                     <div className="space-y-2">
@@ -149,7 +156,10 @@ export function AdminDashboardClient() {
                         {isSaving ? 'Saving...' : <><Save className="mr-2 h-4 w-4" /> Save API Keys</>}
                     </Button>
                 </TabsContent>
-                <TabsContent value="sales-dashboard">
+                 <TabsContent value="sales-dashboard">
+                    {/* Content is handled by navigation */}
+                </TabsContent>
+                <TabsContent value="stock-inward">
                     {/* Content is handled by navigation */}
                 </TabsContent>
             </Tabs>

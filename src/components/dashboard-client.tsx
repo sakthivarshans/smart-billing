@@ -12,7 +12,7 @@ import { IndianRupee, ShoppingCart, Smartphone, Trash2, UserCog, LogOut } from '
 import { useToast } from '@/hooks/use-toast';
 import { RFIDScanner } from './rfid-scanner';
 
-const mockItems = [
+export const mockItems = [
   { id: 'rfid-tshirt-001', name: 'Modern T-Shirt', price: 4.99 },
   { id: 'rfid-jeans-002', name: 'Slim Fit Jeans', price: 3.99 },
   { id: 'rfid-jacket-003', name: 'Denim Jacket', price: 2.99 },

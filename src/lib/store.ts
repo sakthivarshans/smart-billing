@@ -60,17 +60,26 @@ export type ApiKeys = {
     razorpayKeySecret: string;
 };
 
+export type StockItem = {
+    rfid: string;
+    name: string;
+    price: number;
+    quantity: number;
+}
+
 type AdminState = {
     isAuthenticated: boolean;
     password: string | null;
     hasBeenSetup: boolean;
     storeDetails: StoreDetails;
     apiKeys: ApiKeys;
+    stock: StockItem[];
     login: (password: string) => boolean;
     logout: () => void;
     setPassword: (password: string) => void;
     updateStoreDetails: (details: Partial<StoreDetails>) => void;
     updateApiKeys: (keys: Partial<ApiKeys>) => void;
+    addStockItem: (item: Omit<StockItem, 'quantity'>) => void;
 };
 
 export const useAdminStore = create<AdminState>()(
@@ -90,6 +99,7 @@ export const useAdminStore = create<AdminState>()(
             razorpayKeyId: 'rzp_test_RyETUyYsV3wYnQ', // Default test key
             razorpayKeySecret: '',
         },
+        stock: [],
         login: (password: string) => {
             const storedPassword = get().password;
             if (storedPassword && password === storedPassword) {
@@ -108,6 +118,16 @@ export const useAdminStore = create<AdminState>()(
             set((state) => ({
                 apiKeys: { ...state.apiKeys, ...keys },
             })),
+        addStockItem: (item) => set((state) => {
+            const existingItemIndex = state.stock.findIndex(stockItem => stockItem.rfid === item.rfid);
+            if (existingItemIndex > -1) {
+                const newStock = [...state.stock];
+                newStock[existingItemIndex].quantity += 1;
+                return { stock: newStock };
+            } else {
+                return { stock: [...state.stock, { ...item, quantity: 1 }]};
+            }
+        }),
       }),
       {
         name: 'admin-storage', 
