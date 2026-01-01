@@ -74,7 +74,7 @@ export function AdminDashboardClient() {
         title: 'Logged Out',
         description: 'You have been successfully logged out.',
       });
-    router.push('/admin/login');
+    router.push('/billing');
   };
 
   const handleTabChange = (value: string) => {
@@ -82,10 +82,6 @@ export function AdminDashboardClient() {
       router.push('/admin/sales');
     }
   };
-
-  const handleGoToBilling = () => {
-    router.push('/billing');
-  }
 
   if (!isAuthenticated) {
     return null;
@@ -101,10 +97,6 @@ export function AdminDashboardClient() {
               <CardDescription>Update your store's information and API keys here.</CardDescription>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={handleGoToBilling}>
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                Go to Billing
-              </Button>
               <Button variant="ghost" size="sm" onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
                 Logout
