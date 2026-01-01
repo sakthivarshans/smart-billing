@@ -1,15 +1,6 @@
-import dynamic from 'next/dynamic';
-import { Skeleton } from '@/components/ui/skeleton';
 
-const SalesDashboardClient = dynamic(() => import('@/components/sales-dashboard-client').then(mod => mod.SalesDashboardClient), {
-  ssr: false,
-  loading: () => (
-    <div className="p-8">
-      <Skeleton className="h-96 w-full" />
-    </div>
-  ),
-});
+import { SalesDashboardDynamic } from '@/components/sales-dashboard-dynamic';
 
 export default function SalesDashboardPage() {
-  return <SalesDashboardClient />;
+  return <SalesDashboardDynamic />;
 }
