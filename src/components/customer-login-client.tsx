@@ -68,7 +68,7 @@ export function CustomerLoginClient() {
         </div>
       <Card className="w-full max-w-sm shadow-2xl">
         <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Customer Login</CardTitle>
+            <CardTitle className="text-2xl">Login</CardTitle>
             <CardDescription>Enter your mobile number and password to begin.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

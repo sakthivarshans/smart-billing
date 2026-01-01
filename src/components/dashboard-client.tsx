@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useBillStore, useAdminStore, useCustomerStore } from '@/lib/store';
@@ -23,9 +23,20 @@ const mockItems = [
 export function DashboardClient() {
   const router = useRouter();
   const { toast } = useToast();
-  const { items, total, addItem, setPhoneNumber, resetBill } = useBillStore();
-  const { phoneNumber, logout: customerLogout } = useCustomerStore();
+  const { items, total, addItem, setPhoneNumber, resetBill, phoneNumber } = useBillStore();
+  const { phoneNumber: customerPhoneNumber, logout: customerLogout } = useCustomerStore();
   const { storeDetails } = useAdminStore();
+  
+  const [currentPhoneNumber, setCurrentPhoneNumber] = useState(phoneNumber || customerPhoneNumber);
+
+  useEffect(() => {
+    // Sync phone number from customer store to bill store when component mounts
+    if (customerPhoneNumber) {
+        setCurrentPhoneNumber(customerPhoneNumber);
+        setPhoneNumber(customerPhoneNumber);
+    }
+  }, [customerPhoneNumber, setPhoneNumber]);
+
 
   const handleItemScanned = (rfid: string) => {
     const item = mockItems.find(i => i.id === rfid.trim());
@@ -54,8 +65,16 @@ export function DashboardClient() {
       return;
     }
     
-    // Use the logged-in customer's phone number
-    setPhoneNumber(phoneNumber);
+    if (!/^\d{10}$/.test(currentPhoneNumber)) {
+        toast({
+            variant: 'destructive',
+            title: 'Invalid Mobile Number',
+            description: 'Please enter a valid 10-digit mobile number for the receipt.',
+        });
+        return;
+    }
+
+    setPhoneNumber(currentPhoneNumber);
     router.push('/payment');
   };
 
@@ -155,9 +174,9 @@ export function DashboardClient() {
                     type="tel"
                     placeholder="Customer's WhatsApp Number"
                     className="pl-10"
-                    value={phoneNumber}
-                    readOnly
-                    disabled
+                    value={currentPhoneNumber}
+                    onChange={(e) => setCurrentPhoneNumber(e.target.value)}
+                    maxLength={10}
                 />
             </div>
             <Button size="lg" className="w-full sm:w-1/2" onClick={handleProceedToPayment}>

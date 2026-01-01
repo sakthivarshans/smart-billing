@@ -18,25 +18,33 @@ type BillState = {
   resetBill: () => void;
 };
 
-export const useBillStore = create<BillState>((set) => ({
-  items: [],
-  phoneNumber: '',
-  total: 0,
-  addItem: (item) =>
-    set((state) => {
-      const newItem: BillItem = {
-        ...item,
-        id: state.items.length + 1,
-        timestamp: new Date().toLocaleString(),
-      };
-      return {
-        items: [...state.items, newItem],
-        total: state.total + item.price,
-      };
+export const useBillStore = create<BillState>()(
+  persist(
+    (set) => ({
+      items: [],
+      phoneNumber: '',
+      total: 0,
+      addItem: (item) =>
+        set((state) => {
+          const newItem: BillItem = {
+            ...item,
+            id: state.items.length + 1,
+            timestamp: new Date().toLocaleString(),
+          };
+          return {
+            items: [...state.items, newItem],
+            total: state.total + item.price,
+          };
+        }),
+      setPhoneNumber: (number) => set({ phoneNumber: number }),
+      resetBill: () => set({ items: [], total: 0, phoneNumber: '' }),
     }),
-  setPhoneNumber: (number) => set({ phoneNumber: number }),
-  resetBill: () => set({ items: [], total: 0, phoneNumber: '' }),
-}));
+    {
+      name: 'bill-storage',
+      storage: createJSONStorage(() => localStorage),
+    }
+  )
+);
 
 
 export type StoreDetails = {

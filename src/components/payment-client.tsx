@@ -161,7 +161,7 @@ export function PaymentClient() {
       const whatsappUrl = createWhatsAppMessage(phoneNumber, items, total, paymentId);
       window.open(whatsappUrl, '_blank');
       resetBill();
-      router.push('/');
+      router.push('/billing');
     }
   };
 
@@ -225,12 +225,12 @@ export function PaymentClient() {
     
     doc.save(`invoice-${billNumber}.pdf`);
     resetBill();
-    router.push('/');
+    router.push('/billing');
   }
 
   useEffect(() => {
     if (total === 0 && !paymentDone) {
-      router.push('/');
+      router.push('/billing');
       return;
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

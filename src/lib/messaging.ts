@@ -9,11 +9,12 @@ export function createWhatsAppMessage(number: string, items: BillItem[], total: 
   const now = new Date();
   
   const receiptHeader = 
-`${storeDetails.storeName}
+`*${storeDetails.storeName}*
 ${storeDetails.address}
 GSTIN: ${storeDetails.gstin}
 Phone: ${storeDetails.phoneNumber}
-INVOICE
+
+*INVOICE*
 
 Bill No: ${billNumber}
 Date: ${now.toLocaleDateString()}
@@ -28,13 +29,13 @@ Payment ID: ${paymentId.replace('pay_', '')}
   
   const receiptFooter = 
 `---------------------
-TOTAL: Rs${total.toFixed(2)}
+*TOTAL: Rs${total.toFixed(2)}*
 
 Thank You!
 Visit Again!
 `;
   
-  const message = '```\n' + receiptHeader + itemLines + receiptFooter + '```';
+  const message = receiptHeader + itemLines + receiptFooter;
   
   const internationalNumber = `91${number}`;
   const encodedMessage = encodeURIComponent(message);
