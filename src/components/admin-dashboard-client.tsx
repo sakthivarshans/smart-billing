@@ -74,7 +74,7 @@ export function AdminDashboardClient({ activeTab = 'store-details' }: { activeTa
         title: 'Logged Out',
         description: 'You have been successfully logged out.',
       });
-    router.push('/billing');
+    router.push('/');
   };
 
   const handleTabChange = (value: string) => {
