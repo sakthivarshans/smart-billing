@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware'
 
@@ -96,7 +97,7 @@ export const useAdminStore = create<AdminState>()(
         },
         apiKeys: {
             whatsappApiKey: '',
-            razorpayKeyId: 'rzp_test_RyETUyYsV3wYnQ', // Default test key
+            razorpayKeyId: '',
             razorpayKeySecret: '',
         },
         stock: [],
@@ -183,3 +184,4 @@ export const useCustomerStore = create<CustomerState>()(
       }
     )
   );
+
