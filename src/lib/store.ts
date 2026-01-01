@@ -162,7 +162,10 @@ export const useCustomerStore = create<CustomerState>()(
       (set, get) => ({
         isAuthenticated: false,
         phoneNumber: '',
-        users: [{ mobileNumber: '1234567890', passwordHash: 'password123' }], // Mock user for testing
+        users: [
+          { mobileNumber: '1234567890', passwordHash: 'password123' },
+          { mobileNumber: '9655952985', passwordHash: '12345' },
+        ], 
         login: (mobileNumber, password) => {
             const user = get().users.find(u => u.mobileNumber === mobileNumber);
             // In a real app, you would compare a hashed password.
