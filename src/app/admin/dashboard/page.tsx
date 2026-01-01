@@ -1,5 +1,5 @@
-import { AdminDashboardClient } from '@/components/admin-dashboard-client';
+import { StoreDetailsForm } from '@/components/store-details-form';
 
 export default function AdminDashboardPage() {
-    return <AdminDashboardClient activeTab="store-details" />
+  return <StoreDetailsForm />;
 }
