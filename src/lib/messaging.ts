@@ -10,32 +10,26 @@ export function createWhatsAppMessage(number: string, items: BillItem[], total: 
   
   const receiptHeader = 
 `*${storeDetails.storeName}*
-${storeDetails.address}
-GSTIN: ${storeDetails.gstin}
-Phone: ${storeDetails.phoneNumber}
+Thank you for your purchase!
 
-*INVOICE*
-
+Here is a summary of your bill:
 Bill No: *${billNumber}*
-Date: ${now.toLocaleDateString()}
-Time: ${now.toLocaleTimeString()}
 Payment ID: _${paymentId.replace('pay_', '')}_
+Total: *Rs${total.toFixed(2)}*
 -------------------------------------
 `;
-
-  const itemLines = items.map(item => 
-    `${item.name.padEnd(20, ' ')} *Rs${item.price.toFixed(2)}*`
-  ).join('\n');
   
   const receiptFooter = 
-`-------------------------------------
-*TOTAL: Rs${total.toFixed(2)}*
+`
+You can download your detailed PDF invoice here: [Link to PDF will be here]
 
-Thank You for your purchase!
-We look forward to seeing you again.
+Thank you! Visit Again!
 `;
   
-  const message = receiptHeader + itemLines + receiptFooter;
+  // NOTE: Attaching a PDF directly is not possible with web `wa.me` links.
+  // A backend with the WhatsApp Business API is required for that functionality.
+  // This message provides a summary and a placeholder for a link to the PDF.
+  const message = receiptHeader + receiptFooter;
   
   const internationalNumber = `91${number}`;
   const encodedMessage = encodeURIComponent(message);
