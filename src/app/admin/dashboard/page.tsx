@@ -1,5 +1,10 @@
+import { AdminDashboardLayout } from '@/components/admin-dashboard-client';
 import { StoreDetailsForm } from '@/components/store-details-form';
 
 export default function AdminDashboardPage() {
-  return <StoreDetailsForm />;
+  return (
+    <AdminDashboardLayout>
+      <StoreDetailsForm />
+    </AdminDashboardLayout>
+  );
 }
