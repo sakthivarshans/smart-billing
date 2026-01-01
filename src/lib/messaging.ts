@@ -21,14 +21,13 @@ Total: *Rs${total.toFixed(2)}*
   
   const receiptFooter = 
 `
-You can download your detailed PDF invoice here: [Link to PDF will be here]
+You can get a detailed PDF invoice from the cashier.
 
 Thank you! Visit Again!
 `;
   
   // NOTE: Attaching a PDF directly is not possible with web `wa.me` links.
   // A backend with the WhatsApp Business API is required for that functionality.
-  // This message provides a summary and a placeholder for a link to the PDF.
   const message = receiptHeader + receiptFooter;
   
   const internationalNumber = `91${number}`;
