@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -74,7 +73,7 @@ export function AdminDashboardClient({ activeTab = 'store-details' }: { activeTa
         title: 'Logged Out',
         description: 'You have been successfully logged out.',
       });
-    router.push('/');
+    router.push('/billing');
   };
 
   const handleTabChange = (value: string) => {
