@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useBillStore, useAdminStore, useApiKeys } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { IndianRupee, CheckCircle, Loader2, AlertTriangle, CreditCard, Send, SkipForward } from 'lucide-react';
+import { IndianRupee, CheckCircle, Loader2, AlertTriangle, CreditCard, Send, SkipForward, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { initiateRazorpayOrder } from '@/ai/flows/razorpay-flow';
 import { sendWhatsAppPdf } from '@/ai/flows/whatsapp-flow';
@@ -252,8 +252,40 @@ export function PaymentClient() {
     }
   };
 
+  const handleDownloadPdf = () => {
+    if (!paymentId) return;
+    try {
+        const pdfBlob = generatePDF('blob') as Blob;
+        const billNumber = Math.floor(100000 + Math.random() * 900000);
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(pdfBlob);
+        link.download = `invoice-${billNumber}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast({
+            title: 'PDF Downloaded',
+            description: 'The invoice PDF has been saved to your device.',
+        });
+    } catch (err: any) {
+        console.error("Failed to generate PDF:", err);
+        toast({
+            variant: "destructive",
+            title: "Failed to Generate PDF",
+            description: err.message || "Could not create the invoice file.",
+        });
+    }
+  }
+
+
   const handleSendReceipt = async () => {
     if (!paymentId) return;
+
+    // If API key is not present, download the PDF locally.
+    if (!apiKeys.whatsappApiKey) {
+        handleDownloadPdf();
+        return;
+    }
 
     setIsSending(true);
     try {
@@ -358,6 +390,8 @@ Thank you! Visit Again!
       )
   }
 
+  const hasWhatsappKey = !!apiKeys.whatsappApiKey;
+
   return (
     <div className="flex items-center justify-center min-h-screen p-4 bg-background">
       <Card className="w-full max-w-sm text-center shadow-2xl animate-in fade-in-0 zoom-in-95 duration-300">
@@ -394,12 +428,16 @@ Thank you! Visit Again!
                         className="w-full" 
                         size="lg" 
                         onClick={handleSendReceipt}
-                        disabled={isSending || !apiKeys.whatsappApiKey}
+                        disabled={isSending}
                     >
                         {isSending ? (
                             <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</>
                         ) : (
-                            <><Send className="mr-2 h-4 w-4" /> Send via WhatsApp</>
+                           hasWhatsappKey ? (
+                             <><Send className="mr-2 h-4 w-4" /> Send via WhatsApp</>
+                           ) : (
+                            <><Download className="mr-2 h-4 w-4" /> Download PDF for Manual Send</>
+                           )
                         )}
                     </Button>
                     <Button
@@ -417,5 +455,3 @@ Thank you! Visit Again!
     </div>
   );
 }
-
-    
