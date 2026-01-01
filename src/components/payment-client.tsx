@@ -3,10 +3,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useBillStore, useAdminStore } from '@/lib/store';
+import { useBillStore, useAdminStore, useApiKeys } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { IndianRupee, CheckCircle, Loader2, AlertTriangle, CreditCard, Send, Download, SkipForward } from 'lucide-react';
+import { IndianRupee, CheckCircle, Loader2, AlertTriangle, CreditCard, Send, SkipForward } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { initiateRazorpayOrder } from '@/ai/flows/razorpay-flow';
 import { sendWhatsAppPdf } from '@/ai/flows/whatsapp-flow';
@@ -31,7 +31,8 @@ export function PaymentClient() {
   const router = useRouter();
   const { toast } = useToast();
   const { total, items, phoneNumber, resetBill } = useBillStore();
-  const { storeDetails, apiKeys } = useAdminStore();
+  const { storeDetails } = useAdminStore();
+  const apiKeys = useApiKeys();
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -45,7 +46,7 @@ export function PaymentClient() {
     setIsProcessing(false);
     toast({
       title: "Payment Successful!",
-      description: "You can now download the invoice or send the receipt.",
+      description: "You can now send the receipt.",
       action: <CheckCircle className="text-green-500" />,
     });
     setPaymentId(response.razorpay_payment_id);
@@ -288,25 +289,6 @@ Thank you! Visit Again!
     }
   };
 
-  const generateAndDownloadPDF = () => {
-    try {
-        const pdfBlob = generatePDF('blob') as Blob;
-        const billNumber = Math.floor(100000 + Math.random() * 900000);
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(pdfBlob);
-        link.download = `invoice-${billNumber}.pdf`;
-        link.click();
-        URL.revokeObjectURL(link.href);
-        resetBillAndReturn();
-    } catch (err: any) {
-        console.error("Failed to generate PDF:", err);
-        toast({
-            variant: "destructive",
-            title: "Failed to Generate PDF",
-            description: err.message || "An error occurred while creating the PDF.",
-        });
-    }
-  }
 
   const resetBillAndReturn = () => {
     resetBill();

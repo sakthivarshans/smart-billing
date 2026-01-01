@@ -136,6 +136,10 @@ export const useAdminStore = create<AdminState>()(
       }
     )
   );
+  
+// Selector to get specific api keys and prevent unnecessary re-renders
+export const useApiKeys = () => useAdminStore((state) => state.apiKeys);
+
 
 type CustomerUser = {
   mobileNumber: string;
@@ -184,4 +188,3 @@ export const useCustomerStore = create<CustomerState>()(
       }
     )
   );
-
