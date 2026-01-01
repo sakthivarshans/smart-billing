@@ -4,15 +4,16 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useBillStore, useAdminStore } from '@/lib/store';
-import { createWhatsAppMessage } from '@/lib/messaging';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { IndianRupee, CheckCircle, Loader2, AlertTriangle, CreditCard, Send, Download, SkipForward } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { initiateRazorpayOrder } from '@/ai/flows/razorpay-flow';
+import { sendWhatsAppPdf } from '@/ai/flows/whatsapp-flow';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import type { BillItem } from '@/lib/store';
 
 declare global {
     interface Window {
@@ -33,6 +34,7 @@ export function PaymentClient() {
   const { storeDetails, apiKeys } = useAdminStore();
 
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const [paymentDone, setPaymentDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [paymentId, setPaymentId] = useState<string | null>(null);
@@ -156,16 +158,8 @@ export function PaymentClient() {
     }
   }
 
-  const handleSendReceipt = () => {
-    if (paymentId) {
-      const whatsappUrl = createWhatsAppMessage(phoneNumber, items, total, paymentId);
-      window.open(whatsappUrl, '_blank');
-      resetBillAndReturn();
-    }
-  };
-
-  const generateAndDownloadPDF = () => {
-    if (!paymentId) return;
+  const generatePDF = (outputType: 'blob' | 'datauristring'): Blob | string => {
+    if (!paymentId) throw new Error("Payment ID is not available.");
   
     const doc = new jsPDF() as jsPDFWithAutoTable;
     const billNumber = Math.floor(100000 + Math.random() * 900000);
@@ -236,8 +230,79 @@ export function PaymentClient() {
     doc.setFont('helvetica', 'italic');
     doc.text("Thank You! Visit Again!", 105, finalY + 30, { align: 'center' });
     
-    doc.save(`invoice-${billNumber}.pdf`);
-    resetBillAndReturn();
+    if (outputType === 'blob') {
+        return doc.output('blob');
+    } else {
+        // Returns the base64 string without the data URI prefix
+        return doc.output('datauristring').split(',')[1];
+    }
+  };
+
+  const handleSendReceipt = async () => {
+    if (!paymentId) return;
+
+    setIsSending(true);
+    try {
+        const pdfBase64 = generatePDF('datauristring') as string;
+        const billNumber = Math.floor(100000 + Math.random() * 900000);
+        
+        const receiptCaption = 
+`*${storeDetails.storeName}*
+Thank you for your purchase!
+Here is your invoice (Bill No: *${billNumber}*).
+Payment ID: _${paymentId.replace('pay_', '')}_
+Total: *Rs${total.toFixed(2)}*
+Thank you! Visit Again!
+`;
+
+        const result = await sendWhatsAppPdf({
+            to: phoneNumber,
+            pdfBase64,
+            filename: `invoice-${billNumber}.pdf`,
+            caption: receiptCaption,
+            whatsappApiKey: apiKeys.whatsappApiKey,
+        });
+
+        if (result.success) {
+            toast({
+                title: 'Receipt Sent!',
+                description: 'The invoice has been sent via WhatsApp.',
+            });
+            resetBillAndReturn();
+        } else {
+            throw new Error(result.message);
+        }
+
+    } catch (err: any) {
+        console.error("Failed to send receipt:", err);
+        toast({
+            variant: "destructive",
+            title: "Failed to Send Receipt",
+            description: err.message || "Could not send the message.",
+        });
+    } finally {
+        setIsSending(false);
+    }
+  };
+
+  const generateAndDownloadPDF = () => {
+    try {
+        const pdfBlob = generatePDF('blob') as Blob;
+        const billNumber = Math.floor(100000 + Math.random() * 900000);
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(pdfBlob);
+        link.download = `invoice-${billNumber}.pdf`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+        resetBillAndReturn();
+    } catch (err: any) {
+        console.error("Failed to generate PDF:", err);
+        toast({
+            variant: "destructive",
+            title: "Failed to Generate PDF",
+            description: err.message || "An error occurred while creating the PDF.",
+        });
+    }
   }
 
   const resetBillAndReturn = () => {
@@ -320,7 +385,7 @@ export function PaymentClient() {
                     className="w-full" 
                     size="lg" 
                     onClick={handlePayAction}
-                    disabled={isProcessing || !apiKeys.razorpayKeyId || !apiKeys.razorpayKeySecret}
+                    disabled={isProcessing || !apiKeys.razorpayKeyId}
                 >
                     {isProcessing ? (
                         <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Preparing...</>
@@ -343,9 +408,13 @@ export function PaymentClient() {
                         size="lg" 
                         variant="secondary"
                         onClick={handleSendReceipt}
+                        disabled={isSending || !apiKeys.whatsappApiKey}
                     >
-                        <Send className="mr-2 h-4 w-4" />
-                        Send via WhatsApp
+                        {isSending ? (
+                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</>
+                        ) : (
+                            <><Send className="mr-2 h-4 w-4" /> Send via WhatsApp</>
+                        )}
                     </Button>
                     <Button
                         className="w-full"

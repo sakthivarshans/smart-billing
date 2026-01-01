@@ -1,5 +1,8 @@
 'use client';
 
+// This file is now deprecated as we are using a server-side flow
+// to send WhatsApp messages. It is kept for reference but is no longer used.
+
 import type { BillItem } from '@/lib/store';
 import { useAdminStore } from '@/lib/store';
 
@@ -26,8 +29,6 @@ You can get a detailed PDF invoice from the cashier.
 Thank you! Visit Again!
 `;
   
-  // NOTE: Attaching a PDF directly is not possible with web `wa.me` links.
-  // A backend with the WhatsApp Business API is required for that functionality.
   const message = receiptHeader + receiptFooter;
   
   const internationalNumber = `91${number}`;
