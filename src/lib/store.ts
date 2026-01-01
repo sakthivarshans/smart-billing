@@ -81,6 +81,7 @@ type AdminState = {
     updateStoreDetails: (details: Partial<StoreDetails>) => void;
     updateApiKeys: (keys: Partial<ApiKeys>) => void;
     addStockItem: (item: Omit<StockItem, 'quantity'>) => void;
+    getApiKeys: () => ApiKeys;
 };
 
 export const useAdminStore = create<AdminState>()(
@@ -129,6 +130,7 @@ export const useAdminStore = create<AdminState>()(
                 return { stock: [...state.stock, { ...item, quantity: 1 }]};
             }
         }),
+        getApiKeys: () => get().apiKeys,
       }),
       {
         name: 'admin-storage', 
@@ -188,3 +190,5 @@ export const useCustomerStore = create<CustomerState>()(
       }
     )
   );
+
+    

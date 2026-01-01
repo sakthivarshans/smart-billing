@@ -32,13 +32,23 @@ export function PaymentClient() {
   const { toast } = useToast();
   const { total, items, phoneNumber, resetBill } = useBillStore();
   const { storeDetails } = useAdminStore();
-  const apiKeys = useApiKeys();
+  const initialApiKeys = useApiKeys(); // Gets keys on initial render
+  const getApiKeys = useAdminStore((state) => state.getApiKeys);
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [paymentDone, setPaymentDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [paymentId, setPaymentId] = useState<string | null>(null);
+  
+  // State to hold the API keys, which will be updated on the client
+  const [apiKeys, setApiKeys] = useState(initialApiKeys);
+
+  useEffect(() => {
+    // This effect runs only on the client, after the component has mounted.
+    // It fetches the latest API keys from localStorage via the store.
+    setApiKeys(getApiKeys());
+  }, [getApiKeys]);
 
 
   const handlePaymentSuccess = async (response: any) => {
@@ -407,3 +417,5 @@ Thank you! Visit Again!
     </div>
   );
 }
+
+    
