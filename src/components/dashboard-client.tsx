@@ -88,7 +88,7 @@ export function DashboardClient() {
 
   const handleLogout = () => {
     customerLogout();
-    resetBill();
+    resetBill(); // This clears the phoneNumber from the bill store
     toast({
       title: 'Logged Out',
       description: 'You have been successfully logged out.',
