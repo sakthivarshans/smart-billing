@@ -23,7 +23,7 @@ export function DashboardClient() {
   const [currentPhoneNumber, setCurrentPhoneNumber] = useState(phoneNumber || customerPhoneNumber);
   const [rfidInput, setRfidInput] = useState('');
   const rfidInputRef = useRef<HTMLInputElement>(null);
-  const [isScannerReady, setIsScannerReady] = useState(true);
+  const [isScannerReady, setIsScannerReady] = useState(false);
 
   useEffect(() => {
     // Sync phone number from customer store to bill store when component mounts
@@ -34,21 +34,30 @@ export function DashboardClient() {
   }, [customerPhoneNumber, setPhoneNumber]);
   
   useEffect(() => {
-    // Auto-focus the RFID input field on component mount
-    rfidInputRef.current?.focus();
-    
+    // Auto-focus the RFID input field on component mount and keep it focused.
+    const focusInput = () => rfidInputRef.current?.focus();
+    focusInput();
+
     const handleFocus = () => setIsScannerReady(true);
-    const handleBlur = () => setIsScannerReady(false);
-    
+    const handleBlur = () => {
+      setIsScannerReady(false);
+      // Refocus if blurred
+      setTimeout(focusInput, 100);
+    };
+
     const inputElement = rfidInputRef.current;
     inputElement?.addEventListener('focus', handleFocus);
     inputElement?.addEventListener('blur', handleBlur);
-    
-    return () => {
-        inputElement?.removeEventListener('focus', handleFocus);
-        inputElement?.removeEventListener('blur', handleBlur);
+
+    // Also set initial state
+    if (document.activeElement === inputElement) {
+        setIsScannerReady(true);
     }
 
+    return () => {
+      inputElement?.removeEventListener('focus', handleFocus);
+      inputElement?.removeEventListener('blur', handleBlur);
+    };
   }, []);
 
 
@@ -156,7 +165,7 @@ export function DashboardClient() {
   };
 
   return (
-    <div className="container mx-auto p-4 sm:p-6 md:p-8">
+    <div className="container mx-auto p-4 sm:p-6 md:p-8" onClick={() => rfidInputRef.current?.focus()}>
       {/* Hidden input to capture scanner data */}
       <Input
         key="rfid-input"
