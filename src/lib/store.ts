@@ -180,7 +180,7 @@ export const useAdminStore = create<AdminState>()(
         getApiKeys: () => get().apiKeys,
         setProductCatalog: (products) => set({ productCatalog: products }),
         setColumnMapping: (mapping: ColumnMapping) => set({ columnMapping: mapping }),
-        clearInventory: () => set({ stock: [], sales: [], productCatalog: [] }),
+        clearInventory: () => set({ stock: [], productCatalog: [] }),
       }),
       {
         name: 'admin-storage', 
@@ -215,7 +215,7 @@ export const useCustomerStore = create<CustomerState>()(
         phoneNumber: '',
         users: [
           { mobileNumber: '1234567890', passwordHash: 'password123' },
-          { mobileNumber: '9655952985', passwordHash: '12345' },
+          { mobileNumber: '9655952985', passwordHash: '1234' },
         ], 
         login: (mobileNumber, password) => {
             const user = get().users.find(u => u.mobileNumber === mobileNumber);

@@ -149,7 +149,7 @@ export function InventoryClient() {
     setTimeout(() => {
       toast({
         title: 'Inventory Cleared',
-        description: 'All product catalog, stock, and sales records have been erased.',
+        description: 'All product catalog and stock records have been erased. Sales data remains.',
       });
       setIsClearing(false);
     }, 500);
@@ -165,7 +165,7 @@ export function InventoryClient() {
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center justify-center text-center p-12">
-        {inventoryData.length > 0 || stock.length > 0 || sales.length > 0 ? (
+        {inventoryData.length > 0 || stock.length > 0 ? (
           <>
             <PackageSearch className="h-16 w-16 mb-4 text-muted-foreground" />
             <p className="mb-4 text-muted-foreground">
@@ -200,7 +200,7 @@ export function InventoryClient() {
               <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
               <AlertDialogDescription>
                 This action cannot be undone. This will permanently delete your
-                product catalog, all stock inward records, and all sales records.
+                product catalog and all stock inward records. Your sales and payment logs will not be affected.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
