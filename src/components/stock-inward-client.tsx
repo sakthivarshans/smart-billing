@@ -25,10 +25,15 @@ export function StockInwardClient() {
   const [idColumn, setIdColumn] = useState('');
   const [nameColumn, setNameColumn] = useState('');
   const [priceColumn, setPriceColumn] = useState('');
+  const [optionalColumn1, setOptionalColumn1] = useState('');
+  const [optionalColumn2, setOptionalColumn2] = useState('');
+
 
   const [popoverOpenId, setPopoverOpenId] = useState(false);
   const [popoverOpenName, setPopoverOpenName] = useState(false);
   const [popoverOpenPrice, setPopoverOpenPrice] = useState(false);
+  const [popoverOpenOptional1, setPopoverOpenOptional1] = useState(false);
+  const [popoverOpenOptional2, setPopoverOpenOptional2] = useState(false);
 
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,6 +51,8 @@ export function StockInwardClient() {
         setIdColumn('');
         setNameColumn('');
         setPriceColumn('');
+        setOptionalColumn1('');
+        setOptionalColumn2('');
       };
       reader.readAsText(file);
     } else {
@@ -65,7 +72,7 @@ export function StockInwardClient() {
       return;
     }
     if (!idColumn || !nameColumn || !priceColumn) {
-      toast({ variant: 'destructive', title: 'Column Mapping Incomplete', description: 'Please map all required fields.' });
+      toast({ variant: 'destructive', title: 'Column Mapping Incomplete', description: 'Please map all required fields (Barcode, Name, Price).' });
       return;
     }
     
@@ -85,7 +92,7 @@ export function StockInwardClient() {
         const priceIndex = headers.indexOf(priceColumn);
 
         if (idIndex === -1 || nameIndex === -1 || priceIndex === -1) {
-          throw new Error("One or more mapped columns were not found in the file.");
+          throw new Error("One or more required mapped columns were not found in the file.");
         }
 
         const newCatalog: Product[] = rows.map(row => {
@@ -131,10 +138,11 @@ export function StockInwardClient() {
     value: string, 
     setValue: (val: string) => void, 
     isOpen: boolean, 
-    setIsOpen: (open: boolean) => void
+    setIsOpen: (open: boolean) => void,
+    isRequired: boolean = false
   ) => (
     <div className="flex flex-col space-y-2">
-        <Label className="text-sm font-medium">{label}</Label>
+        <Label className="text-sm font-medium">{label}{isRequired && <span className="text-destructive">*</span>}</Label>
         <Popover open={isOpen} onOpenChange={setIsOpen}>
             <PopoverTrigger asChild>
                 <Button
@@ -196,10 +204,12 @@ export function StockInwardClient() {
                 </div>
 
                 {csvHeaders.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border p-4 rounded-md animate-in fade-in-0">
-                        {renderMappingSelector("Barcode/RFID Column", idColumn, setIdColumn, popoverOpenId, setPopoverOpenId)}
-                        {renderMappingSelector("Product Name Column", nameColumn, setNameColumn, popoverOpenName, setPopoverOpenName)}
-                        {renderMappingSelector("Price Column", priceColumn, setPriceColumn, popoverOpenPrice, setPopoverOpenPrice)}
+                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 border p-4 rounded-md animate-in fade-in-0">
+                        {renderMappingSelector("Barcode/RFID Column", idColumn, setIdColumn, popoverOpenId, setPopoverOpenId, true)}
+                        {renderMappingSelector("Product Name Column", nameColumn, setNameColumn, popoverOpenName, setPopoverOpenName, true)}
+                        {renderMappingSelector("Price Column", priceColumn, setPriceColumn, popoverOpenPrice, setPopoverOpenPrice, true)}
+                        {renderMappingSelector("Optional Column 1", optionalColumn1, setOptionalColumn1, popoverOpenOptional1, setPopoverOpenOptional1)}
+                        {renderMappingSelector("Optional Column 2", optionalColumn2, setOptionalColumn2, popoverOpenOptional2, setPopoverOpenOptional2)}
                     </div>
                 )}
                 
