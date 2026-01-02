@@ -2,9 +2,16 @@
 
 import { useMemo } from 'react';
 import { useAdminStore } from '@/lib/store';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PackageSearch } from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Download, PackageSearch } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import type { Product } from '@/lib/store';
 
 interface InventoryItem extends Product {
@@ -14,6 +21,7 @@ interface InventoryItem extends Product {
 }
 
 export function InventoryClient() {
+  const { toast } = useToast();
   const { stock, sales, productCatalog } = useAdminStore((state) => ({
     stock: state.stock,
     sales: state.sales,
@@ -24,7 +32,7 @@ export function InventoryClient() {
     const inventoryMap = new Map<string, InventoryItem>();
 
     // Initialize with all products from the catalog
-    productCatalog.forEach(product => {
+    productCatalog.forEach((product) => {
       inventoryMap.set(product.id, {
         ...product,
         stockIn: 0,
@@ -34,7 +42,7 @@ export function InventoryClient() {
     });
 
     // Calculate stock in
-    stock.forEach(item => {
+    stock.forEach((item) => {
       const entry = inventoryMap.get(item.rfid);
       if (entry) {
         entry.stockIn += 1;
@@ -42,9 +50,9 @@ export function InventoryClient() {
     });
 
     // Calculate stock out from successful sales
-    sales.forEach(sale => {
+    sales.forEach((sale) => {
       if (sale.status === 'success') {
-        sale.items.forEach(item => {
+        sale.items.forEach((item) => {
           const entry = inventoryMap.get(item.rfid);
           if (entry) {
             entry.stockOut += 1;
@@ -54,58 +62,89 @@ export function InventoryClient() {
     });
 
     // Calculate available stock
-    inventoryMap.forEach(entry => {
+    inventoryMap.forEach((entry) => {
       entry.available = entry.stockIn - entry.stockOut;
     });
 
     return Array.from(inventoryMap.values());
   }, [stock, sales, productCatalog]);
 
+  const handleDownloadInventory = () => {
+    if (inventoryData.length === 0) {
+      toast({
+        variant: 'destructive',
+        title: 'No Inventory Data',
+        description:
+          'There is no inventory to export. Upload a product catalog first.',
+      });
+      return;
+    }
+
+    const headers = [
+      'Product Name',
+      'Barcode/RFID',
+      'Stock In',
+      'Sold',
+      'Available',
+    ];
+    const csvContent = [
+      headers.join(','),
+      ...inventoryData.map((item) =>
+        [item.name, item.id, item.stockIn, item.stockOut, item.available].join(
+          ','
+        )
+      ),
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.href) {
+      URL.revokeObjectURL(link.href);
+    }
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'inventory_report.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: 'Download Started',
+      description: 'Your inventory report is being downloaded.',
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Current Inventory</CardTitle>
         <CardDescription>
-          A real-time overview of your product stock levels.
+          Download a real-time overview of your product stock levels.
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="border rounded-lg overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Product Name</TableHead>
-                <TableHead>Barcode/RFID</TableHead>
-                <TableHead className="text-center">Stock In</TableHead>
-                <TableHead className="text-center">Sold</TableHead>
-                <TableHead className="text-center font-bold">Available</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {inventoryData.length > 0 ? (
-                inventoryData.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-medium">{item.name}</TableCell>
-                    <TableCell>{item.id}</TableCell>
-                    <TableCell className="text-center">{item.stockIn}</TableCell>
-                    <TableCell className="text-center">{item.stockOut}</TableCell>
-                    <TableCell className="text-center font-bold">{item.available}</TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                    <div className="flex flex-col items-center gap-2">
-                        <PackageSearch className="h-8 w-8" />
-                        <span>No inventory data found.</span>
-                        <span className="text-xs">Upload a product catalog in the 'Stock Inward' tab to get started.</span>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
+      <CardContent className="flex flex-col items-center justify-center text-center p-12">
+        {inventoryData.length > 0 ? (
+          <>
+            <PackageSearch className="h-16 w-16 mb-4 text-muted-foreground" />
+            <p className="mb-4 text-muted-foreground">
+              Your inventory report is ready to be downloaded.
+            </p>
+            <Button onClick={handleDownloadInventory}>
+              <Download className="mr-2 h-4 w-4" />
+              Download Inventory Report
+            </Button>
+          </>
+        ) : (
+          <>
+            <PackageSearch className="h-16 w-16 mb-4 text-muted-foreground" />
+            <p className="font-semibold">No inventory data found.</p>
+            <p className="text-sm text-muted-foreground">
+              Upload a product catalog in the 'Stock Inward' tab to get
+              started.
+            </p>
+          </>
+        )}
       </CardContent>
     </Card>
   );
