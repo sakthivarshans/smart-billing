@@ -12,9 +12,8 @@ import { format, subDays, isToday, isWithinInterval } from 'date-fns';
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#a4de6c', '#d0ed57', '#ffc658'];
 
 export function SalesDashboardClient() {
-    const { sales, customers } = useAdminStore((state) => ({
+    const { sales } = useAdminStore((state) => ({
         sales: state.sales,
-        customers: state.users, // Assuming customers are tracked via sales records
     }));
 
     const salesData = useMemo(() => {
