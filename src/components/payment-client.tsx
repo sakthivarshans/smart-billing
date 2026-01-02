@@ -45,6 +45,12 @@ export function PaymentClient() {
   // State to hold the API keys, which will be updated on the client
   const [apiKeys, setApiKeys] = useState(initialApiKeys);
 
+  // Price breakup calculation
+  const subtotal = total / 1.18; // Assuming 18% GST
+  const gstAmount = total - subtotal;
+  const sgst = gstAmount / 2;
+  const cgst = gstAmount / 2;
+
   useEffect(() => {
     // This effect runs only on the client, after the component has mounted.
     // It fetches the latest API keys from localStorage via the store.
@@ -385,14 +391,34 @@ Thank you! Visit Again!
         <CardHeader>
           <CardTitle className="text-2xl">Complete Your Payment</CardTitle>
           <CardDescription>
-            Total Amount Due
+            Review your bill summary below
           </CardDescription>
-          <div className="text-5xl font-bold text-primary pt-2 flex items-center justify-center">
-            <IndianRupee size={40} className="mr-1" />
+          <div className="space-y-2 pt-4 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Subtotal</span>
+              <span className="font-medium flex items-center">
+                <IndianRupee size={12} className="mr-1" />{subtotal.toFixed(2)}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">SGST (9%)</span>
+              <span className="font-medium flex items-center">
+                <IndianRupee size={12} className="mr-1" />{sgst.toFixed(2)}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">CGST (9%)</span>
+              <span className="font-medium flex items-center">
+                <IndianRupee size={12} className="mr-1" />{cgst.toFixed(2)}
+              </span>
+            </div>
+          </div>
+          <div className="text-4xl font-bold text-primary pt-4 flex items-center justify-center border-t mt-4">
+            <IndianRupee size={32} className="mr-1" />
             {total.toFixed(2)}
           </div>
         </CardHeader>
-        <CardContent className="flex flex-col items-center gap-4 min-h-[200px] justify-center">
+        <CardContent className="flex flex-col items-center gap-4 min-h-[150px] justify-center">
             {content()}
         </CardContent>
         <CardFooter className="flex flex-col gap-2">
