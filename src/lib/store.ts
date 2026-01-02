@@ -87,6 +87,7 @@ export type Sale = {
     total: number;
     phoneNumber: string;
     date: string; // ISO string
+    paymentResponse: any;
 };
 
 type AdminState = {
