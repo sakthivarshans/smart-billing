@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -12,20 +13,12 @@ import { IndianRupee, ShoppingCart, Smartphone, Trash2, UserCog, LogOut, ScanLin
 import { useToast } from '@/hooks/use-toast';
 import { RFIDScanner } from './rfid-scanner';
 
-export const mockItems = [
-  { id: 'rfid-tshirt-001', name: 'Modern T-Shirt', price: 4.99 },
-  { id: 'rfid-jeans-002', name: 'Slim Fit Jeans', price: 3.99 },
-  { id: 'rfid-jacket-003', name: 'Denim Jacket', price: 2.99 },
-  { id: 'rfid-socks-004', name: 'Crew Socks (3-pack)', price: 1.99 },
-  { id: 'rfid-cap-005', name: 'Baseball Cap', price: 4.50 },
-];
-
 export function DashboardClient() {
   const router = useRouter();
   const { toast } = useToast();
   const { items, total, addItem, setPhoneNumber, resetBill, phoneNumber } = useBillStore();
   const { phoneNumber: customerPhoneNumber, logout: customerLogout } = useCustomerStore();
-  const { storeDetails } = useAdminStore();
+  const { storeDetails, productCatalog } = useAdminStore();
   
   const [currentPhoneNumber, setCurrentPhoneNumber] = useState(phoneNumber || customerPhoneNumber);
   const [rfidInput, setRfidInput] = useState('');
@@ -46,11 +39,11 @@ export function DashboardClient() {
   }, []);
 
 
-  const handleItemScanned = (rfid: string) => {
-    if (!rfid) return;
-    const item = mockItems.find(i => i.id === rfid.trim());
+  const handleItemScanned = (scannedId: string) => {
+    if (!scannedId) return;
+    const item = productCatalog.find(p => p.id === scannedId.trim());
     if (item) {
-        addItem(item);
+        addItem({ rfid: item.id, name: item.name, price: item.price });
         toast({
             title: 'Item Added',
             description: `${item.name} has been added to the bill.`,
@@ -59,7 +52,7 @@ export function DashboardClient() {
         toast({
             variant: 'destructive',
             title: 'Unknown Item',
-            description: `No item found with RFID tag: ${rfid}`,
+            description: `No item found with ID: ${scannedId}`,
         });
     }
     // Clear input for next scan
@@ -144,7 +137,7 @@ export function DashboardClient() {
               <Input
                 ref={rfidInputRef}
                 type="text"
-                placeholder="Scan RFID Tag..."
+                placeholder="Scan Barcode or RFID..."
                 className="pl-10"
                 value={rfidInput}
                 onChange={(e) => setRfidInput(e.target.value)}

@@ -7,14 +7,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Box, Download, IndianRupee } from 'lucide-react';
 import { RFIDScanner } from './rfid-scanner';
 import { useToast } from '@/hooks/use-toast';
-import { mockItems } from '@/components/dashboard-client';
 
 export function StockInwardClient() {
-  const { stock, addStockItem } = useAdminStore();
+  const { stock, addStockItem, productCatalog } = useAdminStore();
   const { toast } = useToast();
 
   const handleItemScanned = (rfid: string) => {
-    const item = mockItems.find(i => i.id === rfid.trim());
+    const item = productCatalog.find(p => p.id === rfid.trim());
     if (item) {
         addStockItem({ rfid: item.id, name: item.name, price: item.price });
         toast({
@@ -25,7 +24,7 @@ export function StockInwardClient() {
         toast({
             variant: 'destructive',
             title: 'Unknown Item',
-            description: `No item found with RFID tag: ${rfid}`,
+            description: `No item found in product catalog with ID: ${rfid}`,
         });
     }
   };

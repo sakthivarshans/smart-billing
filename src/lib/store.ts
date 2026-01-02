@@ -62,6 +62,12 @@ export type ApiKeys = {
     razorpayKeySecret: string;
 };
 
+export type Product = {
+    id: string; // Barcode or RFID
+    name: string;
+    price: number;
+};
+
 export type StockItem = {
     rfid: string;
     name: string;
@@ -83,6 +89,7 @@ type AdminState = {
     hasBeenSetup: boolean;
     storeDetails: StoreDetails;
     apiKeys: ApiKeys;
+    productCatalog: Product[];
     stock: StockItem[];
     sales: Sale[];
     login: (password: string) => boolean;
@@ -112,6 +119,13 @@ export const useAdminStore = create<AdminState>()(
             razorpayKeyId: '',
             razorpayKeySecret: '',
         },
+        productCatalog: [
+            { id: 'rfid-tshirt-001', name: 'Modern T-Shirt', price: 4.99 },
+            { id: 'rfid-jeans-002', name: 'Slim Fit Jeans', price: 3.99 },
+            { id: 'rfid-jacket-003', name: 'Denim Jacket', price: 2.99 },
+            { id: 'rfid-socks-004', name: 'Crew Socks (3-pack)', price: 1.99 },
+            { id: 'rfid-cap-005', name: 'Baseball Cap', price: 4.50 },
+        ],
         stock: [],
         sales: [],
         login: (password: string) => {
@@ -208,5 +222,3 @@ export const useCustomerStore = create<CustomerState>()(
       }
     )
   );
-
-    
