@@ -61,7 +61,7 @@ export function StockInwardClient() {
     const headers = ['Item Name', 'Quantity', 'Price', 'RFID'];
     const csvContent = [
         headers.join(','),
-        ...aggregatedStock.map(item => [item.name, item.quantity, item.price, item.rfid].join(','))
+        ...aggregatedStock.map(item => [item.name, item.quantity, item.price.toFixed(2), item.rfid].join(','))
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -163,16 +163,8 @@ export function StockInwardClient() {
     reader.readAsText(csvFile);
   };
   
-    // Aggregate stock for display
-    const aggregatedStockForDisplay = stock.reduce((acc, currentItem) => {
-        const existingItem = acc.find(item => item.rfid === currentItem.rfid);
-        if (existingItem) {
-            existingItem.quantity += 1;
-        } else {
-            acc.push({ ...currentItem, quantity: 1 });
-        }
-        return acc;
-    }, [] as StockItem[]);
+    // Show only the last 5 scanned items for display
+    const lastFiveItems = stock.slice(-5).reverse();
 
   return (
     <div className="space-y-6">
@@ -209,19 +201,17 @@ export function StockInwardClient() {
                         <TableHead>Item Name</TableHead>
                         <TableHead>RFID</TableHead>
                         <TableHead className="text-right">Price</TableHead>
-                        <TableHead className="text-right">Quantity</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {aggregatedStockForDisplay.length > 0 ? (
-                        aggregatedStockForDisplay.map((item) => (
-                            <TableRow key={item.rfid}>
+                    {lastFiveItems.length > 0 ? (
+                        lastFiveItems.map((item, index) => (
+                            <TableRow key={`${item.rfid}-${stock.length - index}`}>
                                 <TableCell className="font-medium">{item.name}</TableCell>
                                 <TableCell>{item.rfid}</TableCell>
                                 <TableCell className="text-right flex items-center justify-end">
                                     <IndianRupee size={14} className="mr-1"/>{item.price.toFixed(2)}
                                 </TableCell>
-                                <TableCell className="text-right">{item.quantity}</TableCell>
                             </TableRow>
                         ))
                     ) : (

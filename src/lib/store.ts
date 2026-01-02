@@ -72,7 +72,13 @@ export type StockItem = {
     rfid: string;
     name: string;
     price: number;
-    quantity: number;
+    quantity: number; // This represents the aggregated quantity for exports
+};
+
+export type IndividualStockItem = {
+    rfid: string;
+    name: string;
+    price: number;
 }
 
 export type Sale = {
@@ -90,14 +96,14 @@ type AdminState = {
     storeDetails: StoreDetails;
     apiKeys: ApiKeys;
     productCatalog: Product[];
-    stock: StockItem[];
+    stock: IndividualStockItem[];
     sales: Sale[];
     login: (password: string) => boolean;
     logout: () => void;
     setPassword: (password: string) => void;
     updateStoreDetails: (details: Partial<StoreDetails>) => void;
     updateApiKeys: (keys: Partial<ApiKeys>) => void;
-    addStockItem: (item: Omit<StockItem, 'quantity'>) => void;
+    addStockItem: (item: IndividualStockItem) => void;
     getApiKeys: () => ApiKeys;
     addSale: (sale: Sale) => void;
     setProductCatalog: (products: Product[]) => void;
@@ -142,14 +148,7 @@ export const useAdminStore = create<AdminState>()(
                 apiKeys: { ...state.apiKeys, ...keys },
             })),
         addStockItem: (item) => set((state) => {
-            const existingItemIndex = state.stock.findIndex(stockItem => stockItem.rfid === item.rfid);
-            if (existingItemIndex > -1) {
-                const newStock = [...state.stock];
-                newStock[existingItemIndex].quantity += 1;
-                return { stock: newStock };
-            } else {
-                return { stock: [...state.stock, { ...item, quantity: 1 }]};
-            }
+            return { stock: [...state.stock, item]};
         }),
         addSale: (sale) => set((state) => ({
             sales: [...state.sales, sale],
