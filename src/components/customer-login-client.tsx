@@ -60,7 +60,7 @@ export function CustomerLoginClient() {
     <div className="flex items-center justify-center min-h-screen bg-background relative">
       <Card className="w-full max-w-sm shadow-2xl">
         <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Customer Login</CardTitle>
+            <CardTitle className="text-2xl">Operator Login</CardTitle>
             <CardDescription>Enter your mobile number and password to begin.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
