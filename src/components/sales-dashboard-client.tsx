@@ -1,15 +1,16 @@
 
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useAdminStore } from '@/lib/store';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { IndianRupee, ShoppingBag, Users, Download } from 'lucide-react';
 import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, TooltipProps } from 'recharts';
 import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
-import { format, subDays, isToday, isWithinInterval } from 'date-fns';
+import { format, subDays, isToday, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { Button } from './ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { DatePicker } from './ui/date-picker';
 
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#a4de6c', '#d0ed57', '#ffc658'];
 
@@ -18,6 +19,8 @@ export function SalesDashboardClient() {
     const { sales } = useAdminStore((state) => ({
         sales: state.sales,
     }));
+    const [fromDate, setFromDate] = useState<Date | undefined>();
+    const [toDate, setToDate] = useState<Date | undefined>();
 
     const salesData = useMemo(() => {
         const today = new Date();
@@ -74,14 +77,39 @@ export function SalesDashboardClient() {
             });
             return;
         }
+
+        if (fromDate && toDate && fromDate > toDate) {
+            toast({
+                variant: 'destructive',
+                title: 'Invalid Date Range',
+                description: '"From" date cannot be after "To" date.',
+            });
+            return;
+        }
     
+        const filteredSales = sales.filter(sale => {
+            if (!fromDate || !toDate) return true; // No filter if dates are not set
+            const saleDate = new Date(sale.date);
+            return isWithinInterval(saleDate, { start: startOfDay(fromDate), end: endOfDay(toDate) });
+        });
+
+        if (filteredSales.length === 0) {
+            toast({
+                variant: 'destructive',
+                title: 'No Sales in Date Range',
+                description: 'There are no sales records in the selected period.',
+            });
+            return;
+        }
+
+
         // Define CSV headers
         const headers = ['Date', 'Payment ID', 'Order ID', 'Customer Phone', 'Total Amount', 'Item Count'];
         
         // Create CSV content
         const csvContent = [
             headers.join(','),
-            ...sales.map(sale => {
+            ...filteredSales.map(sale => {
                 const date = `"${new Date(sale.date).toLocaleString()}"`;
                 const paymentId = sale.paymentResponse?.razorpay_payment_id || sale.id;
                 const orderId = sale.paymentResponse?.razorpay_order_id || 'N/A';
@@ -159,12 +187,21 @@ export function SalesDashboardClient() {
                 </Card>
             </div>
 
-            <div className="flex justify-end">
-                <Button onClick={handleDownloadLogs}>
-                    <Download className="mr-2 h-4 w-4" />
-                    Download Logs
-                </Button>
-            </div>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Download Payment Logs</CardTitle>
+                    <CardDescription>Select a date range to export payment records.</CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col sm:flex-row gap-4 items-center">
+                    <DatePicker date={fromDate} setDate={setFromDate} placeholder="From Date" />
+                    <DatePicker date={toDate} setDate={setToDate} placeholder="To Date" />
+                    <Button onClick={handleDownloadLogs} className="w-full sm:w-auto">
+                        <Download className="mr-2 h-4 w-4" />
+                        Download Logs
+                    </Button>
+                </CardContent>
+            </Card>
+
 
             {/* Charts */}
             <div className="grid gap-8 md:grid-cols-2">
