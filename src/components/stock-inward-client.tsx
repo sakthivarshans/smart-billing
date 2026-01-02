@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useAdminStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Box, Download, IndianRupee, Upload } from 'lucide-react';
+import { Box, Download, IndianRupee, Upload, Loader2 } from 'lucide-react';
 import { RFIDScanner } from './rfid-scanner';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +15,7 @@ export function StockInwardClient() {
   const { stock, addStockItem, productCatalog, setProductCatalog } = useAdminStore();
   const { toast } = useToast();
   const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleItemScanned = (rfid: string) => {
     const item = productCatalog.find(p => p.id === rfid.trim());
@@ -91,42 +92,57 @@ export function StockInwardClient() {
       });
       return;
     }
+    
+    setIsUploading(true);
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      const text = e.target?.result as string;
-      const rows = text.split('\n').filter(row => row.trim() !== '');
-      const headers = rows.shift()?.split(',').map(h => h.trim());
-      
-      if (!headers || !headers.includes('id') || !headers.includes('name') || !headers.includes('price')) {
+      try {
+        const text = e.target?.result as string;
+        const rows = text.split('\n').filter(row => row.trim() !== '');
+        const headers = rows.shift()?.split(',').map(h => h.trim());
+        
+        if (!headers || !headers.includes('id') || !headers.includes('name') || !headers.includes('price')) {
+          throw new Error("CSV must contain 'id', 'name', and 'price' columns.");
+        }
+
+        const idIndex = headers.indexOf('id');
+        const nameIndex = headers.indexOf('name');
+        const priceIndex = headers.indexOf('price');
+
+        const newCatalog = rows.map(row => {
+          const values = row.split(',');
+          const price = parseFloat(values[priceIndex]);
+          return {
+            id: values[idIndex]?.trim(),
+            name: values[nameIndex]?.trim(),
+            price: isNaN(price) ? 0 : price,
+          };
+        }).filter(p => p.id && p.name);
+
+        setProductCatalog(newCatalog);
         toast({
-            variant: 'destructive',
-            title: 'Invalid CSV Format',
-            description: 'CSV must contain "id", "name", and "price" columns.',
+          title: 'Catalog Uploaded',
+          description: `${newCatalog.length} products have been loaded into the catalog.`,
         });
-        return;
+      } catch (error: any) {
+        toast({
+          variant: 'destructive',
+          title: 'Failed to Upload CSV',
+          description: error.message || 'An unexpected error occurred during parsing.',
+        });
+      } finally {
+        setCsvFile(null); // Clear the file input
+        setIsUploading(false); // End loading state
       }
-
-      const idIndex = headers.indexOf('id');
-      const nameIndex = headers.indexOf('name');
-      const priceIndex = headers.indexOf('price');
-
-      const newCatalog = rows.map(row => {
-        const values = row.split(',');
-        const price = parseFloat(values[priceIndex]);
-        return {
-          id: values[idIndex]?.trim(),
-          name: values[nameIndex]?.trim(),
-          price: isNaN(price) ? 0 : price,
-        };
-      }).filter(p => p.id && p.name);
-
-      setProductCatalog(newCatalog);
+    };
+    reader.onerror = () => {
       toast({
-        title: 'Catalog Uploaded',
-        description: `${newCatalog.length} products have been loaded into the catalog.`,
+        variant: 'destructive',
+        title: 'File Read Error',
+        description: 'Could not read the selected file.',
       });
-      setCsvFile(null); // Clear the file input
+      setIsUploading(false);
     };
     reader.readAsText(csvFile);
   };
@@ -141,9 +157,13 @@ export function StockInwardClient() {
                 </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col sm:flex-row gap-2">
-                <Input type="file" accept=".csv" onChange={handleFileChange} className="w-full sm:w-auto flex-grow"/>
-                <Button onClick={handleFileUpload} disabled={!csvFile}>
-                    <Upload className="mr-2 h-4 w-4" /> Upload
+                <Input type="file" accept=".csv" onChange={handleFileChange} className="w-full sm:w-auto flex-grow" disabled={isUploading}/>
+                <Button onClick={handleFileUpload} disabled={!csvFile || isUploading}>
+                    {isUploading ? (
+                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</>
+                    ) : (
+                        <><Upload className="mr-2 h-4 w-4" /> Upload</>
+                    )}
                 </Button>
             </CardContent>
         </Card>
