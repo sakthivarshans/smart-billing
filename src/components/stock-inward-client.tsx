@@ -49,8 +49,9 @@ export function StockInwardClient() {
     const aggregatedStock = stock.reduce((acc, currentItem) => {
         const existingItem = acc.find(item => item.rfid === currentItem.rfid);
         if (existingItem) {
-            existingItem.quantity += currentItem.quantity;
+            existingItem.quantity += 1;
         } else {
+            // Note: the `addStockItem` in store ensures quantity starts at 1
             acc.push({ ...currentItem });
         }
         return acc;
@@ -166,9 +167,9 @@ export function StockInwardClient() {
     const aggregatedStockForDisplay = stock.reduce((acc, currentItem) => {
         const existingItem = acc.find(item => item.rfid === currentItem.rfid);
         if (existingItem) {
-            existingItem.quantity += currentItem.quantity;
+            existingItem.quantity += 1;
         } else {
-            acc.push({ ...currentItem });
+            acc.push({ ...currentItem, quantity: 1 });
         }
         return acc;
     }, [] as StockItem[]);

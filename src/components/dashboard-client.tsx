@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { IndianRupee, ShoppingCart, Smartphone, Trash2, UserCog, LogOut, ScanLine } from 'lucide-react';
+import { IndianRupee, ShoppingCart, Smartphone, Trash2, UserCog, LogOut, ScanLine, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { RFIDScanner } from './rfid-scanner';
 
@@ -107,6 +107,41 @@ export function DashboardClient() {
     router.push('/');
   }
 
+  const handleExportToCSV = () => {
+    if (items.length === 0) {
+        toast({
+            variant: 'destructive',
+            title: 'No Items to Export',
+            description: 'Your current bill is empty.',
+        });
+        return;
+    }
+
+    const headers = ['S.No', 'Item Name', 'Price', 'Date and Time'];
+    const csvContent = [
+        headers.join(','),
+        ...items.map(item => [item.id, item.name, item.price.toFixed(2), `"${item.timestamp}"`].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.href) {
+        URL.revokeObjectURL(link.href);
+    }
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'bill_items.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+        title: 'Export Successful',
+        description: 'Your current bill has been downloaded as a CSV file.',
+    });
+  };
+
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8">
       <Card className="w-full max-w-4xl mx-auto shadow-2xl">
@@ -120,6 +155,9 @@ export function DashboardClient() {
             </CardDescription>
           </div>
           <div className="absolute top-4 right-4 flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={handleExportToCSV} aria-label="Export Bill">
+                <Download className="h-6 w-6" />
+            </Button>
             <Link href="/admin/login" passHref>
                 <Button variant="ghost" size="icon" aria-label="Admin Login">
                     <UserCog className="h-6 w-6" />
