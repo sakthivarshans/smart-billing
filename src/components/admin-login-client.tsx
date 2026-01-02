@@ -17,7 +17,8 @@ export function AdminLoginClient() {
   const { toast } = useToast();
   const { hasBeenSetup, login, setPassword: setAdminPassword, isAuthenticated } = useAdminStore();
   
-  const [activeTab, setActiveTab] = useState(hasBeenSetup ? 'signin' : 'signup');
+  // Initialize state to 'signin' to avoid SSR issues with hasBeenSetup
+  const [activeTab, setActiveTab] = useState('signin');
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Sign In State
@@ -34,9 +35,13 @@ export function AdminLoginClient() {
   }, [isAuthenticated, router]);
 
   useEffect(() => {
-    // If setup state changes (e.g. after first setup), switch to signin tab
-    setActiveTab(hasBeenSetup ? 'signin' : 'signup');
-  }, [hasBeenSetup])
+    // This effect runs on the client and sets the correct tab
+    if (!hasBeenSetup) {
+      setActiveTab('signup');
+    } else {
+      setActiveTab('signin');
+    }
+  }, [hasBeenSetup]);
 
   const handleSignIn = () => {
     setIsProcessing(true);
