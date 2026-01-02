@@ -135,6 +135,7 @@ export function DashboardClient() {
             <div className="relative w-full sm:w-auto">
               <ScanLine className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
+                key="rfid-input"
                 ref={rfidInputRef}
                 type="text"
                 placeholder="Scan Barcode or RFID..."
