@@ -149,7 +149,7 @@ export function InventoryClient() {
     setTimeout(() => {
       toast({
         title: 'Inventory Cleared',
-        description: 'All stock and sales records have been erased.',
+        description: 'All product catalog, stock, and sales records have been erased.',
       });
       setIsClearing(false);
     }, 500);
@@ -199,9 +199,8 @@ export function InventoryClient() {
             <AlertDialogHeader>
               <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete all
-                stock inward and sales records, resetting your inventory count
-                to zero. Your product catalog will not be affected.
+                This action cannot be undone. This will permanently delete your
+                product catalog, all stock inward records, and all sales records.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

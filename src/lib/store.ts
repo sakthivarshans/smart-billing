@@ -180,7 +180,7 @@ export const useAdminStore = create<AdminState>()(
         getApiKeys: () => get().apiKeys,
         setProductCatalog: (products) => set({ productCatalog: products }),
         setColumnMapping: (mapping: ColumnMapping) => set({ columnMapping: mapping }),
-        clearInventory: () => set({ stock: [], sales: [] }),
+        clearInventory: () => set({ stock: [], sales: [], productCatalog: [] }),
       }),
       {
         name: 'admin-storage', 
