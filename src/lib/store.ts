@@ -123,6 +123,7 @@ type AdminState = {
     addSale: (sale: Sale) => void;
     setProductCatalog: (products: Product[]) => void;
     setColumnMapping: (mapping: ColumnMapping) => void;
+    clearInventory: () => void;
 };
 
 export const useAdminStore = create<AdminState>()(
@@ -179,6 +180,7 @@ export const useAdminStore = create<AdminState>()(
         getApiKeys: () => get().apiKeys,
         setProductCatalog: (products) => set({ productCatalog: products }),
         setColumnMapping: (mapping: ColumnMapping) => set({ columnMapping: mapping }),
+        clearInventory: () => set({ stock: [], sales: [] }),
       }),
       {
         name: 'admin-storage', 

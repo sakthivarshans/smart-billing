@@ -1,18 +1,30 @@
 
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useAdminStore } from '@/lib/store';
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, PackageSearch } from 'lucide-react';
+import { Download, PackageSearch, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import type { Product } from '@/lib/store';
 
 interface InventoryItem extends Product {
@@ -23,12 +35,20 @@ interface InventoryItem extends Product {
 
 export function InventoryClient() {
   const { toast } = useToast();
-  const { stock, sales, productCatalog, columnMapping } = useAdminStore((state) => ({
+  const {
+    stock,
+    sales,
+    productCatalog,
+    columnMapping,
+    clearInventory,
+  } = useAdminStore((state) => ({
     stock: state.stock,
     sales: state.sales,
     productCatalog: state.productCatalog,
     columnMapping: state.columnMapping,
+    clearInventory: state.clearInventory,
   }));
+  const [isClearing, setIsClearing] = useState(false);
 
   const inventoryData = useMemo(() => {
     const inventoryMap = new Map<string, InventoryItem>();
@@ -87,18 +107,20 @@ export function InventoryClient() {
       columnMapping.nameColumn || 'Product Name',
       columnMapping.priceColumn || 'Price',
     ];
-    if (columnMapping.optionalColumn1) headers.push(columnMapping.optionalColumn1);
-    if (columnMapping.optionalColumn2) headers.push(columnMapping.optionalColumn2);
+    if (columnMapping.optionalColumn1)
+      headers.push(columnMapping.optionalColumn1);
+    if (columnMapping.optionalColumn2)
+      headers.push(columnMapping.optionalColumn2);
     headers.push('Stock In', 'Sold', 'Available');
 
     const csvContent = [
       headers.join(','),
       ...inventoryData.map((item) => {
-        const row = [item.id, item.name, item.price,];
+        const row: (string | number)[] = [item.id, item.name, item.price];
         if (columnMapping.optionalColumn1) row.push(item.optional1 || '');
         if (columnMapping.optionalColumn2) row.push(item.optional2 || '');
         row.push(item.stockIn, item.stockOut, item.available);
-        return row.join(',');
+        return row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
       }),
     ].join('\n');
 
@@ -121,16 +143,29 @@ export function InventoryClient() {
     });
   };
 
+  const handleClearInventory = () => {
+    setIsClearing(true);
+    clearInventory();
+    setTimeout(() => {
+      toast({
+        title: 'Inventory Cleared',
+        description: 'All stock and sales records have been erased.',
+      });
+      setIsClearing(false);
+    }, 500);
+  };
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Current Inventory</CardTitle>
         <CardDescription>
-          Download a real-time overview of your product stock levels. The columns will reflect your selections from the 'Stock Inward' tab.
+          Download a real-time overview of your product stock levels. The
+          columns will reflect your selections from the 'Stock Inward' tab.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center justify-center text-center p-12">
-        {inventoryData.length > 0 ? (
+        {inventoryData.length > 0 || stock.length > 0 || sales.length > 0 ? (
           <>
             <PackageSearch className="h-16 w-16 mb-4 text-muted-foreground" />
             <p className="mb-4 text-muted-foreground">
@@ -152,6 +187,32 @@ export function InventoryClient() {
           </>
         )}
       </CardContent>
+      <CardFooter className="flex justify-end bg-muted/50 p-4 border-t">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive" disabled={isClearing}>
+              <Trash2 className="mr-2 h-4 w-4" />
+              {isClearing ? 'Clearing...' : 'Clear Inventory'}
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete all
+                stock inward and sales records, resetting your inventory count
+                to zero. Your product catalog will not be affected.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleClearInventory}>
+                Continue
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </CardFooter>
     </Card>
   );
 }
