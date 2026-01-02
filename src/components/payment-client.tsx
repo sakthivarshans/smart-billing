@@ -46,7 +46,7 @@ export function PaymentClient() {
   const [apiKeys, setApiKeys] = useState(initialApiKeys);
 
   // Price breakup calculation
-  const subtotal = total / 1.18; // Assuming 18% GST
+  const subtotal = total / 1.18; // Prices are inclusive of 18% GST
   const gstAmount = total - subtotal;
   const sgst = gstAmount / 2;
   const cgst = gstAmount / 2;
