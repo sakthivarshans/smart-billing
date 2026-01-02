@@ -23,7 +23,6 @@ export function DashboardClient() {
   const [currentPhoneNumber, setCurrentPhoneNumber] = useState(phoneNumber || customerPhoneNumber);
   const [rfidInput, setRfidInput] = useState('');
   const rfidInputRef = useRef<HTMLInputElement>(null);
-  const [isScannerReady, setIsScannerReady] = useState(false);
 
   useEffect(() => {
     // Sync phone number from customer store to bill store when component mounts
@@ -34,34 +33,8 @@ export function DashboardClient() {
   }, [customerPhoneNumber, setPhoneNumber]);
   
   useEffect(() => {
-    // Auto-focus the RFID input field on component mount and keep it focused.
-    const focusInput = () => rfidInputRef.current?.focus();
-    focusInput();
-
-    const handleFocus = () => setIsScannerReady(true);
-    const handleBlur = () => {
-      setIsScannerReady(false);
-      // Refocus if blurred, this keeps the scanner "active" as long as the user is on the page
-      setTimeout(focusInput, 100);
-    };
-
-    const inputElement = rfidInputRef.current;
-    inputElement?.addEventListener('focus', handleFocus);
-    inputElement?.addEventListener('blur', handleBlur);
-
-    // Also set initial state if the window is already focused
-    if (document.hasFocus() && document.activeElement === inputElement) {
-        setIsScannerReady(true);
-    }
-
-    // Add listeners for window focus/blur
-    window.addEventListener('focus', focusInput);
-    
-    return () => {
-      inputElement?.removeEventListener('focus', handleFocus);
-      inputElement?.removeEventListener('blur', handleBlur);
-      window.removeEventListener('focus', focusInput);
-    };
+    // Auto-focus the RFID input field on component mount
+    rfidInputRef.current?.focus();
   }, []);
 
 
@@ -169,19 +142,7 @@ export function DashboardClient() {
   };
 
   return (
-    <div className="container mx-auto p-4 sm:p-6 md:p-8" onClick={() => rfidInputRef.current?.focus()}>
-      {/* Hidden input to capture scanner data */}
-      <Input
-        key="rfid-input"
-        ref={rfidInputRef}
-        type="text"
-        className="absolute top-[-9999px] left-[-9999px] opacity-0"
-        value={rfidInput}
-        onChange={(e) => setRfidInput(e.target.value)}
-        onKeyPress={handleRfidKeyPress}
-        aria-hidden="true"
-      />
-      
+    <div className="container mx-auto p-4 sm:p-6 md:p-8">
       <Card className="w-full max-w-4xl mx-auto shadow-2xl">
         <CardHeader className="relative">
           <div className="text-center">
@@ -208,11 +169,17 @@ export function DashboardClient() {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex flex-col sm:flex-row justify-end gap-2">
-            <div className="w-full sm:w-auto flex items-center justify-center sm:justify-start px-4 py-2 rounded-md border border-input bg-background">
-                <div className={`h-3 w-3 rounded-full mr-2 transition-colors ${isScannerReady ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
-                <span className="text-sm font-medium text-muted-foreground">
-                    {isScannerReady ? 'Scanner Ready' : 'Scanner Not Active'}
-                </span>
+            <div className="flex-grow relative">
+                <ScanLine className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                    ref={rfidInputRef}
+                    type="text"
+                    placeholder="Scan or Enter Barcode..."
+                    className="pl-10"
+                    value={rfidInput}
+                    onChange={(e) => setRfidInput(e.target.value)}
+                    onKeyPress={handleRfidKeyPress}
+                />
             </div>
             <RFIDScanner onScan={handleItemScanned} />
             <Button variant="destructive" onClick={handleClearBill} disabled={items.length === 0}>
