@@ -74,10 +74,9 @@ export function AdminDashboardLayout({
             value={activeTab}
             onValueChange={handleTabChange}
           >
-            <TabsList className="grid w-full grid-cols-6 mb-6">
+            <TabsList className="grid w-full grid-cols-5 mb-6">
               <TabsTrigger value="dashboard">Store Details</TabsTrigger>
               <TabsTrigger value="api-keys">API Keys</TabsTrigger>
-              <TabsTrigger value="customers">Customers</TabsTrigger>
               <TabsTrigger value="sales">Sales</TabsTrigger>
               <TabsTrigger value="stock-inward">Stock Inward</TabsTrigger>
               <TabsTrigger value="inventory">Inventory</TabsTrigger>
