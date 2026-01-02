@@ -63,6 +63,7 @@ export function PaymentClient() {
       phoneNumber,
       date: new Date().toISOString(),
       paymentResponse: response,
+      status: 'success',
     });
     
     setIsProcessing(false);
@@ -142,6 +143,17 @@ export function PaymentClient() {
     const rzp = new window.Razorpay(options);
     rzp.on('payment.failed', function (response: any) {
         console.error('Razorpay payment failed:', response);
+        
+        addSale({
+            id: response.error?.metadata?.payment_id || uuidv4(),
+            items,
+            total,
+            phoneNumber,
+            date: new Date().toISOString(),
+            paymentResponse: response,
+            status: 'failure',
+        });
+        
         setIsProcessing(false);
         toast({
             variant: "destructive",

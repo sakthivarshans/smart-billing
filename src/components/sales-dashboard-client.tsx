@@ -24,7 +24,7 @@ export function SalesDashboardClient() {
 
     const salesData = useMemo(() => {
         const today = new Date();
-        const todaysSales = sales.filter(sale => isToday(new Date(sale.date)));
+        const todaysSales = sales.filter(sale => isToday(new Date(sale.date)) && sale.status === 'success');
         
         const todaysRevenue = todaysSales.reduce((acc, sale) => acc + sale.total, 0);
         const todaysSaleCount = todaysSales.length;
@@ -33,7 +33,7 @@ export function SalesDashboardClient() {
         const weeklySalesData = Array.from({ length: 7 }).map((_, i) => {
             const day = subDays(today, 6 - i);
             const dailySales = sales
-                .filter(sale => format(new Date(sale.date), 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd'))
+                .filter(sale => format(new Date(sale.date), 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd') && sale.status === 'success')
                 .reduce((acc, sale) => acc + sale.total, 0);
             return {
                 day: format(day, 'EEE'),
@@ -42,7 +42,7 @@ export function SalesDashboardClient() {
         });
 
         // Top products
-        const productSales = sales.flatMap(sale => sale.items).reduce((acc, item) => {
+        const productSales = sales.filter(s => s.status === 'success').flatMap(sale => sale.items).reduce((acc, item) => {
             acc[item.name] = (acc[item.name] || 0) + 1; // Count by quantity
             return acc;
         }, {} as Record<string, number>);
@@ -55,7 +55,7 @@ export function SalesDashboardClient() {
         // New Customers (very basic implementation)
         // This is a simplified logic. A real app would track first purchase date.
         const recentCustomers = new Set(sales
-            .filter(sale => isWithinInterval(new Date(sale.date), { start: subDays(today, 7), end: today }))
+            .filter(sale => isWithinInterval(new Date(sale.date), { start: subDays(today, 7), end: today }) && sale.status === 'success')
             .map(sale => sale.phoneNumber)
         );
 
@@ -104,20 +104,21 @@ export function SalesDashboardClient() {
 
 
         // Define CSV headers
-        const headers = ['Date', 'Payment ID', 'Order ID', 'Customer Phone', 'Total Amount', 'Item Count'];
+        const headers = ['Date', 'Status', 'Payment ID', 'Order ID', 'Customer Phone', 'Total Amount', 'Item Count'];
         
         // Create CSV content
         const csvContent = [
             headers.join(','),
             ...filteredSales.map(sale => {
                 const date = `"${new Date(sale.date).toLocaleString()}"`;
+                const status = sale.status;
                 const paymentId = sale.paymentResponse?.razorpay_payment_id || sale.id;
-                const orderId = sale.paymentResponse?.razorpay_order_id || 'N/A';
+                const orderId = sale.paymentResponse?.razorpay_order_id || sale.paymentResponse?.error?.metadata?.order_id || 'N/A';
                 const phone = sale.phoneNumber;
                 const total = sale.total.toFixed(2);
                 const itemCount = sale.items.length;
     
-                return [date, paymentId, orderId, phone, total, itemCount].join(',');
+                return [date, status, paymentId, orderId, phone, total, itemCount].join(',');
             })
         ].join('\n');
     

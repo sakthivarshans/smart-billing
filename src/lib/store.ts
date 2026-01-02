@@ -88,6 +88,7 @@ export type Sale = {
     phoneNumber: string;
     date: string; // ISO string
     paymentResponse: any;
+    status: 'success' | 'failure';
 };
 
 type AdminState = {
