@@ -1,16 +1,20 @@
 
 'use client';
 
+import { useState } from 'react';
 import { useAdminStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Box, Download, IndianRupee } from 'lucide-react';
+import { Box, Download, IndianRupee, Upload } from 'lucide-react';
 import { RFIDScanner } from './rfid-scanner';
 import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 
 export function StockInwardClient() {
-  const { stock, addStockItem, productCatalog } = useAdminStore();
+  const { stock, addStockItem, productCatalog, setProductCatalog } = useAdminStore();
   const { toast } = useToast();
+  const [csvFile, setCsvFile] = useState<File | null>(null);
 
   const handleItemScanned = (rfid: string) => {
     const item = productCatalog.find(p => p.id === rfid.trim());
@@ -64,12 +68,90 @@ export function StockInwardClient() {
     });
   };
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type === 'text/csv') {
+      setCsvFile(file);
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Invalid File Type',
+        description: 'Please upload a valid .csv file.',
+      });
+      setCsvFile(null);
+    }
+  };
+
+  const handleFileUpload = () => {
+    if (!csvFile) {
+      toast({
+        variant: 'destructive',
+        title: 'No File Selected',
+        description: 'Please select a CSV file to upload.',
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      const rows = text.split('\n').filter(row => row.trim() !== '');
+      const headers = rows.shift()?.split(',').map(h => h.trim());
+      
+      if (!headers || !headers.includes('id') || !headers.includes('name') || !headers.includes('price')) {
+        toast({
+            variant: 'destructive',
+            title: 'Invalid CSV Format',
+            description: 'CSV must contain "id", "name", and "price" columns.',
+        });
+        return;
+      }
+
+      const idIndex = headers.indexOf('id');
+      const nameIndex = headers.indexOf('name');
+      const priceIndex = headers.indexOf('price');
+
+      const newCatalog = rows.map(row => {
+        const values = row.split(',');
+        const price = parseFloat(values[priceIndex]);
+        return {
+          id: values[idIndex]?.trim(),
+          name: values[nameIndex]?.trim(),
+          price: isNaN(price) ? 0 : price,
+        };
+      }).filter(p => p.id && p.name);
+
+      setProductCatalog(newCatalog);
+      toast({
+        title: 'Catalog Uploaded',
+        description: `${newCatalog.length} products have been loaded into the catalog.`,
+      });
+      setCsvFile(null); // Clear the file input
+    };
+    reader.readAsText(csvFile);
+  };
+
   return (
     <div className="space-y-6">
+        <Card>
+            <CardHeader>
+                <CardTitle>Upload Product Catalog</CardTitle>
+                <CardDescription>
+                    Upload a CSV file with your product data. The file must contain columns: 'id' (for barcode/RFID), 'name', and 'price'.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col sm:flex-row gap-2">
+                <Input type="file" accept=".csv" onChange={handleFileChange} className="w-full sm:w-auto flex-grow"/>
+                <Button onClick={handleFileUpload} disabled={!csvFile}>
+                    <Upload className="mr-2 h-4 w-4" /> Upload
+                </Button>
+            </CardContent>
+        </Card>
+
         <div className="flex justify-end gap-2">
             <Button onClick={handleExportToCSV}>
                 <Download className="mr-2 h-4 w-4" />
-                Export to Excel
+                Export Stock to CSV
             </Button>
             <RFIDScanner onScan={handleItemScanned} />
         </div>

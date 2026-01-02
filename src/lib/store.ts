@@ -100,6 +100,7 @@ type AdminState = {
     addStockItem: (item: Omit<StockItem, 'quantity'>) => void;
     getApiKeys: () => ApiKeys;
     addSale: (sale: Sale) => void;
+    setProductCatalog: (products: Product[]) => void;
 };
 
 export const useAdminStore = create<AdminState>()(
@@ -119,13 +120,7 @@ export const useAdminStore = create<AdminState>()(
             razorpayKeyId: '',
             razorpayKeySecret: '',
         },
-        productCatalog: [
-            { id: 'rfid-tshirt-001', name: 'Modern T-Shirt', price: 4.99 },
-            { id: 'rfid-jeans-002', name: 'Slim Fit Jeans', price: 3.99 },
-            { id: 'rfid-jacket-003', name: 'Denim Jacket', price: 2.99 },
-            { id: 'rfid-socks-004', name: 'Crew Socks (3-pack)', price: 1.99 },
-            { id: 'rfid-cap-005', name: 'Baseball Cap', price: 4.50 },
-        ],
+        productCatalog: [],
         stock: [],
         sales: [],
         login: (password: string) => {
@@ -160,6 +155,7 @@ export const useAdminStore = create<AdminState>()(
             sales: [...state.sales, sale],
         })),
         getApiKeys: () => get().apiKeys,
+        setProductCatalog: (products) => set({ productCatalog: products }),
       }),
       {
         name: 'admin-storage', 
