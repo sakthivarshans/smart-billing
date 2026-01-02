@@ -4,7 +4,7 @@
 import { useAdminStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Box, Download } from 'lucide-react';
+import { Box, Download, IndianRupee } from 'lucide-react';
 import { RFIDScanner } from './rfid-scanner';
 import { useToast } from '@/hooks/use-toast';
 import { mockItems } from '@/components/dashboard-client';
@@ -79,7 +79,9 @@ export function StockInwardClient() {
                 <TableHeader>
                     <TableRow>
                         <TableHead>Item Name</TableHead>
-                        <TableHead className="text-right">Quantity in Stock</TableHead>
+                        <TableHead>RFID</TableHead>
+                        <TableHead className="text-right">Price</TableHead>
+                        <TableHead className="text-right">Quantity</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -87,12 +89,16 @@ export function StockInwardClient() {
                         stock.map((item) => (
                             <TableRow key={item.rfid}>
                                 <TableCell className="font-medium">{item.name}</TableCell>
+                                <TableCell>{item.rfid}</TableCell>
+                                <TableCell className="text-right flex items-center justify-end">
+                                    <IndianRupee size={14} className="mr-1"/>{item.price.toFixed(2)}
+                                </TableCell>
                                 <TableCell className="text-right">{item.quantity}</TableCell>
                             </TableRow>
                         ))
                     ) : (
                         <TableRow>
-                            <TableCell colSpan={2} className="h-24 text-center text-muted-foreground">
+                            <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
                                 <div className="flex flex-col items-center gap-2">
                                     <Box className="h-8 w-8" />
                                     <span>No items in stock. Scan to begin.</span>
