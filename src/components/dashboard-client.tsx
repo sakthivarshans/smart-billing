@@ -41,7 +41,7 @@ export function DashboardClient() {
     const handleFocus = () => setIsScannerReady(true);
     const handleBlur = () => {
       setIsScannerReady(false);
-      // Refocus if blurred
+      // Refocus if blurred, this keeps the scanner "active" as long as the user is on the page
       setTimeout(focusInput, 100);
     };
 
@@ -49,14 +49,18 @@ export function DashboardClient() {
     inputElement?.addEventListener('focus', handleFocus);
     inputElement?.addEventListener('blur', handleBlur);
 
-    // Also set initial state
-    if (document.activeElement === inputElement) {
+    // Also set initial state if the window is already focused
+    if (document.hasFocus() && document.activeElement === inputElement) {
         setIsScannerReady(true);
     }
 
+    // Add listeners for window focus/blur
+    window.addEventListener('focus', focusInput);
+    
     return () => {
       inputElement?.removeEventListener('focus', handleFocus);
       inputElement?.removeEventListener('blur', handleBlur);
+      window.removeEventListener('focus', focusInput);
     };
   }, []);
 
@@ -205,7 +209,7 @@ export function DashboardClient() {
         <CardContent className="space-y-6">
           <div className="flex flex-col sm:flex-row justify-end gap-2">
             <div className="w-full sm:w-auto flex items-center justify-center sm:justify-start px-4 py-2 rounded-md border border-input bg-background">
-                <div className={`h-3 w-3 rounded-full mr-2 ${isScannerReady ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
+                <div className={`h-3 w-3 rounded-full mr-2 transition-colors ${isScannerReady ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
                 <span className="text-sm font-medium text-muted-foreground">
                     {isScannerReady ? 'Scanner Ready' : 'Scanner Not Active'}
                 </span>
