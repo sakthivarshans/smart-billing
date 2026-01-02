@@ -53,7 +53,7 @@ export function AdminDashboardLayout({
 
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8">
-      <Card className="w-full max-w-4xl mx-auto shadow-2xl">
+      <Card className="w-full max-w-5xl mx-auto shadow-2xl">
         <CardHeader>
           <div className="flex justify-between items-start">
             <div>
@@ -74,11 +74,12 @@ export function AdminDashboardLayout({
             value={activeTab}
             onValueChange={handleTabChange}
           >
-            <TabsList className="grid w-full grid-cols-4 mb-6">
+            <TabsList className="grid w-full grid-cols-5 mb-6">
               <TabsTrigger value="dashboard">Store Details</TabsTrigger>
               <TabsTrigger value="api-keys">API Keys</TabsTrigger>
               <TabsTrigger value="sales">Sales</TabsTrigger>
               <TabsTrigger value="stock-inward">Stock Inward</TabsTrigger>
+              <TabsTrigger value="inventory">Inventory</TabsTrigger>
             </TabsList>
             {/* Content for the active tab is rendered via `children` */}
             {children}
