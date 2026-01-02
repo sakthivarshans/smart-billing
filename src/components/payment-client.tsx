@@ -230,14 +230,14 @@ export function PaymentClient() {
     doc.text(`Customer: ${phoneNumber}`, 196, 65, { align: 'right' });
     
     // Table
-    const tableColumn = ["S.No", "Item Name", "Price (INR)"];
+    const tableColumn = ["S.No", "Item Name", "Grams/Size", "Price (INR)"];
     const tableRows: (string | number)[][] = [];
   
     items.forEach(item => {
-      const itemName = `${item.name} ${item.optional1 || ''} ${item.optional2 || ''}`.trim();
       const itemData = [
         item.id,
-        itemName,
+        item.name,
+        item.optional1 || '',
         item.price.toFixed(2),
       ];
       tableRows.push(itemData);
@@ -253,7 +253,7 @@ export function PaymentClient() {
             halign: 'left',
         },
         columnStyles: {
-            2: { halign: 'right' },
+            3: { halign: 'right' },
         }
     });
 

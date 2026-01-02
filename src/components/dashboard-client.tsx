@@ -155,6 +155,7 @@ export function DashboardClient() {
                 <TableRow>
                   <TableHead className="w-[80px]">S.No</TableHead>
                   <TableHead>Item Name</TableHead>
+                  <TableHead>Grams/Size</TableHead>
                   <TableHead className="text-right">Price</TableHead>
                   <TableHead className="hidden sm:table-cell">Date and Time</TableHead>
                 </TableRow>
@@ -164,14 +165,15 @@ export function DashboardClient() {
                   items.map((item) => (
                     <TableRow key={item.id} className="animate-in fade-in-0 slide-in-from-top-4 duration-300">
                       <TableCell className="font-medium">{item.id}</TableCell>
-                      <TableCell>{item.name} {item.optional1 || ''} {item.optional2 || ''}</TableCell>
+                      <TableCell>{item.name}</TableCell>
+                      <TableCell>{item.optional1 || ''}</TableCell>
                       <TableCell className="text-right flex items-center justify-end"><IndianRupee size={14} className="mr-1"/>{item.price.toFixed(2)}</TableCell>
                       <TableCell className="hidden sm:table-cell">{item.timestamp}</TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                    <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                       <div className="flex flex-col items-center gap-2">
                         <ShoppingCart className="h-8 w-8" />
                         <span>Scan an item to begin</span>
