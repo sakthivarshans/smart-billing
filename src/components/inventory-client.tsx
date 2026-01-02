@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -22,10 +23,11 @@ interface InventoryItem extends Product {
 
 export function InventoryClient() {
   const { toast } = useToast();
-  const { stock, sales, productCatalog } = useAdminStore((state) => ({
+  const { stock, sales, productCatalog, columnMapping } = useAdminStore((state) => ({
     stock: state.stock,
     sales: state.sales,
     productCatalog: state.productCatalog,
+    columnMapping: state.columnMapping,
   }));
 
   const inventoryData = useMemo(() => {
@@ -81,19 +83,23 @@ export function InventoryClient() {
     }
 
     const headers = [
-      'Product Name',
-      'Barcode/RFID',
-      'Stock In',
-      'Sold',
-      'Available',
+      columnMapping.idColumn || 'Barcode/RFID',
+      columnMapping.nameColumn || 'Product Name',
+      columnMapping.priceColumn || 'Price',
     ];
+    if (columnMapping.optionalColumn1) headers.push(columnMapping.optionalColumn1);
+    if (columnMapping.optionalColumn2) headers.push(columnMapping.optionalColumn2);
+    headers.push('Stock In', 'Sold', 'Available');
+
     const csvContent = [
       headers.join(','),
-      ...inventoryData.map((item) =>
-        [item.name, item.id, item.stockIn, item.stockOut, item.available].join(
-          ','
-        )
-      ),
+      ...inventoryData.map((item) => {
+        const row = [item.id, item.name, item.price,];
+        if (columnMapping.optionalColumn1) row.push(item.optional1 || '');
+        if (columnMapping.optionalColumn2) row.push(item.optional2 || '');
+        row.push(item.stockIn, item.stockOut, item.available);
+        return row.join(',');
+      }),
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -120,7 +126,7 @@ export function InventoryClient() {
       <CardHeader>
         <CardTitle>Current Inventory</CardTitle>
         <CardDescription>
-          Download a real-time overview of your product stock levels.
+          Download a real-time overview of your product stock levels. The columns will reflect your selections from the 'Stock Inward' tab.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center justify-center text-center p-12">

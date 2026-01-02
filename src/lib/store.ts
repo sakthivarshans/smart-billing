@@ -66,6 +66,8 @@ export type Product = {
     id: string; // Barcode or RFID
     name: string;
     price: number;
+    optional1?: string;
+    optional2?: string;
 };
 
 export type StockItem = {
@@ -91,6 +93,14 @@ export type Sale = {
     status: 'success' | 'failure';
 };
 
+export type ColumnMapping = {
+  idColumn: string;
+  nameColumn: string;
+  priceColumn: string;
+  optionalColumn1: string;
+  optionalColumn2: string;
+}
+
 type AdminState = {
     isAuthenticated: boolean;
     password: string | null;
@@ -100,6 +110,7 @@ type AdminState = {
     productCatalog: Product[];
     stock: IndividualStockItem[];
     sales: Sale[];
+    columnMapping: ColumnMapping;
     login: (password: string) => boolean;
     logout: () => void;
     setPassword: (password: string) => void;
@@ -109,6 +120,7 @@ type AdminState = {
     getApiKeys: () => ApiKeys;
     addSale: (sale: Sale) => void;
     setProductCatalog: (products: Product[]) => void;
+    setColumnMapping: (mapping: ColumnMapping) => void;
 };
 
 export const useAdminStore = create<AdminState>()(
@@ -131,6 +143,13 @@ export const useAdminStore = create<AdminState>()(
         productCatalog: [],
         stock: [],
         sales: [],
+        columnMapping: {
+          idColumn: 'Barcode/RFID',
+          nameColumn: 'Product Name',
+          priceColumn: 'Price',
+          optionalColumn1: 'Optional 1',
+          optionalColumn2: 'Optional 2',
+        },
         login: (password: string) => {
             const storedPassword = get().password;
             if (storedPassword && password === storedPassword) {
@@ -157,6 +176,7 @@ export const useAdminStore = create<AdminState>()(
         })),
         getApiKeys: () => get().apiKeys,
         setProductCatalog: (products) => set({ productCatalog: products }),
+        setColumnMapping: (mapping: ColumnMapping) => set({ columnMapping: mapping }),
       }),
       {
         name: 'admin-storage', 

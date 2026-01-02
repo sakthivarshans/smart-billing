@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAdminStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -9,24 +9,24 @@ import { Box, Download, IndianRupee, Upload, Loader2, ChevronsUpDown, Check } fr
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import type { StockItem, Product } from '@/lib/store';
+import type { StockItem, Product, ColumnMapping } from '@/lib/store';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
 export function StockInwardClient() {
-  const { stock, addStockItem, productCatalog, setProductCatalog } = useAdminStore();
+  const { stock, addStockItem, productCatalog, setProductCatalog, columnMapping, setColumnMapping } = useAdminStore();
   const { toast } = useToast();
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
   
-  const [idColumn, setIdColumn] = useState('');
-  const [nameColumn, setNameColumn] = useState('');
-  const [priceColumn, setPriceColumn] = useState('');
-  const [optionalColumn1, setOptionalColumn1] = useState('');
-  const [optionalColumn2, setOptionalColumn2] = useState('');
+  const [idColumn, setIdColumn] = useState(columnMapping.idColumn || '');
+  const [nameColumn, setNameColumn] = useState(columnMapping.nameColumn || '');
+  const [priceColumn, setPriceColumn] = useState(columnMapping.priceColumn || '');
+  const [optionalColumn1, setOptionalColumn1] = useState(columnMapping.optionalColumn1 || '');
+  const [optionalColumn2, setOptionalColumn2] = useState(columnMapping.optionalColumn2 || '');
 
 
   const [popoverOpenId, setPopoverOpenId] = useState(false);
@@ -34,6 +34,14 @@ export function StockInwardClient() {
   const [popoverOpenPrice, setPopoverOpenPrice] = useState(false);
   const [popoverOpenOptional1, setPopoverOpenOptional1] = useState(false);
   const [popoverOpenOptional2, setPopoverOpenOptional2] = useState(false);
+
+  useEffect(() => {
+    setIdColumn(columnMapping.idColumn);
+    setNameColumn(columnMapping.nameColumn);
+    setPriceColumn(columnMapping.priceColumn);
+    setOptionalColumn1(columnMapping.optionalColumn1);
+    setOptionalColumn2(columnMapping.optionalColumn2);
+  }, [columnMapping]);
 
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,7 +55,7 @@ export function StockInwardClient() {
         const firstLine = text.split('\n')[0];
         const headers = firstLine.split(',').map(h => h.trim());
         setCsvHeaders(headers);
-        // Reset mappings
+        // Reset mappings if new file is chosen
         setIdColumn('');
         setNameColumn('');
         setPriceColumn('');
@@ -90,6 +98,8 @@ export function StockInwardClient() {
         const idIndex = headers.indexOf(idColumn);
         const nameIndex = headers.indexOf(nameColumn);
         const priceIndex = headers.indexOf(priceColumn);
+        const optional1Index = optionalColumn1 ? headers.indexOf(optionalColumn1) : -1;
+        const optional2Index = optionalColumn2 ? headers.indexOf(optionalColumn2) : -1;
 
         if (idIndex === -1 || nameIndex === -1 || priceIndex === -1) {
           throw new Error("One or more required mapped columns were not found in the file.");
@@ -102,10 +112,13 @@ export function StockInwardClient() {
             id: values[idIndex]?.trim(),
             name: values[nameIndex]?.trim(),
             price: isNaN(price) ? 0 : price,
+            optional1: optional1Index > -1 ? values[optional1Index]?.trim() : undefined,
+            optional2: optional2Index > -1 ? values[optional2Index]?.trim() : undefined,
           };
         }).filter(p => p.id && p.name);
 
         setProductCatalog(newCatalog);
+        setColumnMapping({ idColumn, nameColumn, priceColumn, optionalColumn1, optionalColumn2 });
         toast({
           title: 'Catalog Uploaded',
           description: `${newCatalog.length} products have been loaded.`,
@@ -152,7 +165,7 @@ export function StockInwardClient() {
                     className="w-full justify-between"
                     disabled={csvHeaders.length === 0}
                 >
-                    {value ? csvHeaders.find(h => h === value) : "Select column..."}
+                    {value ? csvHeaders.find(h => h === value) || value : "Select column..."}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
