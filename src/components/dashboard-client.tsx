@@ -42,7 +42,7 @@ export function DashboardClient() {
     if (!scannedId) return;
     const item = productCatalog.find(p => p.id === scannedId.trim());
     if (item) {
-        addItem({ rfid: item.id, name: item.name, price: item.price });
+        addItem({ rfid: item.id, name: item.name, price: item.price, optional1: item.optional1, optional2: item.optional2 });
         toast({
             title: 'Item Added',
             description: `${item.name} has been added to the bill.`,
@@ -164,7 +164,7 @@ export function DashboardClient() {
                   items.map((item) => (
                     <TableRow key={item.id} className="animate-in fade-in-0 slide-in-from-top-4 duration-300">
                       <TableCell className="font-medium">{item.id}</TableCell>
-                      <TableCell>{item.name}</TableCell>
+                      <TableCell>{item.name} {item.optional1 || ''} {item.optional2 || ''}</TableCell>
                       <TableCell className="text-right flex items-center justify-end"><IndianRupee size={14} className="mr-1"/>{item.price.toFixed(2)}</TableCell>
                       <TableCell className="hidden sm:table-cell">{item.timestamp}</TableCell>
                     </TableRow>

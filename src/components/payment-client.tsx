@@ -234,9 +234,10 @@ export function PaymentClient() {
     const tableRows: (string | number)[][] = [];
   
     items.forEach(item => {
+      const itemName = `${item.name} ${item.optional1 || ''} ${item.optional2 || ''}`.trim();
       const itemData = [
         item.id,
-        item.name,
+        itemName,
         item.price.toFixed(2),
       ];
       tableRows.push(itemData);

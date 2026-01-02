@@ -9,6 +9,8 @@ export type BillItem = {
   price: number;
   timestamp: string;
   rfid: string;
+  optional1?: string;
+  optional2?: string;
 };
 
 type BillState = {
