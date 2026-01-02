@@ -4,14 +4,17 @@
 import { useMemo } from 'react';
 import { useAdminStore } from '@/lib/store';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { IndianRupee, ShoppingBag, Users } from 'lucide-react';
+import { IndianRupee, ShoppingBag, Users, Download } from 'lucide-react';
 import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, TooltipProps } from 'recharts';
 import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { format, subDays, isToday, isWithinInterval } from 'date-fns';
+import { Button } from './ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#a4de6c', '#d0ed57', '#ffc658'];
 
 export function SalesDashboardClient() {
+    const { toast } = useToast();
     const { sales } = useAdminStore((state) => ({
         sales: state.sales,
     }));
@@ -62,6 +65,54 @@ export function SalesDashboardClient() {
         };
     }, [sales]);
 
+    const handleDownloadLogs = () => {
+        if (sales.length === 0) {
+            toast({
+                variant: 'destructive',
+                title: 'No Sales Data',
+                description: 'There are no sales records to export.',
+            });
+            return;
+        }
+    
+        // Define CSV headers
+        const headers = ['Date', 'Payment ID', 'Order ID', 'Customer Phone', 'Total Amount', 'Item Count'];
+        
+        // Create CSV content
+        const csvContent = [
+            headers.join(','),
+            ...sales.map(sale => {
+                const date = `"${new Date(sale.date).toLocaleString()}"`;
+                const paymentId = sale.paymentResponse?.razorpay_payment_id || sale.id;
+                const orderId = sale.paymentResponse?.razorpay_order_id || 'N/A';
+                const phone = sale.phoneNumber;
+                const total = sale.total.toFixed(2);
+                const itemCount = sale.items.length;
+    
+                return [date, paymentId, orderId, phone, total, itemCount].join(',');
+            })
+        ].join('\n');
+    
+        // Create a blob and trigger download
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.href) {
+            URL.revokeObjectURL(link.href);
+        }
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'payment_logs.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    
+        toast({
+            title: 'Download Started',
+            description: 'Your payment logs are being downloaded.',
+        });
+    };
+
     const CustomTooltip = ({ active, payload }: TooltipProps<ValueType, NameType>) => {
         if (active && payload && payload.length) {
             return (
@@ -106,6 +157,13 @@ export function SalesDashboardClient() {
                         <p className="text-xs text-muted-foreground">This week</p>
                     </CardContent>
                 </Card>
+            </div>
+
+            <div className="flex justify-end">
+                <Button onClick={handleDownloadLogs}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Download Logs
+                </Button>
             </div>
 
             {/* Charts */}
