@@ -1,6 +1,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware'
+import { v4 as uuidv4 } from 'uuid';
 
 export type BillItem = {
   id: number;
@@ -68,6 +69,14 @@ export type StockItem = {
     quantity: number;
 }
 
+export type Sale = {
+    id: string; // paymentId or uuid
+    items: BillItem[];
+    total: number;
+    phoneNumber: string;
+    date: string; // ISO string
+};
+
 type AdminState = {
     isAuthenticated: boolean;
     password: string | null;
@@ -75,6 +84,7 @@ type AdminState = {
     storeDetails: StoreDetails;
     apiKeys: ApiKeys;
     stock: StockItem[];
+    sales: Sale[];
     login: (password: string) => boolean;
     logout: () => void;
     setPassword: (password: string) => void;
@@ -82,6 +92,7 @@ type AdminState = {
     updateApiKeys: (keys: Partial<ApiKeys>) => void;
     addStockItem: (item: Omit<StockItem, 'quantity'>) => void;
     getApiKeys: () => ApiKeys;
+    addSale: (sale: Sale) => void;
 };
 
 export const useAdminStore = create<AdminState>()(
@@ -102,6 +113,7 @@ export const useAdminStore = create<AdminState>()(
             razorpayKeySecret: '',
         },
         stock: [],
+        sales: [],
         login: (password: string) => {
             const storedPassword = get().password;
             if (storedPassword && password === storedPassword) {
@@ -130,6 +142,9 @@ export const useAdminStore = create<AdminState>()(
                 return { stock: [...state.stock, { ...item, quantity: 1 }]};
             }
         }),
+        addSale: (sale) => set((state) => ({
+            sales: [...state.sales, sale],
+        })),
         getApiKeys: () => get().apiKeys,
       }),
       {

@@ -14,6 +14,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import type { BillItem } from '@/lib/store';
+import { v4 as uuidv4 } from 'uuid';
 
 declare global {
     interface Window {
@@ -31,7 +32,7 @@ export function PaymentClient() {
   const router = useRouter();
   const { toast } = useToast();
   const { total, items, phoneNumber, resetBill } = useBillStore();
-  const { storeDetails } = useAdminStore();
+  const { storeDetails, addSale } = useAdminStore();
   const initialApiKeys = useApiKeys(); // Gets keys on initial render
   const getApiKeys = useAdminStore((state) => state.getApiKeys);
 
@@ -53,6 +54,16 @@ export function PaymentClient() {
 
   const handlePaymentSuccess = async (response: any) => {
     console.log('Razorpay success response:', response);
+    
+    // Record the sale
+    addSale({
+      id: response.razorpay_payment_id || uuidv4(),
+      items,
+      total,
+      phoneNumber,
+      date: new Date().toISOString(),
+    });
+    
     setIsProcessing(false);
     toast({
       title: "Payment Successful!",
