@@ -169,7 +169,7 @@ export const useAdminStore = create<AdminState>()(
 export const useApiKeys = () => useAdminStore((state) => state.apiKeys);
 
 
-type CustomerUser = {
+export type CustomerUser = {
   mobileNumber: string;
   passwordHash: string;
 }
@@ -180,7 +180,8 @@ type CustomerState = {
     users: CustomerUser[];
     login: (mobileNumber: string, password: string) => boolean;
     logout: () => void;
-    signup: (mobileNumber: string, password: string) => void;
+    addUser: (mobileNumber: string) => void;
+    removeUser: (mobileNumber: string) => void;
 };
 
 export const useCustomerStore = create<CustomerState>()(
@@ -203,15 +204,24 @@ export const useCustomerStore = create<CustomerState>()(
             return false;
         },
         logout: () => set({ isAuthenticated: false, phoneNumber: '' }),
-        signup: (mobileNumber, password) => {
+        addUser: (mobileNumber) => {
+          const userExists = get().users.some(u => u.mobileNumber === mobileNumber);
+          if (userExists) {
+            return; // Or throw an error, depending on desired behavior
+          }
             const newUser: CustomerUser = {
                 mobileNumber: mobileNumber,
-                passwordHash: password, // In a real app, hash this password!
+                passwordHash: 'password', // Default temporary password
             };
             set((state) => ({
                 users: [...state.users, newUser],
             }));
         },
+        removeUser: (mobileNumber) => {
+          set((state) => ({
+            users: state.users.filter(u => u.mobileNumber !== mobileNumber),
+          }));
+        }
       }),
       {
         name: 'customer-storage', 

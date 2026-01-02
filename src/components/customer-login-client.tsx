@@ -94,12 +94,9 @@ export function CustomerLoginClient() {
             <Button onClick={handleSignIn} className="w-full" disabled={isProcessing}>
                 {isProcessing ? 'Logging in...' : <><LogIn className="mr-2 h-4 w-4" /> Sign In</>}
             </Button>
-            <div className="text-sm text-center w-full flex justify-between">
+            <div className="text-sm text-center w-full">
                 <Link href="/forgot-password" passHref>
                     <span className="text-sm text-muted-foreground hover:text-primary underline">Forgot Password?</span>
-                </Link>
-                <Link href="/signup" passHref>
-                    <span className="text-sm text-muted-foreground hover:text-primary">Don't have an account? <span className="font-semibold underline">Sign Up</span></span>
                 </Link>
             </div>
         </CardFooter>
