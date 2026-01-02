@@ -10,6 +10,7 @@ import { RFIDScanner } from './rfid-scanner';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import type { StockItem } from '@/lib/store';
 
 export function StockInwardClient() {
   const { stock, addStockItem, productCatalog, setProductCatalog } = useAdminStore();
@@ -43,11 +44,23 @@ export function StockInwardClient() {
         });
         return;
     }
+    
+    // Aggregate stock items
+    const aggregatedStock = stock.reduce((acc, currentItem) => {
+        const existingItem = acc.find(item => item.rfid === currentItem.rfid);
+        if (existingItem) {
+            existingItem.quantity += currentItem.quantity;
+        } else {
+            acc.push({ ...currentItem });
+        }
+        return acc;
+    }, [] as StockItem[]);
+
 
     const headers = ['Item Name', 'Quantity', 'Price', 'RFID'];
     const csvContent = [
         headers.join(','),
-        ...stock.map(item => [item.name, item.quantity, item.price, item.rfid].join(','))
+        ...aggregatedStock.map(item => [item.name, item.quantity, item.price, item.rfid].join(','))
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -133,6 +146,8 @@ export function StockInwardClient() {
         });
       } finally {
         setCsvFile(null); // Clear the file input
+        const fileInput = document.getElementById('csv-upload-input') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
         setIsUploading(false); // End loading state
       }
     };
@@ -146,6 +161,17 @@ export function StockInwardClient() {
     };
     reader.readAsText(csvFile);
   };
+  
+    // Aggregate stock for display
+    const aggregatedStockForDisplay = stock.reduce((acc, currentItem) => {
+        const existingItem = acc.find(item => item.rfid === currentItem.rfid);
+        if (existingItem) {
+            existingItem.quantity += currentItem.quantity;
+        } else {
+            acc.push({ ...currentItem });
+        }
+        return acc;
+    }, [] as StockItem[]);
 
   return (
     <div className="space-y-6">
@@ -157,7 +183,7 @@ export function StockInwardClient() {
                 </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col sm:flex-row gap-2">
-                <Input type="file" accept=".csv" onChange={handleFileChange} className="w-full sm:w-auto flex-grow" disabled={isUploading}/>
+                <Input id="csv-upload-input" type="file" accept=".csv" onChange={handleFileChange} className="w-full sm:w-auto flex-grow" disabled={isUploading}/>
                 <Button onClick={handleFileUpload} disabled={!csvFile || isUploading}>
                     {isUploading ? (
                         <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</>
@@ -186,8 +212,8 @@ export function StockInwardClient() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {stock.length > 0 ? (
-                        stock.map((item) => (
+                    {aggregatedStockForDisplay.length > 0 ? (
+                        aggregatedStockForDisplay.map((item) => (
                             <TableRow key={item.rfid}>
                                 <TableCell className="font-medium">{item.name}</TableCell>
                                 <TableCell>{item.rfid}</TableCell>
