@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useBillStore, useAdminStore, useCustomerStore } from '@/lib/store';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { IndianRupee, ShoppingCart, Smartphone, Trash2, UserCog, LogOut } from 'lucide-react';
+import { IndianRupee, ShoppingCart, Smartphone, Trash2, UserCog, LogOut, ScanLine } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { RFIDScanner } from './rfid-scanner';
 
@@ -28,6 +28,9 @@ export function DashboardClient() {
   const { storeDetails } = useAdminStore();
   
   const [currentPhoneNumber, setCurrentPhoneNumber] = useState(phoneNumber || customerPhoneNumber);
+  const [rfidInput, setRfidInput] = useState('');
+  const rfidInputRef = useRef<HTMLInputElement>(null);
+
 
   useEffect(() => {
     // Sync phone number from customer store to bill store when component mounts
@@ -36,9 +39,15 @@ export function DashboardClient() {
         setPhoneNumber(customerPhoneNumber);
     }
   }, [customerPhoneNumber, setPhoneNumber]);
+  
+  useEffect(() => {
+    // Auto-focus the RFID input field on component mount
+    rfidInputRef.current?.focus();
+  }, []);
 
 
   const handleItemScanned = (rfid: string) => {
+    if (!rfid) return;
     const item = mockItems.find(i => i.id === rfid.trim());
     if (item) {
         addItem(item);
@@ -52,6 +61,14 @@ export function DashboardClient() {
             title: 'Unknown Item',
             description: `No item found with RFID tag: ${rfid}`,
         });
+    }
+    // Clear input for next scan
+    setRfidInput('');
+  };
+
+  const handleRfidKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleItemScanned(rfidInput);
     }
   };
 
@@ -80,6 +97,7 @@ export function DashboardClient() {
 
   const handleClearBill = () => {
     resetBill();
+    setCurrentPhoneNumber(customerPhoneNumber); // Reset to logged in user's number
     toast({
       title: 'Cart Cleared',
       description: 'All items have been removed from the bill.',
@@ -120,7 +138,19 @@ export function DashboardClient() {
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex justify-end gap-2">
+          <div className="flex flex-col sm:flex-row justify-end gap-2">
+            <div className="relative w-full sm:w-auto">
+              <ScanLine className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Input
+                ref={rfidInputRef}
+                type="text"
+                placeholder="Scan RFID Tag..."
+                className="pl-10"
+                value={rfidInput}
+                onChange={(e) => setRfidInput(e.target.value)}
+                onKeyPress={handleRfidKeyPress}
+              />
+            </div>
             <RFIDScanner onScan={handleItemScanned} />
             <Button variant="destructive" onClick={handleClearBill} disabled={items.length === 0}>
                 <Trash2 className="mr-2 h-4 w-4" />
