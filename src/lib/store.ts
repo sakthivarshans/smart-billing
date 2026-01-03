@@ -1,7 +1,7 @@
 
 
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware'
+import { createJSONStorage } from 'zustand/middleware'
 import { v4 as uuidv4 } from 'uuid';
 
 export type BillItem = {
@@ -25,7 +25,6 @@ type BillState = {
 };
 
 export const useBillStore = create<BillState>()(
-  persist(
     (set) => ({
       items: [],
       phoneNumber: '',
@@ -45,12 +44,7 @@ export const useBillStore = create<BillState>()(
         }),
       setPhoneNumber: (number) => set({ phoneNumber: number }),
       resetBill: () => set({ items: [], total: 0, phoneNumber: '' }),
-    }),
-    {
-      name: 'bill-storage',
-      storage: createJSONStorage(() => localStorage),
-    }
-  )
+    })
 );
 
 
@@ -147,8 +141,7 @@ type AdminState = {
 
 
 export const useAdminStore = create<AdminState>()(
-    persist(
-      (set, get) => ({
+    (set, get) => ({
         isAuthenticated: false,
         loggedInRole: null,
         managerPermissions: ['dashboard', 'sales', 'stock-inward', 'inventory', 'returns'],
@@ -244,12 +237,7 @@ export const useAdminStore = create<AdminState>()(
           }));
         },
         setManagerPermissions: (permissions) => set({ managerPermissions: permissions }),
-      }),
-      {
-        name: 'admin-storage', 
-        storage: createJSONStorage(() => localStorage),
-      }
-    )
+      })
   );
   
 // Selector to get specific api keys and prevent unnecessary re-renders
@@ -273,8 +261,7 @@ type CustomerState = {
 };
 
 export const useCustomerStore = create<CustomerState>()(
-    persist(
-      (set, get) => ({
+    (set, get) => ({
         isAuthenticated: false,
         phoneNumber: '',
         users: [
@@ -317,12 +304,7 @@ export const useCustomerStore = create<CustomerState>()(
             users: state.users.filter(u => u.operatorMobileNumber !== operatorMobile),
           }));
         },
-      }),
-      {
-        name: 'customer-storage',
-        storage: createJSONStorage(() => localStorage),
-      }
-    )
+      })
   );
 
 // Add the users array to the admin store state so it can be accessed there
