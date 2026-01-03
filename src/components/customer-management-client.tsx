@@ -83,13 +83,20 @@ export function CustomerManagementClient() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Manage Customer Logins</CardTitle>
-        <CardDescription>
-          Add or remove mobile numbers that are allowed to use the operator login.
-        </CardDescription>
+        <div className="flex justify-between items-start">
+            <div>
+                <CardTitle>Manage Customer Logins</CardTitle>
+                <CardDescription>
+                Add or remove mobile numbers that are allowed to use the operator login.
+                </CardDescription>
+            </div>
+            <Button onClick={handleAddUser} className="ml-auto">
+                <UserPlus className="mr-2 h-4 w-4" /> Add Customer
+            </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
           <div className="space-y-2 lg:col-span-1">
             <Label htmlFor="new-shop-name">Shop Name</Label>
             <Input id="new-shop-name" type="text" value={shopName} onChange={(e) => setShopName(e.target.value)} placeholder="Shop Name" />
@@ -113,11 +120,6 @@ export function CustomerManagementClient() {
           <div className="space-y-2 lg:col-span-1">
             <Label htmlFor="new-admin-password">Admin Password</Label>
             <Input id="new-admin-password" type="password" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} placeholder="Min. 4 chars" />
-          </div>
-          <div className="self-end">
-            <Button onClick={handleAddUser} className="w-full">
-              <UserPlus className="mr-2 h-4 w-4" /> Add Customer
-            </Button>
           </div>
         </div>
 
