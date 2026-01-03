@@ -39,6 +39,10 @@ const whatsAppPdfFlow = ai.defineFlow(
 
       const params = {
         authorization: whatsappApiKey,
+        // The Sender ID is required by DLT regulations in India.
+        // 'FSTSMS' is a default. This might need to be changed to a
+        // registered ID from the telecom provider.
+        sender_id: 'FSTSMS',
         route: 'dlt',
         // In Fast2Sms, you typically need pre-approved DLT templates.
         // We'll use a generic message parameter.
