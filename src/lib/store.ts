@@ -180,17 +180,20 @@ export const useAdminStore = create<AdminState>()(
           const { users } = useCustomerStore.getState();
           const dev = get().developers.find(d => d.mobileNumber === mobileNumber);
 
-          // Find if the mobile number belongs to an admin of any customer
-          const customerAdmin = users.find(u => u.adminMobileNumber === mobileNumber);
-          
+          // Check if the login is for a developer
           if (dev && password === dev.passwordHash) {
               set({ isAuthenticated: true, isDeveloper: true });
               return true;
           }
+          
+          // Check if the login is for a customer's admin
+          const customerAdmin = users.find(u => u.adminMobileNumber === mobileNumber);
           if (customerAdmin && password === customerAdmin.adminPassword) {
               set({ isAuthenticated: true, isDeveloper: false });
               return true;
           }
+
+          // If neither matches, login fails
           return false;
         },
         logout: () => set({ isAuthenticated: false, isDeveloper: false }),
@@ -357,6 +360,7 @@ export const useCustomerStore = create<CustomerState>()(
       }
     )
   );
+
 
 
 

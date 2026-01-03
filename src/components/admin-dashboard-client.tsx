@@ -53,6 +53,7 @@ export function AdminDashboardLayout({
     return null; // Render nothing if not authenticated
   }
   
+  // If the user is a developer, show only the developer management panel
   if (isDeveloper) {
     return (
         <div className="container mx-auto p-4 sm:p-6 md:p-8">
@@ -62,7 +63,7 @@ export function AdminDashboardLayout({
                         <div>
                         <CardTitle className="text-2xl">Developer Panel</CardTitle>
                         <CardDescription>
-                            Manage developer-specific settings.
+                            Manage developer-specific settings and all other admin functions.
                         </CardDescription>
                         </div>
                         <Button variant="ghost" size="sm" onClick={handleLogout}>
@@ -72,14 +73,29 @@ export function AdminDashboardLayout({
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <DeveloperManagementClient />
+                  <Tabs
+                    defaultValue={activeTab}
+                    value={activeTab}
+                    onValueChange={handleTabChange}
+                  >
+                    <TabsList className="grid w-full grid-cols-7">
+                      <TabsTrigger value="dashboard">Store Details</TabsTrigger>
+                      <TabsTrigger value="api-keys">API Keys</TabsTrigger>
+                      <TabsTrigger value="sales">Sales</TabsTrigger>
+                      <TabsTrigger value="stock-inward">Stock Inward</TabsTrigger>
+                      <TabsTrigger value="inventory">Inventory</TabsTrigger>
+                      <TabsTrigger value="returns">Returns</TabsTrigger>
+                      <TabsTrigger value="developer">Developer</TabsTrigger>
+                    </TabsList>
+                    {children}
+                  </Tabs>
                 </CardContent>
             </Card>
         </div>
     )
   }
 
-
+  // Regular admin view
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8">
       <Card className="w-full max-w-6xl mx-auto shadow-2xl">
@@ -103,14 +119,13 @@ export function AdminDashboardLayout({
             value={activeTab}
             onValueChange={handleTabChange}
           >
-            <TabsList className="grid w-full grid-cols-7">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="dashboard">Store Details</TabsTrigger>
               <TabsTrigger value="api-keys">API Keys</TabsTrigger>
               <TabsTrigger value="sales">Sales</TabsTrigger>
               <TabsTrigger value="stock-inward">Stock Inward</TabsTrigger>
               <TabsTrigger value="inventory">Inventory</TabsTrigger>
               <TabsTrigger value="returns">Returns</TabsTrigger>
-              <TabsTrigger value="developer">Developer</TabsTrigger>
             </TabsList>
             {children}
           </Tabs>
