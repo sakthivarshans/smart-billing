@@ -21,6 +21,7 @@ export function DashboardClient() {
   const { users, isAuthenticated, login, logout, phoneNumber: loggedInPhoneNumber } = useCustomerStore();
   
   const [loginAttemptMobile, setLoginAttemptMobile] = useState('');
+  const [password, setPassword] = useState('');
   const [currentPhoneNumber, setCurrentPhoneNumber] = useState(billPhoneNumber);
   const [rfidInput, setRfidInput] = useState('');
   const rfidInputRef = useRef<HTMLInputElement>(null);
@@ -135,6 +136,21 @@ export function DashboardClient() {
                                 maxLength={10}
                                 value={loginAttemptMobile}
                                 onChange={(e) => setLoginAttemptMobile(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                            />
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="password">Password</Label>
+                        <div className="relative">
+                            <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                            <Input 
+                                id="password" 
+                                type="password" 
+                                placeholder="Password" 
+                                className="pl-10"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                                 onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
                             />
                         </div>
