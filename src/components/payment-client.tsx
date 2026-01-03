@@ -44,6 +44,7 @@ export function PaymentClient() {
   
   // State to hold the API keys, which will be updated on the client
   const [apiKeys, setApiKeys] = useState(initialApiKeys);
+  const [billNumber, setBillNumber] = useState('');
 
   // Price breakup calculation
   const subtotal = total / 1.18; // Prices are inclusive of 18% GST
@@ -55,6 +56,7 @@ export function PaymentClient() {
     // This effect runs only on the client, after the component has mounted.
     // It fetches the latest API keys from localStorage via the store.
     setApiKeys(getApiKeys());
+    setBillNumber(String(Math.floor(100000 + Math.random() * 900000)));
   }, [getApiKeys]);
 
 
@@ -89,7 +91,7 @@ export function PaymentClient() {
       key: razorpayKeyId,
       amount: Math.round(total * 100),
       currency: "INR",
-      name: "ABC Clothings",
+      name: storeDetails.storeName,
       description: "Smart Bill Payment",
       order_id: orderId,
       handler: handlePaymentSuccess,
@@ -98,7 +100,7 @@ export function PaymentClient() {
         method: "upi",
       },
       notes: {
-        address: "ABC Clothings Store",
+        address: storeDetails.address,
       },
       theme: {
         color: "#3f007f",
@@ -149,9 +151,10 @@ export function PaymentClient() {
     const rzp = new window.Razorpay(options);
     rzp.on('payment.failed', function (response: any) {
         console.error('Razorpay payment failed:', response);
+        const paymentId = response?.error?.metadata?.payment_id || uuidv4();
         
         addSale({
-            id: response?.error?.metadata?.payment_id || uuidv4(),
+            id: paymentId,
             items,
             total,
             phoneNumber,
@@ -161,12 +164,13 @@ export function PaymentClient() {
         });
         
         setIsProcessing(false);
+        const description = response?.error?.description || "Your payment was not successful.";
         toast({
             variant: "destructive",
             title: "Payment Failed",
-            description: response?.error?.description || "Your payment was not successful.",
+            description: description,
         });
-        setError("Payment failed. Please try again.");
+        setError(description);
     });
     rzp.open();
   };
@@ -206,7 +210,6 @@ export function PaymentClient() {
     if (!paymentId) throw new Error("Payment ID is not available.");
   
     const doc = new jsPDF() as jsPDFWithAutoTable;
-    const billNumber = Math.floor(100000 + Math.random() * 900000);
     const now = new Date();
 
     // Header
@@ -285,7 +288,6 @@ export function PaymentClient() {
     setIsSending(true);
     try {
         const pdfBase64 = generatePDF();
-        const billNumber = Math.floor(100000 + Math.random() * 900000);
         
         const receiptCaption = 
 `*${storeDetails.storeName}*
@@ -464,3 +466,5 @@ Thank you! Visit Again!
     </div>
   );
 }
+
+    
