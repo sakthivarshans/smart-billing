@@ -126,7 +126,7 @@ type AdminState = {
     columnMapping: ColumnMapping;
     developers: DeveloperUser[];
     users: CustomerUser[];
-    login: (role: Role, mobileNumber?: string) => boolean;
+    login: (role: Role) => boolean;
     logout: () => void;
     updateStoreDetails: (details: Partial<StoreDetails>) => void;
     updateApiKeys: (keys: Partial<ApiKeys>) => void;
@@ -173,7 +173,7 @@ export const useAdminStore = create<AdminState>()(
           optionalColumn1: 'Optional 1',
           optionalColumn2: 'Optional 2',
         },
-        login: (role: Role, mobileNumber?: string) => {
+        login: (role: Role) => {
             const isDev = role === 'developer';
             set({ isAuthenticated: true, isDeveloper: isDev });
             return true;
@@ -313,7 +313,7 @@ export const useCustomerStore = create<CustomerState>()(
         },
       }),
       {
-        name: 'customer-storage', _
+        name: 'customer-storage',
         storage: createJSONStorage(() => localStorage), 
       }
     )
