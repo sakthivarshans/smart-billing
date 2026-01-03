@@ -14,7 +14,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { LogOut, Code, Shield, UserCog } from 'lucide-react';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { DeveloperManagementClient } from './developer-management-client';
 
@@ -40,12 +40,31 @@ export function AdminDashboardLayout({
   const pathname = usePathname();
   const { isAuthenticated, logout, role } = useAdminStore();
   const { toast } = useToast();
+  const [isStateHydrated, setIsStateHydrated] = useState(false);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    // Wait for the zustand state to be hydrated from localStorage
+    const unsub = useAdminStore.persist.onFinishHydration(() => {
+      setIsStateHydrated(true);
+    });
+
+    // If already hydrated, set the state
+    if (useAdminStore.persist.hasHydrated()) {
+      setIsStateHydrated(true);
+    }
+    
+    return () => {
+      unsub();
+    };
+  }, []);
+
+
+  useEffect(() => {
+    // Only perform the redirect check once the state is hydrated
+    if (isStateHydrated && !isAuthenticated) {
       router.replace('/admin/login');
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, isStateHydrated, router]);
 
   const handleLogout = () => {
     logout();
@@ -62,8 +81,8 @@ export function AdminDashboardLayout({
 
   const activeTab = pathname.split('/')[2] || 'dashboard';
 
-  if (!isAuthenticated || !role) {
-    return null; // or a loading skeleton
+  if (!isStateHydrated || !isAuthenticated || !role) {
+    return null; // Render nothing until state is confirmed
   }
 
   const RoleIcon = roleIcons[role] || UserCog;
