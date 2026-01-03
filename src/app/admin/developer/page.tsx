@@ -1,14 +1,11 @@
 
-
 import { AdminDashboardLayout } from '@/components/admin-dashboard-client';
-import { DeveloperManagementClient } from '@/components/developer-management-client';
+import { DeveloperPageClient } from '@/components/developer-page-client';
 
 export default function DeveloperPage() {
   return (
     <AdminDashboardLayout>
-        <div className="pt-4">
-            <DeveloperManagementClient />
-        </div>
+        <DeveloperPageClient />
     </AdminDashboardLayout>
   );
 }
