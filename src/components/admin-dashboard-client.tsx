@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAdminStore } from '@/lib/store';
 
 export function AdminDashboardLayout({
   children,
@@ -19,6 +20,7 @@ export function AdminDashboardLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { isDeveloper } = useAdminStore();
 
   const handleTabChange = (value: string) => {
     router.push(`/admin/${value}`);
@@ -45,14 +47,14 @@ export function AdminDashboardLayout({
             value={activeTab}
             onValueChange={handleTabChange}
           >
-            <TabsList className="grid w-full grid-cols-7">
+            <TabsList className={`grid w-full ${isDeveloper ? 'grid-cols-7' : 'grid-cols-6'}`}>
               <TabsTrigger value="dashboard">Store Details</TabsTrigger>
               <TabsTrigger value="api-keys">API Keys</TabsTrigger>
               <TabsTrigger value="sales">Sales</TabsTrigger>
               <TabsTrigger value="stock-inward">Stock Inward</TabsTrigger>
               <TabsTrigger value="inventory">Inventory</TabsTrigger>
               <TabsTrigger value="returns">Returns</TabsTrigger>
-              <TabsTrigger value="developer">Developer</TabsTrigger>
+              {isDeveloper && <TabsTrigger value="developer">Developer</TabsTrigger>}
             </TabsList>
             {children}
           </Tabs>

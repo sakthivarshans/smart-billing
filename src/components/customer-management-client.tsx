@@ -90,7 +90,7 @@ export function CustomerManagementClient() {
       return;
     }
 
-    const headers = ['Shop Name', 'Email ID', 'Operator Number'];
+    const headers = ['Shop Name', 'Email ID', 'Operator Number', 'Owner Password', 'Manager Password'];
     const csvContent = [
       headers.join(','),
       ...users.map(user => {
@@ -98,6 +98,8 @@ export function CustomerManagementClient() {
           user.shopName,
           user.emailId,
           user.operatorMobileNumber,
+          user.ownerPassword,
+          user.managerPassword,
         ];
         return row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
       }),
@@ -156,6 +158,14 @@ export function CustomerManagementClient() {
             <Label htmlFor="new-operator-mobile">Login Mobile</Label>
             <Input id="new-operator-mobile" type="tel" value={operatorMobile} onChange={(e) => setOperatorMobile(e.target.value)} placeholder="10-digit number" maxLength={10} />
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="owner-password">Owner Password</Label>
+            <Input id="owner-password" type="password" value={ownerPassword} onChange={(e) => setOwnerPassword(e.target.value)} placeholder="Min. 4 characters" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="manager-password">Manager Password</Label>
+            <Input id="manager-password" type="password" value={managerPassword} onChange={(e) => setManagerPassword(e.target.value)} placeholder="Min. 4 characters" />
+          </div>
         </div>
 
         <div className="border rounded-lg overflow-hidden">
@@ -165,6 +175,8 @@ export function CustomerManagementClient() {
                 <TableHead>Shop Name</TableHead>
                 <TableHead>Email ID</TableHead>
                 <TableHead>Login Mobile</TableHead>
+                <TableHead>Owner Password</TableHead>
+                <TableHead>Manager Password</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -175,6 +187,8 @@ export function CustomerManagementClient() {
                     <TableCell>{user.shopName}</TableCell>
                     <TableCell>{user.emailId}</TableCell>
                     <TableCell className="font-mono">{user.operatorMobileNumber}</TableCell>
+                    <TableCell className="font-mono">{user.ownerPassword}</TableCell>
+                    <TableCell className="font-mono">{user.managerPassword}</TableCell>
                     <TableCell className="text-right">
                       <AlertDialog>
                         <AlertDialogTrigger asChild>

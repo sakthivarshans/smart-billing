@@ -239,13 +239,16 @@ export type CustomerUser = {
   shopName: string;
   emailId: string;
   operatorMobileNumber: string;
+  operatorPassword?: string; // Made optional for existing users
+  ownerPassword?: string;
+  managerPassword?: string;
 }
 
 type CustomerState = {
     isAuthenticated: boolean;
     phoneNumber: string;
     users: CustomerUser[];
-    addUser: (shopName: string, emailId: string, operatorMobile: string) => void;
+    addUser: (shopName: string, emailId: string, operatorMobile: string, operatorPassword: string, ownerPassword: string, managerPassword: string) => void;
     removeUser: (operatorMobile: string) => void;
 };
 
@@ -257,10 +260,17 @@ export const useCustomerStore = create<CustomerState>()(
         users: [
           { shopName: 'Default Shop', emailId: 'default@example.com', operatorMobileNumber: '1234567890' },
         ], 
-        addUser: (shopName, emailId, operatorMobile) => {
+        addUser: (shopName, emailId, operatorMobile, operatorPassword, ownerPassword, managerPassword) => {
           set((state) => {
             const userExists = state.users.some(u => u.operatorMobileNumber === operatorMobile);
-            const newUser = { shopName, emailId, operatorMobileNumber: operatorMobile };
+            const newUser: CustomerUser = { 
+              shopName, 
+              emailId, 
+              operatorMobileNumber: operatorMobile,
+              operatorPassword,
+              ownerPassword,
+              managerPassword
+            };
             if (userExists) {
               return {
                 users: state.users.map(u => u.operatorMobileNumber === operatorMobile ? newUser : u)
@@ -283,4 +293,3 @@ export const useCustomerStore = create<CustomerState>()(
       }
     )
   );
-
