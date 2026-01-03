@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -82,8 +83,7 @@ export function AdminLoginClient() {
     setupInitialAdmin(signUpPassword);
     toast({
       title: 'Setup Complete!',
-      description: 'The default admin accounts have been configured. You can now sign in.',
-      duration: 9000,
+      description: 'The default admin account has been configured. You can now sign in.',
     });
     setActiveTab('signin');
   };
@@ -145,21 +145,16 @@ export function AdminLoginClient() {
                     />
                 </div>
                 </CardContent>
-                <CardFooter className="flex flex-col gap-4">
+                <CardFooter>
                     <Button onClick={handleSignIn} className="w-full">
                         <LogIn className="mr-2 h-4 w-4" /> Login
                     </Button>
-                    <div className="text-sm text-center w-full">
-                        <Link href="/forgot-password" passHref>
-                            <span className="text-sm text-muted-foreground hover:text-primary underline">Forgot Password?</span>
-                        </Link>
-                    </div>
                 </CardFooter>
             </TabsContent>
             <TabsContent value="signup">
                 <CardHeader className="text-center">
-                    <CardTitle className="text-2xl">Create Admin Accounts</CardTitle>
-                    <CardDescription>Set the password for the default admin accounts.</CardDescription>
+                    <CardTitle className="text-2xl">Initial Admin Setup</CardTitle>
+                    <CardDescription>Set the password for the primary admin account.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -185,7 +180,7 @@ export function AdminLoginClient() {
                     />
                 </div>
                 <Button onClick={handleSignUp} className="w-full">
-                    <UserPlus className="mr-2 h-4 w-4" /> Create Accounts
+                    <UserPlus className="mr-2 h-4 w-4" /> Create Account
                 </Button>
                 </CardContent>
             </TabsContent>

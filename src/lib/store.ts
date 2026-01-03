@@ -119,13 +119,10 @@ export type DeveloperUser = {
   emailId: string;
 }
 
-type AdminRole = 'owner' | 'manager' | 'developer';
-
 type AdminState = {
     isAuthenticated: boolean;
-    role: AdminRole | null;
     hasBeenSetup: boolean;
-    isDeveloper: boolean; // Retained for compatibility, but role is preferred
+    isDeveloper: boolean;
     storeDetails: StoreDetails;
     apiKeys: ApiKeys;
     productCatalog: Product[];
@@ -154,9 +151,8 @@ export const useAdminStore = create<AdminState>()(
     persist(
       (set, get) => ({
         isAuthenticated: false,
-        role: null,
         hasBeenSetup: false,
-        isDeveloper: false, // Legacy
+        isDeveloper: false,
         storeDetails: {
           storeName: 'Zudio Store',
           gstin: '27ABCDE1234F1Z5',
@@ -172,9 +168,7 @@ export const useAdminStore = create<AdminState>()(
         productCatalog: [],
         stock: [],
         sales: [],
-        developers: [
-          { mobileNumber: '9999999999', passwordHash: 'developer', emailId: 'dev@example.com' }
-        ],
+        developers: [],
         columnMapping: {
           idColumn: 'Barcode/RFID',
           nameColumn: 'Product Name',
@@ -183,33 +177,28 @@ export const useAdminStore = create<AdminState>()(
           optionalColumn2: 'Optional 2',
         },
         login: (mobileNumber, password) => {
+          const { users } = useCustomerStore.getState();
           const dev = get().developers.find(d => d.mobileNumber === mobileNumber);
+
+          // Find if the mobile number belongs to an admin of any customer
+          const customerAdmin = users.find(u => u.adminMobileNumber === mobileNumber);
+          
           if (dev && password === dev.passwordHash) {
-              set({ isAuthenticated: true, isDeveloper: true, role: 'developer' });
+              set({ isAuthenticated: true, isDeveloper: true });
               return true;
           }
-          
-          if (mobileNumber === '0000000000' && password === '12345') {
-              set({ isAuthenticated: true, isDeveloper: false, role: 'owner' });
+          if (customerAdmin && password === customerAdmin.adminPassword) {
+              set({ isAuthenticated: true, isDeveloper: false });
               return true;
           }
-          
-          // Check for manager in customerUsers
-          const manager = useCustomerStore.getState().users.find(u => u.adminMobileNumber === mobileNumber);
-          if (manager && password === manager.adminPassword) {
-            set({ isAuthenticated: true, isDeveloper: false, role: 'manager' });
-            return true;
-          }
-          
           return false;
-      },
-        logout: () => set({ isAuthenticated: false, isDeveloper: false, role: null }),
+        },
+        logout: () => set({ isAuthenticated: false, isDeveloper: false }),
         setPassword: (password: string) => {
             const { addUser } = useCustomerStore.getState();
-            // This function now sets up both the Owner and Manager accounts
-            addUser('Default Owner', 'owner@example.com', '0000000000', 'default-op-owner', '0000000000', password); 
-            addUser('Default Manager', 'manager@example.com', '1111111111', 'default-op-manager', '1111111111', password); 
-        
+            // This setup creates a default user who is both an operator and an admin.
+            // The operator logs into the billing portal, the admin logs into the admin portal.
+            addUser('Default Shop', 'admin@example.com', '9999999999', 'password123', '0000000000', password);
             set({ hasBeenSetup: true });
         },
         updateStoreDetails: (details) =>
@@ -330,34 +319,17 @@ export const useCustomerStore = create<CustomerState>()(
         logout: () => set({ isAuthenticated: false, phoneNumber: '' }),
         addUser: (shopName, emailId, operatorMobile, operatorPass, adminMobile, adminPass) => {
           set((state) => {
-            const userExists = state.users.some(u => u.operatorMobileNumber === operatorMobile || u.adminMobileNumber === adminMobile);
-            const newUser: CustomerUser = {
-                shopName,
-                emailId,
-                operatorMobileNumber: operatorMobile,
-                operatorPassword: operatorPass, 
-                adminMobileNumber: adminMobile,
-                adminPassword: adminPass,
-              };
-
+            const userExists = state.users.some(u => u.operatorMobileNumber === operatorMobile);
             if (userExists) {
-              // If user exists, update their details if it's not one of the default accounts
-              if (operatorMobile === '0000000000' || operatorMobile === '1111111111') {
-                return { users: state.users }; 
-              }
+              // If user exists, update their details
               return {
-                users: state.users.map(u => 
-                  (u.operatorMobileNumber === operatorMobile || u.adminMobileNumber === adminMobile) 
-                  ? newUser
-                  : u
-                )
-              };
-            } else {
-              // If user does not exist, add them
-              return {
-                users: [...state.users, newUser],
+                users: state.users.map(u => u.operatorMobileNumber === operatorMobile ? { shopName, emailId, operatorMobileNumber: operatorMobile, operatorPassword: operatorPass, adminMobileNumber: adminMobile, adminPassword: adminPass } : u)
               };
             }
+            // If user does not exist, add them
+            return {
+              users: [...state.users, { shopName, emailId, operatorMobileNumber: operatorMobile, operatorPassword: operatorPass, adminMobileNumber: adminMobile, adminPassword: adminPass }],
+            };
           });
         },
         removeUser: (operatorMobile: string) => {
@@ -385,5 +357,6 @@ export const useCustomerStore = create<CustomerState>()(
       }
     )
   );
+
 
 
