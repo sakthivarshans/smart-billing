@@ -40,31 +40,20 @@ const whatsAppPdfFlow = ai.defineFlow(
       const params = {
         authorization: whatsappApiKey,
         // The Sender ID is required by DLT regulations in India.
-        // 'FSTSMS' is a default. This might need to be changed to a
-        // registered ID from the telecom provider.
+        // 'FSTSMS' is a default that works for transactional text SMS.
+        // This might need to be changed to a registered ID from the telecom provider
+        // for promotional routes.
         sender_id: 'FSTSMS',
         route: 'dlt',
-        // In Fast2Sms, you typically need pre-approved DLT templates.
-        // We'll use a generic message parameter.
+        // In Fast2Sms, you need pre-approved DLT templates for the 'dlt' route.
+        // The 'message' content must match one of these templates.
+        // We are using the content from the payment screen.
         message: message, 
-        // For sending files, Fast2SMS documentation suggests using a different mechanism
-        // or a different API endpoint if available. The standard bulkV2 is for text.
-        // Let's assume we can pass media, though this might need a different route or parameter.
-        // This is a hypothetical structure for Fast2Sms file sending based on common patterns.
-        // A direct file-sending endpoint like WABlas might be more straightforward.
-        // For demonstration, we will attempt to send it as part of the payload.
-        // NOTE: This part of the implementation is speculative without a direct Fast2Sms WhatsApp file API example.
-        // The user would need to ensure their Fast2Sms plan supports this.
-        // A more robust solution might involve getting a public URL for the PDF and sending that link.
-        // However, we'll stick to the base64 approach as requested.
-        
-        // Fast2SMS does not have a direct PDF upload in its standard 'bulkV2' API.
-        // Instead, we will send the text message and log that a PDF would have been sent.
-        // The caption will be the message.
+        // This endpoint sends text messages. It does not support sending files.
+        // We will send the text message and return a success message that clarifies this.
         numbers: to,
       };
 
-      // Since we can't send the PDF directly with this endpoint, we will just send the text message.
       const response = await axios.get(apiUrl, {
         params,
         headers: {
@@ -75,23 +64,24 @@ const whatsAppPdfFlow = ai.defineFlow(
       if (response.data?.return === true) {
         return {
           success: true,
-          // We modify the message to reflect that the PDF link would be here.
-          message: `Text message sent successfully via Fast2Sms. (PDF sending not supported by this API endpoint).`,
+          // We modify the message to reflect that only the text was sent.
+          message: `Text message sent successfully. (PDF attachment not supported by this API endpoint).`,
         };
       } else {
-        const errorMessage = response.data?.message || 'Unknown error from Fast2Sms service.';
+        const errorMessage = response.data?.message || 'Unknown error from Fast2Sms.';
+        // This will catch DLT template errors or other API issues.
         return {
           success: false,
-          message: `Failed to send WhatsApp message: ${errorMessage}`,
+          message: `Failed to send message: ${errorMessage}`,
         };
       }
 
     } catch (error: any) {
-      console.error('Fast2Sms API sending error:', error.response?.data || error.message);
+      console.error('Fast2Sms API error:', error.response?.data || error.message);
       const errorMessage = error.response?.data?.message || error.message || 'An unknown network error occurred';
       return {
         success: false,
-        message: `Failed to send WhatsApp message: ${errorMessage}`,
+        message: `Failed to send message: ${errorMessage}`,
       };
     }
   }
