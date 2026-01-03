@@ -108,11 +108,6 @@ export type ColumnMapping = {
   optionalColumn2: string;
 }
 
-export type AdminUser = {
-  mobileNumber: string;
-  passwordHash: string;
-};
-
 export type DeveloperUser = {
   mobileNumber: string;
   passwordHash: string;
@@ -130,7 +125,7 @@ type AdminState = {
     sales: Sale[];
     columnMapping: ColumnMapping;
     developers: DeveloperUser[];
-    login: (mobileNumber: string, password: string) => boolean;
+    login: (role: 'owner' | 'manager' | 'developer', password: string) => boolean;
     logout: () => void;
     setPassword: (password: string) => void;
     updateStoreDetails: (details: Partial<StoreDetails>) => void;
@@ -146,6 +141,9 @@ type AdminState = {
     removeDeveloper: (mobileNumber: string) => void;
     updateDeveloperPassword: (mobileNumber: string, newPassword: string) => void;
 };
+
+// This is the hardcoded mobile number for the default owner/manager.
+const DEFAULT_ADMIN_MOBILE = '9999999999';
 
 export const useAdminStore = create<AdminState>()(
     persist(
@@ -176,35 +174,33 @@ export const useAdminStore = create<AdminState>()(
           optionalColumn1: 'Optional 1',
           optionalColumn2: 'Optional 2',
         },
-        login: (mobileNumber, password) => {
-          const { users } = useCustomerStore.getState();
-          const dev = get().developers.find(d => d.mobileNumber === mobileNumber);
+        login: (role, password) => {
+            const { users } = useCustomerStore.getState();
+            const defaultAdmin = users.find(u => u.operatorMobileNumber === DEFAULT_ADMIN_MOBILE);
 
-          // Check if the login is for a developer
-          if (dev && password === dev.passwordHash) {
-              set({ isAuthenticated: true, isDeveloper: true });
-              return true;
-          }
-          
-          // Check if the login is for a customer's admin
-          const customerAdmin = users.find(u => u.operatorMobileNumber === mobileNumber);
-          if (customerAdmin && password === customerAdmin.ownerPassword) {
-              set({ isAuthenticated: true, isDeveloper: true }); // Owner is a developer
-              return true;
-          }
-          if (customerAdmin && password === customerAdmin.managerPassword) {
-            set({ isAuthenticated: true, isDeveloper: false }); // Manager is not a developer
-            return true;
-        }
+            if (!defaultAdmin) return false;
 
-          // If neither matches, login fails
-          return false;
+            if (role === 'owner' && password === defaultAdmin.ownerPassword) {
+                set({ isAuthenticated: true, isDeveloper: true });
+                return true;
+            }
+            if (role === 'manager' && password === defaultAdmin.managerPassword) {
+                set({ isAuthenticated: true, isDeveloper: false });
+                return true;
+            }
+            if (role === 'developer' && password === defaultAdmin.ownerPassword) {
+              set({isAuthenticated: true, isDeveloper: true});
+              return true;
+            }
+
+            return false;
         },
         logout: () => set({ isAuthenticated: false, isDeveloper: false }),
         setPassword: (password: string) => {
             const { addUser } = useCustomerStore.getState();
-            // This setup creates a default user with all roles.
-            addUser('Default Shop', 'admin@example.com', '9999999999', 'password', password, password);
+            // This setup creates a default user with the Owner password set to what was entered.
+            // Manager gets a default password 'manager'.
+            addUser('Default Shop', 'admin@example.com', DEFAULT_ADMIN_MOBILE, 'password', password, 'manager');
             set({ hasBeenSetup: true });
         },
         updateStoreDetails: (details) =>
@@ -369,6 +365,7 @@ export const useCustomerStore = create<CustomerState>()(
       }
     )
   );
+
 
 
 

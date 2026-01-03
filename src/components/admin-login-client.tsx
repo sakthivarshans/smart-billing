@@ -12,7 +12,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { LogIn, UserPlus, ArrowLeft } from 'lucide-react';
+import { LogIn, UserPlus, ArrowLeft, ShieldQuestion } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 
 export function AdminLoginClient() {
   const router = useRouter();
@@ -22,7 +23,7 @@ export function AdminLoginClient() {
   const [activeTab, setActiveTab] = useState('signin');
 
   // Sign In State
-  const [signInMobile, setSignInMobile] = useState('');
+  const [signInRole, setSignInRole] = useState<'owner' | 'manager' | 'developer'>('owner');
   const [signInPassword, setSignInPassword] = useState('');
 
   // Sign Up State
@@ -45,7 +46,8 @@ export function AdminLoginClient() {
   }, []);
 
   const handleSignIn = () => {
-    const success = login(signInMobile, signInPassword);
+    // The mobile number is now hardcoded for the default owner/manager/developer roles
+    const success = login(signInRole, signInPassword);
     if (success) {
       toast({
         title: 'Login Successful',
@@ -56,7 +58,7 @@ export function AdminLoginClient() {
       toast({
         variant: 'destructive',
         title: 'Login Failed',
-        description: 'Incorrect mobile number or password.',
+        description: 'Incorrect role or password.',
       });
       setSignInPassword('');
     }
@@ -118,20 +120,29 @@ export function AdminLoginClient() {
             <TabsContent value="signin">
                 <CardHeader className="text-center">
                     <CardTitle className="text-2xl">Admin Login</CardTitle>
-                    <CardDescription>Enter your credentials to access the admin dashboard.</CardDescription>
+                    <CardDescription>Select your role and enter your password.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                 <div className="space-y-2">
-                    <Label htmlFor="mobile-signin">Mobile Number</Label>
-                    <Input
-                      id="mobile-signin"
-                      type="tel"
-                      value={signInMobile}
-                      onChange={(e) => setSignInMobile(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      placeholder="10-digit number"
-                      maxLength={10}
-                    />
+                  <Label>Role</Label>
+                  <RadioGroup
+                    defaultValue="owner"
+                    onValueChange={(value: 'owner' | 'manager' | 'developer') => setSignInRole(value)}
+                    className="flex space-x-4"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="owner" id="r-owner" />
+                      <Label htmlFor="r-owner">Owner</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="manager" id="r-manager" />
+                      <Label htmlFor="r-manager">Manager</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="developer" id="r-developer" />
+                      <Label htmlFor="r-developer">Developer</Label>
+                    </div>
+                  </RadioGroup>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="password-signin">Password</Label>
