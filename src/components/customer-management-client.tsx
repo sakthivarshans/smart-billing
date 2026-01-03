@@ -193,9 +193,9 @@ export function CustomerManagementClient() {
                     <TableCell>{user.shopName}</TableCell>
                     <TableCell>{user.emailId}</TableCell>
                     <TableCell className="font-mono">{user.operatorMobileNumber}</TableCell>
-                    <TableCell className="font-mono">{user.operatorPassword}</TableCell>
-                    <TableCell className="font-mono">{user.ownerPassword}</TableCell>
-                    <TableCell className="font-mono">{user.managerPassword}</TableCell>
+                    <TableCell className="font-mono">••••••••</TableCell>
+                    <TableCell className="font-mono">••••••••</TableCell>
+                    <TableCell className="font-mono">••••••••</TableCell>
                     <TableCell className="text-right">
                       <AlertDialog>
                         <AlertDialogTrigger asChild>

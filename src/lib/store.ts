@@ -180,27 +180,39 @@ export const useAdminStore = create<AdminState>()(
 
             if (!defaultAdmin) return false;
 
+            let success = false;
+            let isDeveloper = false;
+        
             if (role === 'owner' && password === defaultAdmin.ownerPassword) {
-                set({ isAuthenticated: true, isDeveloper: true });
-                return true;
+                success = true;
+                isDeveloper = true; 
+            } else if (role === 'manager' && password === defaultAdmin.managerPassword) {
+                success = true;
+                isDeveloper = false;
+            } else {
+                const developer = get().developers.find(d => d.mobileNumber === DEFAULT_ADMIN_MOBILE);
+                if (role === 'developer' && developer && password === developer.passwordHash) {
+                    success = true;
+                    isDeveloper = true;
+                }
             }
-            if (role === 'manager' && password === defaultAdmin.managerPassword) {
-                set({ isAuthenticated: true, isDeveloper: false });
-                return true;
+        
+            if (success) {
+                set({ isAuthenticated: true, isDeveloper: isDeveloper });
             }
-            if (role === 'developer' && password === defaultAdmin.ownerPassword) {
-              set({isAuthenticated: true, isDeveloper: true});
-              return true;
-            }
-
-            return false;
+        
+            return success;
         },
         logout: () => set({ isAuthenticated: false, isDeveloper: false }),
         setPassword: (password: string) => {
             const { addUser } = useCustomerStore.getState();
+            const { addDeveloper } = get();
+            
             // This setup creates a default user with the Owner password set to what was entered.
-            // Manager gets a default password 'manager'.
-            addUser('Default Shop', 'admin@example.com', DEFAULT_ADMIN_MOBILE, 'password', password, 'manager');
+            // Manager gets a default password 'password'.
+            addUser('Default Shop', 'admin@example.com', DEFAULT_ADMIN_MOBILE, 'password', password, 'password');
+            addDeveloper(DEFAULT_ADMIN_MOBILE, 'dev@example.com', password);
+
             set({ hasBeenSetup: true });
         },
         updateStoreDetails: (details) =>
@@ -240,13 +252,22 @@ export const useAdminStore = create<AdminState>()(
         clearInventory: () => set({ stock: [], productCatalog: [] }),
         addDeveloper: (mobileNumber, emailId, password = 'password') => {
           const developerExists = get().developers.some(d => d.mobileNumber === mobileNumber);
-          if (developerExists) return;
-          const newDeveloper: DeveloperUser = {
-            mobileNumber,
-            emailId,
-            passwordHash: password
-          };
-          set(state => ({ developers: [...state.developers, newDeveloper] }));
+          if (developerExists) {
+            set(state => ({
+              developers: state.developers.map(dev => 
+                dev.mobileNumber === mobileNumber 
+                ? { mobileNumber, emailId, passwordHash: password }
+                : dev
+              )
+            }));
+          } else {
+            const newDeveloper: DeveloperUser = {
+              mobileNumber,
+              emailId,
+              passwordHash: password
+            };
+            set(state => ({ developers: [...state.developers, newDeveloper] }));
+          }
         },
         removeDeveloper: (mobileNumber) => {
           set(state => ({
@@ -365,6 +386,7 @@ export const useCustomerStore = create<CustomerState>()(
       }
     )
   );
+
 
 
 
