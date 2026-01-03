@@ -248,7 +248,7 @@ type CustomerState = {
     isAuthenticated: boolean;
     phoneNumber: string;
     users: CustomerUser[];
-    login: (mobileNumber: string, password?: string) => boolean;
+    login: (mobileNumber: string) => boolean;
     logout: () => void;
     addUser: (shopName: string, emailId: string, operatorMobile: string, operatorPassword: string, ownerPassword: string, managerPassword: string) => void;
     removeUser: (operatorMobile: string) => void;
@@ -262,14 +262,10 @@ export const useCustomerStore = create<CustomerState>()(
         users: [
           { shopName: 'Default Shop', emailId: 'default@example.com', operatorMobileNumber: '1234567890', operatorPassword: 'password' },
         ], 
-        login: (mobileNumber, password) => {
+        login: (mobileNumber) => {
           const user = get().users.find(u => u.operatorMobileNumber === mobileNumber);
-          if (user && user.operatorPassword === password) {
+          if (user) {
               set({ isAuthenticated: true, phoneNumber: mobileNumber });
-              return true;
-          }
-          if (user && !user.operatorPassword) { // For users without a password set yet
-              set({isAuthenticated: true, phoneNumber: mobileNumber});
               return true;
           }
           return false;
