@@ -297,6 +297,8 @@ Thanks for shopping at ${storeDetails.storeName}. As part of our green initiativ
 Happy Shopping`;
 
         const result = await sendWhatsAppPdf({
+            // IMPORTANT: Replace this with your actual API endpoint from Bot Bee AI or another provider.
+            apiUrl: 'https://api.botbee.ai/v1/messages', 
             to: phoneNumber,
             pdfBase64,
             filename: `invoice-${billNumber}.pdf`,
@@ -319,7 +321,7 @@ Happy Shopping`;
         toast({
             variant: "destructive",
             title: "Failed to Send Receipt",
-            description: err.message || "Could not send the message. Please ensure the API key is correct and the service is running.",
+            description: err.message || "Could not send the message. Please ensure the API key and URL are correct.",
         });
     } finally {
         setIsSending(false);

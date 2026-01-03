@@ -4,6 +4,7 @@
 import { z } from 'zod';
 
 export const WhatsAppMessageInputSchema = z.object({
+  apiUrl: z.string().url().describe("The API endpoint URL for the WhatsApp provider."),
   to: z.string().describe("The recipient's phone number."),
   pdfBase64: z.string().describe("The base64 encoded PDF string."),
   filename: z.string().describe("The desired filename for the PDF."),

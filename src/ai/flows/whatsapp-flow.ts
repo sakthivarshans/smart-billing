@@ -25,7 +25,7 @@ const whatsAppPdfFlow = ai.defineFlow(
     outputSchema: WhatsAppMessageOutputSchema,
   },
   async (input) => {
-    const { to, pdfBase64, filename, message, whatsappApiKey } = input;
+    const { apiUrl, to, pdfBase64, filename, message, whatsappApiKey } = input;
 
     if (!whatsappApiKey) {
       return {
@@ -33,12 +33,17 @@ const whatsAppPdfFlow = ai.defineFlow(
         message: 'WhatsApp API Key is not configured in the admin dashboard.',
       };
     }
+    
+    if (!apiUrl) {
+        return {
+          success: false,
+          message: 'The WhatsApp API URL is not configured.',
+        };
+    }
 
     try {
-      // This is a generic endpoint structure. The actual URL may differ based on the provider.
-      // E.g., for WABlas: https://wablas.com/api/v2/send-document
-      const apiUrl = 'https://proxy.wablas.com/api/v2/send-document'; // Example provider URL
-
+      // This is a generic endpoint structure. The actual data structure may differ based on the provider.
+      // E.g., for BotBee, it might require a 'type' field and different parameter names.
       const data = {
         phone: to,
         document: pdfBase64,
@@ -54,7 +59,7 @@ const whatsAppPdfFlow = ai.defineFlow(
         }
       });
       
-      if (response.data?.status === 'success') {
+      if (response.data?.status === 'success' || response.status === 200 || response.status === 201) {
         return {
           success: true,
           message: `WhatsApp message with PDF sent successfully.`,
