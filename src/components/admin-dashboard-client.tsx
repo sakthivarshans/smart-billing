@@ -2,6 +2,7 @@
 
 'use client';
 
+import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   Card,
@@ -51,7 +52,6 @@ export function AdminDashboardLayout({
 
   const visibleTabs = ALL_TABS.filter(tab => {
     if (loggedInRole === 'developer') {
-        // Developer sees all tabs except owner-only ones
         return !tab.ownerOnly;
     }
     if (tab.ownerOnly) {
@@ -62,6 +62,17 @@ export function AdminDashboardLayout({
     }
     return loggedInRole === 'owner';
   });
+
+  useEffect(() => {
+    // If the user is a manager and their current tab is not in their list of visible tabs,
+    // redirect them to the first tab they DO have permission for.
+    if (loggedInRole === 'manager') {
+        const canViewCurrentTab = visibleTabs.some(tab => tab.value === activeTab);
+        if (!canViewCurrentTab && visibleTabs.length > 0) {
+            router.replace(`/admin/${visibleTabs[0].value}`);
+        }
+    }
+  }, [activeTab, loggedInRole, router, visibleTabs]);
   
 
   return (
