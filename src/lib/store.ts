@@ -173,6 +173,8 @@ export const useAdminStore = create<AdminState>()(
           optionalColumn2: 'Optional 2',
         },
         login: (mobileNumber, password) => {
+          const { users: customerUsers } = useCustomerStore.getState();
+
           // Check for developer login first
           const dev = get().developers.find(d => d.mobileNumber === mobileNumber);
           if (dev && password === dev.passwordHash) {
@@ -180,10 +182,9 @@ export const useAdminStore = create<AdminState>()(
             return true;
           }
 
-          // Check for standard admin login from customer list
-          const { users } = useCustomerStore.getState();
-          const customerAsAdmin = users.find(u => u.adminMobileNumber === mobileNumber);
-          if (customerAsAdmin && customerAsAdmin.adminPassword === password) {
+          // Check for Owner/Manager roles
+          const userAsAdmin = customerUsers.find(u => u.adminMobileNumber === mobileNumber);
+          if (userAsAdmin && userAsAdmin.adminPassword === password) {
               set({ isAuthenticated: true, isDeveloper: false });
               return true;
           }
