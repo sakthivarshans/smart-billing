@@ -59,13 +59,6 @@ export function CustomerLoginClient() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background relative">
-      <div className="absolute top-4 right-4">
-          <Link href="/admin/login" passHref>
-              <Button variant="ghost" size="icon" aria-label="Admin Login">
-                  <UserCog className="h-6 w-6" />
-              </Button>
-          </Link>
-      </div>
       <Card className="w-full max-w-sm shadow-2xl">
         <CardHeader className="text-center">
             <CardTitle className="text-2xl">Operator Login</CardTitle>

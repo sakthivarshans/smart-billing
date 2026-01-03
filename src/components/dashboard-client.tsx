@@ -119,13 +119,13 @@ export function DashboardClient() {
             </CardDescription>
           </div>
           <div className="absolute top-4 right-4 flex items-center gap-2">
-            {isDeveloper &&
+            
               <Link href="/admin/login" passHref>
                   <Button variant="ghost" size="icon" aria-label="Admin Login">
                       <UserCog className="h-6 w-6" />
                   </Button>
               </Link>
-            }
+            
             <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Logout">
               <LogOut className="h-6 w-6" />
             </Button>
