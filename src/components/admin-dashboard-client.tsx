@@ -12,6 +12,9 @@ import {
 } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAdminStore } from '@/lib/store';
+import { Button } from './ui/button';
+import { LogOut } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export function AdminDashboardLayout({
   children,
@@ -20,10 +23,17 @@ export function AdminDashboardLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { isDeveloper } = useAdminStore();
+  const { isDeveloper, logout } = useAdminStore();
+  const { toast } = useToast();
 
   const handleTabChange = (value: string) => {
     router.push(`/admin/${value}`);
+  };
+
+  const handleLogout = () => {
+    logout();
+    toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
+    router.push('/admin/login');
   };
 
   const activeTab = pathname.split('/')[2] || 'dashboard';
@@ -39,6 +49,10 @@ export function AdminDashboardLayout({
                 Manage your store settings, sales, and inventory.
               </CardDescription>
             </div>
+            <Button variant="ghost" size="icon" onClick={handleLogout}>
+                <LogOut className="h-5 w-5" />
+                <span className="sr-only">Logout</span>
+            </Button>
           </div>
         </CardHeader>
         <CardContent>

@@ -123,6 +123,8 @@ type AdminState = {
     sales: Sale[];
     columnMapping: ColumnMapping;
     developers: DeveloperUser[];
+    login: (mobileNumber: string) => boolean;
+    logout: () => void;
     updateStoreDetails: (details: Partial<StoreDetails>) => void;
     updateApiKeys: (keys: Partial<ApiKeys>) => void;
     addStockItem: (item: IndividualStockItem) => void;
@@ -140,8 +142,8 @@ type AdminState = {
 export const useAdminStore = create<AdminState>()(
     persist(
       (set, get) => ({
-        isAuthenticated: true,
-        isDeveloper: true,
+        isAuthenticated: false,
+        isDeveloper: false,
         storeDetails: {
           storeName: 'Zudio Store',
           gstin: '27ABCDE1234F1Z5',
@@ -165,6 +167,21 @@ export const useAdminStore = create<AdminState>()(
           optionalColumn1: 'Optional 1',
           optionalColumn2: 'Optional 2',
         },
+        login: (mobileNumber) => {
+            const devUser = get().developers.find(d => d.mobileNumber === mobileNumber);
+            if (devUser) {
+              set({ isAuthenticated: true, isDeveloper: true });
+              return true;
+            }
+            // Add other admin login logic here if needed
+            const adminUser = get().users.find(u => u.operatorMobileNumber === mobileNumber);
+            if(adminUser) {
+              set({ isAuthenticated: true, isDeveloper: false });
+              return true;
+            }
+            return false;
+          },
+        logout: () => set({ isAuthenticated: false, isDeveloper: false }),
         updateStoreDetails: (details) =>
           set((state) => ({
             storeDetails: { ...state.storeDetails, ...details },
@@ -227,6 +244,11 @@ export const useAdminStore = create<AdminState>()(
       {
         name: 'admin-storage', 
         storage: createJSONStorage(() => localStorage),
+        // This part is crucial for making sure the non-serializable `login` function is not persisted
+        partialize: (state) =>
+          Object.fromEntries(
+            Object.entries(state).filter(([key]) => !['login', 'logout'].includes(key))
+        ),
       }
     )
   );
@@ -239,7 +261,6 @@ export type CustomerUser = {
   shopName: string;
   emailId: string;
   operatorMobileNumber: string;
-  operatorPassword?: string;
   ownerPassword?: string;
   managerPassword?: string;
 }
@@ -250,7 +271,7 @@ type CustomerState = {
     users: CustomerUser[];
     login: (mobileNumber: string) => boolean;
     logout: () => void;
-    addUser: (shopName: string, emailId: string, operatorMobile: string, operatorPassword: string, ownerPassword: string, managerPassword: string) => void;
+    addUser: (shopName: string, emailId: string, operatorMobile: string, ownerPassword: string, managerPassword: string) => void;
     removeUser: (operatorMobile: string) => void;
 };
 
@@ -260,7 +281,7 @@ export const useCustomerStore = create<CustomerState>()(
         isAuthenticated: false,
         phoneNumber: '',
         users: [
-          { shopName: 'Default Shop', emailId: 'default@example.com', operatorMobileNumber: '1234567890', operatorPassword: 'password' },
+          { shopName: 'Default Shop', emailId: 'default@example.com', operatorMobileNumber: '9999999999', ownerPassword: 'password', managerPassword: 'password' },
         ], 
         login: (mobileNumber) => {
           const user = get().users.find(u => u.operatorMobileNumber === mobileNumber);
@@ -273,14 +294,13 @@ export const useCustomerStore = create<CustomerState>()(
         logout: () => {
           set({ isAuthenticated: false, phoneNumber: ''});
         },
-        addUser: (shopName, emailId, operatorMobile, operatorPassword, ownerPassword, managerPassword) => {
+        addUser: (shopName, emailId, operatorMobile, ownerPassword, managerPassword) => {
           set((state) => {
             const userExists = state.users.some(u => u.operatorMobileNumber === operatorMobile);
             const newUser: CustomerUser = { 
               shopName, 
               emailId, 
               operatorMobileNumber: operatorMobile,
-              operatorPassword,
               ownerPassword,
               managerPassword
             };
@@ -306,3 +326,10 @@ export const useCustomerStore = create<CustomerState>()(
       }
     )
   );
+
+// Add the users array to the admin store state so it can be accessed there
+useAdminStore.setState({ users: useCustomerStore.getState().users });
+useCustomerStore.subscribe(
+    users => useAdminStore.setState({ users }),
+    state => state.users
+);

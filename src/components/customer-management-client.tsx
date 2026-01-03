@@ -29,7 +29,6 @@ export function CustomerManagementClient() {
   const [shopName, setShopName] = useState('');
   const [emailId, setEmailId] = useState('');
   const [operatorMobile, setOperatorMobile] = useState('');
-  const [operatorPassword, setOperatorPassword] = useState('');
   const [ownerPassword, setOwnerPassword] = useState('');
   const [managerPassword, setManagerPassword] = useState('');
 
@@ -46,10 +45,6 @@ export function CustomerManagementClient() {
       toast({ variant: 'destructive', title: 'Invalid Operator Mobile', description: 'Please enter a valid 10-digit mobile number.' });
       return;
     }
-    if (operatorPassword.length < 4) {
-      toast({ variant: 'destructive', title: 'Operator Password Too Short', description: 'Password must be at least 4 characters long.' });
-      return;
-    }
     if (ownerPassword.length < 4) {
         toast({ variant: 'destructive', title: 'Owner Password Too Short', description: 'Password must be at least 4 characters long.' });
         return;
@@ -59,7 +54,7 @@ export function CustomerManagementClient() {
         return;
     }
 
-    addUser(shopName, emailId, operatorMobile, operatorPassword, ownerPassword, managerPassword);
+    addUser(shopName, emailId, operatorMobile, ownerPassword, managerPassword);
     toast({
       title: 'User Added',
       description: `User for ${shopName} has been added.`,
@@ -67,7 +62,6 @@ export function CustomerManagementClient() {
     setShopName('');
     setEmailId('');
     setOperatorMobile('');
-    setOperatorPassword('');
     setOwnerPassword('');
     setManagerPassword('');
   };
@@ -187,8 +181,8 @@ export function CustomerManagementClient() {
                     <TableCell>{user.shopName}</TableCell>
                     <TableCell>{user.emailId}</TableCell>
                     <TableCell className="font-mono">{user.operatorMobileNumber}</TableCell>
-                    <TableCell className="font-mono">{user.ownerPassword}</TableCell>
-                    <TableCell className="font-mono">{user.managerPassword}</TableCell>
+                    <TableCell className="font-mono">••••••••</TableCell>
+                    <TableCell className="font-mono">••••••••</TableCell>
                     <TableCell className="text-right">
                       <AlertDialog>
                         <AlertDialogTrigger asChild>

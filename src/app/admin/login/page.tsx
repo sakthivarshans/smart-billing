@@ -1,12 +1,6 @@
-'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { AdminLoginClient } from '@/components/admin-login-client';
 
 export default function AdminLoginPage() {
-  const router = useRouter();
-  useEffect(() => {
-    router.replace('/admin/dashboard');
-  }, [router]);
-  return null;
+  return <AdminLoginClient />;
 }
