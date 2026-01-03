@@ -290,13 +290,9 @@ export function PaymentClient() {
         const pdfBase64 = generatePDF();
         
         const receiptCaption = 
-`*${storeDetails.storeName}*
-Thank you for your purchase!
-Here is your invoice (Bill No: *${billNumber}*).
-Payment ID: _${paymentId.replace('pay_', '')}_
-Total: *Rs${total.toFixed(2)}*
-Thank you! Visit Again!
-`;
+`Dear Customer,
+Thanks for shopping at ${storeDetails.storeName}. As part of our green initiative, your digital bill is attached.
+Happy Shopping`;
 
         const result = await sendWhatsAppPdf({
             to: phoneNumber,
@@ -466,5 +462,3 @@ Thank you! Visit Again!
     </div>
   );
 }
-
-    
