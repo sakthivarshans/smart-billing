@@ -40,20 +40,15 @@ export function DashboardClient() {
   }, [isAuthenticated]);
 
   const handleLogin = () => {
-    const isDeveloper = developers.some(d => d.mobileNumber === loginAttemptMobile);
-
-    if (isDeveloper) {
-        const success = adminLogin('developer');
-        if (success) {
-            toast({ title: 'Developer Login Successful', description: 'Welcome, developer!' });
-            router.push('/admin/dashboard');
-        }
-        return;
-    }
-
+    // Standard login for all users. Developer status grants access via key icon.
     const success = login(loginAttemptMobile);
     if (success) {
-        toast({ title: 'Login Successful', description: `Welcome!` });
+        const isDeveloper = developers.some(d => d.mobileNumber === loginAttemptMobile);
+        if (isDeveloper) {
+            toast({ title: 'Developer Login Successful', description: `Welcome, Developer!` });
+        } else {
+            toast({ title: 'Login Successful', description: `Welcome!` });
+        }
     } else {
         toast({ variant: 'destructive', title: 'Login Failed', description: 'This mobile number is not registered.' });
     }
@@ -123,7 +118,16 @@ export function DashboardClient() {
   }
 
   const handleAdminLoginClick = () => {
-    router.push('/admin/login');
+    const isDeveloper = developers.some(d => d.mobileNumber === loggedInPhoneNumber);
+    if (isDeveloper) {
+      const success = adminLogin('developer');
+      if (success) {
+        toast({ title: 'Developer Access Granted', description: 'Welcome, developer!' });
+        router.push('/admin/dashboard');
+      }
+    } else {
+      router.push('/admin/login');
+    }
   };
 
   if (!isAuthenticated) {
