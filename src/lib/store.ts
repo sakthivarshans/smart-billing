@@ -158,16 +158,9 @@ export const useAdminStore = create<AdminState>()(
         },
         login: (password: string) => {
             const storedPassword = get().password;
-            
-            // Any authenticated admin is now a developer
             if (storedPassword && password === storedPassword) {
                 set({ isAuthenticated: true, isDeveloper: true });
                 return true;
-            }
-            // Also allow the hardcoded 'developer' password
-            if (password === 'developer') {
-              set({ isAuthenticated: true, isDeveloper: true });
-              return true;
             }
             return false;
         },
@@ -214,7 +207,7 @@ type CustomerState = {
     users: CustomerUser[];
     login: (mobileNumber: string, password: string) => boolean;
     logout: () => void;
-    addUser: (mobileNumber: string) => void;
+    addUser: (mobileNumber: string, password?: string) => void;
     removeUser: (mobileNumber: string) => void;
 };
 
@@ -239,14 +232,14 @@ export const useCustomerStore = create<CustomerState>()(
             return false;
         },
         logout: () => set({ isAuthenticated: false, phoneNumber: '' }),
-        addUser: (mobileNumber) => {
+        addUser: (mobileNumber, password = 'password') => {
           const userExists = get().users.some(u => u.mobileNumber === mobileNumber);
           if (userExists) {
             return; // Or throw an error, depending on desired behavior
           }
             const newUser: CustomerUser = {
                 mobileNumber: mobileNumber,
-                passwordHash: 'password', // Default temporary password
+                passwordHash: password, 
             };
             set((state) => ({
                 users: [...state.users, newUser],
