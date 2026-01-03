@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { IndianRupee, ShoppingCart, Smartphone, Trash2, ScanLine, LogOut, KeyRound, User } from 'lucide-react';
+import { IndianRupee, ShoppingCart, Smartphone, Trash2, ScanLine, LogOut, KeyRound, User, Settings } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { RFIDScanner } from './rfid-scanner';
 import { Label } from './ui/label';
@@ -156,10 +156,16 @@ export function DashboardClient() {
               Smart Billing System
             </CardDescription>
           </div>
-          <Button variant="ghost" size="icon" className="absolute top-4 right-4" onClick={handleLogout}>
-              <LogOut className="h-5 w-5" />
-              <span className="sr-only">Logout</span>
-          </Button>
+          <div className="absolute top-4 right-4 flex gap-2">
+            <Button variant="ghost" size="icon" onClick={() => router.push('/admin')}>
+                <Settings className="h-5 w-5" />
+                <span className="sr-only">Admin Login</span>
+            </Button>
+            <Button variant="ghost" size="icon" onClick={handleLogout}>
+                <LogOut className="h-5 w-5" />
+                <span className="sr-only">Logout</span>
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex flex-col sm:flex-row justify-end gap-2">
