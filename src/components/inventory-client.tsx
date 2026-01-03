@@ -146,13 +146,11 @@ export function InventoryClient() {
   const handleClearInventory = () => {
     setIsClearing(true);
     clearInventory();
-    setTimeout(() => {
-      toast({
-        title: 'Inventory Cleared',
-        description: 'All product catalog and stock records have been erased. Sales data remains.',
-      });
-      setIsClearing(false);
-    }, 500);
+    toast({
+      title: 'Inventory Cleared',
+      description: 'All product catalog and stock records have been erased. Sales data remains.',
+    });
+    setIsClearing(false);
   };
 
   return (

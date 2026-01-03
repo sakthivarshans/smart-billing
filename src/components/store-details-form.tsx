@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -23,15 +24,12 @@ export function StoreDetailsForm() {
 
   const handleSaveChanges = () => {
     setIsSaving(true);
-    // Simulate saving to a backend
-    setTimeout(() => {
-      updateStoreDetails(formState);
-      toast({
-        title: 'Changes Saved',
-        description: 'Your store details have been updated.',
-      });
-      setIsSaving(false);
-    }, 500);
+    updateStoreDetails(formState);
+    toast({
+      title: 'Changes Saved',
+      description: 'Your store details have been updated.',
+    });
+    setIsSaving(false);
   };
 
   return (

@@ -31,24 +31,22 @@ export function CustomerLoginClient() {
         return;
     }
     setIsProcessing(true);
-    setTimeout(() => {
-      const success = login(mobileNumber, password);
-      if (success) {
-        toast({
-          title: 'Login Successful',
-          description: 'Redirecting to the billing dashboard...',
-        });
-        router.push('/billing');
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Login Failed',
-          description: 'Incorrect mobile number or password.',
-        });
-        setPassword('');
-      }
-      setIsProcessing(false);
-    }, 500);
+    const success = login(mobileNumber, password);
+    if (success) {
+      toast({
+        title: 'Login Successful',
+        description: 'Redirecting to the billing dashboard...',
+      });
+      router.push('/billing');
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Login Failed',
+        description: 'Incorrect mobile number or password.',
+      });
+      setPassword('');
+    }
+    setIsProcessing(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -59,6 +57,13 @@ export function CustomerLoginClient() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background relative">
+        <div className="absolute top-4 right-4">
+            <Link href="/admin/login" passHref>
+                <Button variant="ghost" size="icon" aria-label="Admin Login">
+                    <UserCog className="h-6 w-6" />
+                </Button>
+            </Link>
+        </div>
       <Card className="w-full max-w-sm shadow-2xl">
         <CardHeader className="text-center">
             <CardTitle className="text-2xl">Operator Login</CardTitle>

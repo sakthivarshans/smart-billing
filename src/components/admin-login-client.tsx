@@ -57,24 +57,22 @@ export function AdminLoginClient() {
         return;
     }
 
-    setTimeout(() => {
-      const success = login(signInMobile, signInPassword);
-      if (success) {
-        toast({
-          title: 'Login Successful',
-          description: 'Redirecting to admin dashboard...',
-        });
-        router.push('/admin/dashboard');
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Login Failed',
-          description: 'Incorrect mobile number or password.',
-        });
-        setSignInPassword('');
-      }
-      setIsProcessing(false);
-    }, 500);
+    const success = login(signInMobile, signInPassword);
+    if (success) {
+      toast({
+        title: 'Login Successful',
+        description: 'Redirecting to admin dashboard...',
+      });
+      router.push('/admin/dashboard');
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Login Failed',
+        description: 'Incorrect mobile number or password.',
+      });
+      setSignInPassword('');
+    }
+    setIsProcessing(false);
   };
 
   const handleSignUp = () => {
@@ -96,15 +94,13 @@ export function AdminLoginClient() {
     }
 
     setIsProcessing(true);
-    setTimeout(() => {
-      setupInitialAdmin(signUpPassword);
-      toast({
-        title: 'Setup Complete!',
-        description: 'Your initial admin account has been created. Please sign in.',
-      });
-      setActiveTab('signin');
-      setIsProcessing(false);
-    }, 500);
+    setupInitialAdmin(signUpPassword);
+    toast({
+      title: 'Setup Complete!',
+      description: 'Your initial admin account has been created. Please sign in.',
+    });
+    setActiveTab('signin');
+    setIsProcessing(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {

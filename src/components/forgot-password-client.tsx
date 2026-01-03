@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -30,50 +31,58 @@ export function ForgotPasswordClient() {
         });
         return;
     }
-    if (!users.find(u => u.mobileNumber === mobileNumber)) {
+    const customer = users.find(u => u.operatorMobileNumber === mobileNumber);
+    const admin = users.find(u => u.adminMobileNumber === mobileNumber);
+
+    if (!customer && !admin) {
         toast({
             variant: 'destructive',
             title: 'Unregistered Number',
-            description: 'This mobile number is not registered. Please sign up.',
+            description: 'This mobile number is not registered for any account.',
           });
           return;
     }
 
     setIsProcessing(true);
     // Simulate sending OTP
-    setTimeout(() => {
-        toast({
-            title: 'OTP Sent!',
-            description: 'An OTP has been sent to your mobile number (mocked).',
-        });
-        setStep(2);
-        setIsProcessing(false);
-    }, 1000);
+    toast({
+        title: 'OTP Sent!',
+        description: 'An OTP has been sent to your mobile number (mocked).',
+    });
+    setStep(2);
+    setIsProcessing(false);
   };
 
   const handleVerifyOtp = () => {
     setIsProcessing(true);
     // Simulate verifying OTP
-    setTimeout(() => {
-        // In a real app, you would verify the OTP here.
-        // For this mock, any 4-digit OTP is accepted.
-        if (otp.length === 4) {
-            toast({
-                title: 'Password Reset Successful',
-                description: 'You can now log in with your new (mock) password.',
-            });
-            // In a real app, you would redirect to a password reset page.
-            // Here, we just go back to the login page.
-            router.push('/');
-        } else {
-            toast({
-                variant: 'destructive',
-                title: 'Invalid OTP',
-                description: 'The OTP entered is incorrect. Please try again.',
-            });
+    // In a real app, you would verify the OTP here.
+    // For this mock, any 4-digit OTP is accepted.
+    if (otp.length === 4) {
+        // Find which password to show
+        const customer = users.find(u => u.operatorMobileNumber === mobileNumber);
+        const admin = users.find(u => u.adminMobileNumber === mobileNumber);
+        let passwordToShow = '';
+        if (customer) {
+            passwordToShow = customer.operatorPassword;
+        } else if (admin) {
+            passwordToShow = admin.adminPassword;
         }
-        setIsProcessing(false);
-    }, 1000);
+
+        toast({
+            title: 'Password Retrieved',
+            description: `Your password is: ${passwordToShow}`,
+            duration: 9000,
+        });
+        router.push('/');
+    } else {
+        toast({
+            variant: 'destructive',
+            title: 'Invalid OTP',
+            description: 'The OTP entered is incorrect. Please try again.',
+        });
+    }
+    setIsProcessing(false);
   };
 
 
@@ -129,7 +138,7 @@ export function ForgotPasswordClient() {
                 </Button>
             ) : (
                 <Button onClick={handleVerifyOtp} className="w-full" disabled={isProcessing}>
-                    {isProcessing ? 'Verifying...' : <><ShieldCheck className="mr-2 h-4 w-4" /> Verify OTP</>}
+                    {isProcessing ? 'Verifying...' : <><ShieldCheck className="mr-2 h-4 w-4" /> Verify OTP & Get Password</>}
                 </Button>
             )}
            

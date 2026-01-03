@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -23,15 +24,12 @@ export function ApiKeysForm() {
 
   const handleSaveChanges = () => {
     setIsSaving(true);
-    // Simulate saving to a backend
-    setTimeout(() => {
-      updateApiKeys(formState);
-      toast({
-        title: 'Changes Saved',
-        description: 'Your API keys have been updated.',
-      });
-      setIsSaving(false);
-    }, 500);
+    updateApiKeys(formState);
+    toast({
+      title: 'Changes Saved',
+      description: 'Your API keys have been updated.',
+    });
+    setIsSaving(false);
   };
 
   return (
