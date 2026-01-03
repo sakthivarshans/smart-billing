@@ -196,8 +196,8 @@ export const useAdminStore = create<AdminState>()(
           const { addUser } = useCustomerStore.getState();
           // This function sets up the initial Owner and Manager accounts
           // with hardcoded mobile numbers and a specified password.
-          addUser('0000000000', 'default-op', '0000000000', password); // Owner
-          addUser('1111111111', 'default-op', '1111111111', password); // Manager
+          addUser('Default Owner', 'owner@example.com', '0000000000', 'default-op', '0000000000', password); // Owner
+          addUser('Default Manager', 'manager@example.com', '1111111111', 'default-op', '1111111111', password); // Manager
       
           set({ hasBeenSetup: true });
         },
@@ -246,6 +246,8 @@ export const useApiKeys = () => useAdminStore((state) => state.apiKeys);
 
 
 export type CustomerUser = {
+  shopName: string;
+  emailId: string;
   operatorMobileNumber: string;
   operatorPassword: string;
   adminMobileNumber: string;
@@ -258,7 +260,7 @@ type CustomerState = {
     users: CustomerUser[];
     login: (mobileNumber: string, password: string) => boolean;
     logout: () => void;
-    addUser: (operatorMobile: string, operatorPass: string, adminMobile: string, adminPass: string) => void;
+    addUser: (shopName: string, emailId: string, operatorMobile: string, operatorPass: string, adminMobile: string, adminPass: string) => void;
     removeUser: (operatorMobile: string) => void;
 };
 
@@ -268,7 +270,7 @@ export const useCustomerStore = create<CustomerState>()(
         isAuthenticated: false,
         phoneNumber: '',
         users: [
-          { operatorMobileNumber: '1234567890', operatorPassword: 'password123', adminMobileNumber: '0123456789', adminPassword: 'admin123' },
+          { shopName: 'Default Shop', emailId: 'default@example.com', operatorMobileNumber: '1234567890', operatorPassword: 'password123', adminMobileNumber: '0123456789', adminPassword: 'admin123' },
         ], 
         login: (mobileNumber, password) => {
             const user = get().users.find(u => u.operatorMobileNumber === mobileNumber);
@@ -287,26 +289,29 @@ export const useCustomerStore = create<CustomerState>()(
             return false;
         },
         logout: () => set({ isAuthenticated: false, phoneNumber: '' }),
-        addUser: (operatorMobile, operatorPass, adminMobile, adminPass) => {
+        addUser: (shopName, emailId, operatorMobile, operatorPass, adminMobile, adminPass) => {
           set((state) => {
             const userExists = state.users.some(u => u.operatorMobileNumber === operatorMobile || u.adminMobileNumber === adminMobile);
-            if (userExists) {
-              // If user exists, update their details
-              return {
-                users: state.users.map(u => 
-                  (u.operatorMobileNumber === operatorMobile || u.adminMobileNumber === adminMobile) 
-                  ? { operatorMobileNumber: operatorMobile, operatorPassword: operatorPass, adminMobileNumber: adminMobile, adminPassword: adminPass } 
-                  : u
-                )
-              };
-            } else {
-              // If user does not exist, add them
-              const newUser: CustomerUser = {
+            const newUser: CustomerUser = {
+                shopName,
+                emailId,
                 operatorMobileNumber: operatorMobile,
                 operatorPassword: operatorPass, 
                 adminMobileNumber: adminMobile,
                 adminPassword: adminPass,
               };
+
+            if (userExists) {
+              // If user exists, update their details
+              return {
+                users: state.users.map(u => 
+                  (u.operatorMobileNumber === operatorMobile || u.adminMobileNumber === adminMobile) 
+                  ? newUser
+                  : u
+                )
+              };
+            } else {
+              // If user does not exist, add them
               return {
                 users: [...state.users, newUser],
               };

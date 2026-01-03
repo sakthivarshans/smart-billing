@@ -26,12 +26,22 @@ export function CustomerManagementClient() {
   const { toast } = useToast();
   const { users, addUser, removeUser } = useCustomerStore();
   
+  const [shopName, setShopName] = useState('');
+  const [emailId, setEmailId] = useState('');
   const [operatorMobile, setOperatorMobile] = useState('');
   const [operatorPassword, setOperatorPassword] = useState('');
   const [adminMobile, setAdminMobile] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
 
   const handleAddUser = () => {
+    if (!shopName) {
+      toast({ variant: 'destructive', title: 'Shop Name Required', description: 'Please enter a shop name.' });
+      return;
+    }
+    if (!emailId || !/^\S+@\S+\.\S+$/.test(emailId)) {
+        toast({ variant: 'destructive', title: 'Invalid Email ID', description: 'Please enter a valid email address.' });
+        return;
+    }
     if (!/^\d{10}$/.test(operatorMobile)) {
       toast({ variant: 'destructive', title: 'Invalid Operator Mobile', description: 'Please enter a valid 10-digit mobile number.' });
       return;
@@ -49,11 +59,13 @@ export function CustomerManagementClient() {
         return;
     }
 
-    addUser(operatorMobile, operatorPassword, adminMobile, adminPassword);
+    addUser(shopName, emailId, operatorMobile, operatorPassword, adminMobile, adminPassword);
     toast({
       title: 'User Added',
-      description: `User with operator mobile ${operatorMobile} has been added.`,
+      description: `User for ${shopName} has been added.`,
     });
+    setShopName('');
+    setEmailId('');
     setOperatorMobile('');
     setOperatorPassword('');
     setAdminMobile('');
@@ -77,7 +89,15 @@ export function CustomerManagementClient() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-4">
+          <div className="space-y-2 lg:col-span-1">
+            <Label htmlFor="new-shop-name">Shop Name</Label>
+            <Input id="new-shop-name" type="text" value={shopName} onChange={(e) => setShopName(e.target.value)} placeholder="Shop Name" />
+          </div>
+          <div className="space-y-2 lg:col-span-1">
+            <Label htmlFor="new-email-id">Email ID</Label>
+            <Input id="new-email-id" type="email" value={emailId} onChange={(e) => setEmailId(e.target.value)} placeholder="Email ID" />
+          </div>
           <div className="space-y-2 lg:col-span-1">
             <Label htmlFor="new-operator-mobile">Operator Number</Label>
             <Input id="new-operator-mobile" type="tel" value={operatorMobile} onChange={(e) => setOperatorMobile(e.target.value)} placeholder="10-digit number" maxLength={10} />
@@ -105,6 +125,8 @@ export function CustomerManagementClient() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Shop Name</TableHead>
+                <TableHead>Email ID</TableHead>
                 <TableHead>Operator Number</TableHead>
                 <TableHead>Operator Password</TableHead>
                 <TableHead>Admin Number</TableHead>
@@ -116,6 +138,8 @@ export function CustomerManagementClient() {
               {users.length > 0 ? (
                 users.map((user, index) => (
                   <TableRow key={`${user.operatorMobileNumber}-${index}`}>
+                    <TableCell>{user.shopName}</TableCell>
+                    <TableCell>{user.emailId}</TableCell>
                     <TableCell className="font-mono">{user.operatorMobileNumber}</TableCell>
                     <TableCell className="font-mono">{user.operatorPassword}</TableCell>
                     <TableCell className="font-mono">{user.adminMobileNumber}</TableCell>
@@ -148,7 +172,7 @@ export function CustomerManagementClient() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                  <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                     <div className="flex flex-col items-center gap-2">
                       <Users className="h-8 w-8" />
                       <span>No customers found.</span>
