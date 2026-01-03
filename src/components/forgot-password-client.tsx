@@ -75,15 +75,25 @@ export function ForgotPasswordClient() {
     const randomOtp = Math.floor(1000 + Math.random() * 9000).toString();
     setGeneratedOtp(randomOtp);
     
+    // If no Email API key, use mock OTP
+    if (!apiKeys.emailApiKey) {
+        setGeneratedOtp('1234');
+        toast({
+            title: 'OTP Sent (Mocked)',
+            description: 'No Email API key is set. Use OTP: 1234 to proceed.',
+            duration: 9000,
+        });
+        setStep(2);
+        setIsProcessing(false);
+        return;
+    }
+
     const subject = 'Your Password Reset OTP';
     const body = `Your One-Time Password (OTP) to reset your password is: ${randomOtp}`;
 
     try {
-        if (!apiKeys.emailApiKey) {
-            throw new Error("Email service is not configured. Please contact support.");
-        }
         const result = await sendEmail({
-            apiUrl: 'https://api.botbee.ai/v1/emails', // Placeholder URL
+            apiUrl: 'https://api.botbee.ai/v1/emails', 
             to: userAccount.emailId,
             subject,
             body,
