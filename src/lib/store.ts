@@ -92,7 +92,8 @@ export type Sale = {
     phoneNumber: string;
     date: string; // ISO string
     paymentResponse: any;
-    status: 'success' | 'failure';
+    status: 'success' | 'failure' | 'skipped';
+    paymentMethod: 'UPI/QR' | 'Card' | 'NetBanking' | 'Wallet' | 'Skipped' | 'Unknown';
 };
 
 export type ColumnMapping = {

@@ -104,7 +104,7 @@ export function SalesDashboardClient() {
 
 
         // Define CSV headers
-        const headers = ['Date', 'Status', 'Payment ID', 'Order ID', 'Customer Phone', 'Total Amount', 'Item Count'];
+        const headers = ['Date', 'Status', 'Payment ID', 'Order ID', 'Customer Phone', 'Total Amount', 'Item Count', 'Payment Method'];
         
         // Create CSV content
         const csvContent = [
@@ -117,8 +117,9 @@ export function SalesDashboardClient() {
                 const phone = sale.phoneNumber;
                 const total = sale.total.toFixed(2);
                 const itemCount = sale.items.length;
+                const paymentMethod = sale.paymentMethod || 'Unknown';
     
-                return [date, status, paymentId, orderId, phone, total, itemCount].join(',');
+                return [date, status, paymentId, orderId, phone, total, itemCount, paymentMethod].join(',');
             })
         ].join('\n');
     

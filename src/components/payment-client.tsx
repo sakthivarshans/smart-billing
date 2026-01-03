@@ -72,6 +72,7 @@ export function PaymentClient() {
       date: new Date().toISOString(),
       paymentResponse: response,
       status: 'success',
+      paymentMethod: 'UPI/QR'
     });
     
     setIsProcessing(false);
@@ -161,6 +162,7 @@ export function PaymentClient() {
             date: new Date().toISOString(),
             paymentResponse: response,
             status: 'failure',
+            paymentMethod: 'Unknown'
         });
         
         setIsProcessing(false);
@@ -330,6 +332,20 @@ Happy Shopping`;
     router.push('/billing');
   }
 
+  const handleSkip = () => {
+    addSale({
+      id: uuidv4(),
+      items,
+      total,
+      phoneNumber,
+      date: new Date().toISOString(),
+      paymentResponse: { message: 'Skipped' },
+      status: 'skipped',
+      paymentMethod: 'Skipped',
+    });
+    resetBillAndReturn();
+  };
+
   useEffect(() => {
     if (total === 0 && !paymentDone) {
       router.push('/billing');
@@ -450,10 +466,10 @@ Happy Shopping`;
                     <Button
                         className="w-full"
                         variant="link"
-                        onClick={resetBillAndReturn}
+                        onClick={handleSkip}
                     >
                         <SkipForward className="mr-2 h-4 w-4" />
-                        Skip
+                        Skip & New Bill
                     </Button>
                 </>
             )}
