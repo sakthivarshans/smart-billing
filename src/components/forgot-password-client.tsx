@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { KeyRound, ShieldCheck, Send, ArrowLeft, Loader2 } from 'lucide-react';
-import { sendEmail } from '@/ai/flows/email-flow';
+import { sendWhatsAppText } from '@/ai/flows/whatsapp-text-flow';
 
 type UserAccount = {
   emailId: string;
@@ -75,12 +75,12 @@ export function ForgotPasswordClient() {
     const randomOtp = Math.floor(1000 + Math.random() * 9000).toString();
     setGeneratedOtp(randomOtp);
     
-    // If no Email API key, use mock OTP
-    if (!apiKeys.emailApiKey) {
+    // If no WhatsApp API key, use mock OTP
+    if (!apiKeys.whatsappApiKey) {
         setGeneratedOtp('1234');
         toast({
-            title: 'OTP Sent (Mocked)',
-            description: 'No Email API key is set. Use OTP: 1234 to proceed.',
+            title: 'OTP Sent (Mock)',
+            description: 'No WhatsApp API key set. Use OTP: 1234 to proceed.',
             duration: 9000,
         });
         setStep(2);
@@ -88,22 +88,20 @@ export function ForgotPasswordClient() {
         return;
     }
 
-    const subject = 'Your Password Reset OTP';
-    const body = `Your One-Time Password (OTP) to reset your password is: ${randomOtp}`;
+    const message = `Your One-Time Password (OTP) to reset your password is: ${randomOtp}`;
 
     try {
-        const result = await sendEmail({
-            apiUrl: 'https://api.botbee.ai/v1/emails', 
-            to: userAccount.emailId,
-            subject,
-            body,
-            apiKey: apiKeys.emailApiKey,
+        const result = await sendWhatsAppText({
+            apiUrl: 'https://api.botbee.ai/v1/messages', 
+            to: mobileNumber,
+            message,
+            whatsappApiKey: apiKeys.whatsappApiKey,
         });
 
         if (result.success) {
             toast({
                 title: 'OTP Sent!',
-                description: `An OTP has been sent to your registered email: ${userAccount.emailId}.`,
+                description: `An OTP has been sent to your registered WhatsApp number.`,
             });
             setStep(2);
         } else {
@@ -113,7 +111,7 @@ export function ForgotPasswordClient() {
         toast({
             variant: "destructive",
             title: "Failed to Send OTP",
-            description: err.message || "Could not send the OTP. Please ensure the Email API key is correct.",
+            description: err.message || "Could not send the OTP. Please ensure the WhatsApp API key is correct.",
         });
     } finally {
         setIsProcessing(false);
@@ -188,7 +186,7 @@ export function ForgotPasswordClient() {
             <CardTitle className="text-2xl">Forgot Password</CardTitle>
             <CardDescription>
                 {step === 1 && 'Enter your registered mobile number to receive an OTP.'}
-                {step === 2 && `Enter the 4-digit OTP sent to ${account?.emailId}.`}
+                {step === 2 && `Enter the 4-digit OTP sent to your WhatsApp.`}
                 {step === 3 && 'Create a new password for your account.'}
             </CardDescription>
         </CardHeader>
