@@ -114,8 +114,8 @@ export function CustomerManagementClient() {
             </TableHeader>
             <TableBody>
               {users.length > 0 ? (
-                users.map((user) => (
-                  <TableRow key={user.operatorMobileNumber}>
+                users.map((user, index) => (
+                  <TableRow key={`${user.operatorMobileNumber}-${index}`}>
                     <TableCell className="font-mono">{user.operatorMobileNumber}</TableCell>
                     <TableCell className="font-mono">{user.operatorPassword}</TableCell>
                     <TableCell className="font-mono">{user.adminMobileNumber}</TableCell>
