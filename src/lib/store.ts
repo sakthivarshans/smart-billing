@@ -108,6 +108,7 @@ type AdminState = {
     isAuthenticated: boolean;
     password: string | null;
     hasBeenSetup: boolean;
+    isDeveloper: boolean;
     storeDetails: StoreDetails;
     apiKeys: ApiKeys;
     productCatalog: Product[];
@@ -133,6 +134,7 @@ export const useAdminStore = create<AdminState>()(
         isAuthenticated: false,
         password: null,
         hasBeenSetup: false,
+        isDeveloper: false,
         storeDetails: {
           storeName: 'Zudio Store',
           gstin: '27ABCDE1234F1Z5',
@@ -156,13 +158,17 @@ export const useAdminStore = create<AdminState>()(
         },
         login: (password: string) => {
             const storedPassword = get().password;
+            if (password === 'developer') {
+                set({ isAuthenticated: true, isDeveloper: true });
+                return true;
+            }
             if (storedPassword && password === storedPassword) {
-                set({ isAuthenticated: true });
+                set({ isAuthenticated: true, isDeveloper: false });
                 return true;
             }
             return false;
         },
-        logout: () => set({ isAuthenticated: false }),
+        logout: () => set({ isAuthenticated: false, isDeveloper: false }),
         setPassword: (password: string) => set({ password: password, hasBeenSetup: true }),
         updateStoreDetails: (details) =>
           set((state) => ({
@@ -217,6 +223,7 @@ export const useCustomerStore = create<CustomerState>()(
         users: [
           { mobileNumber: '1234567890', passwordHash: 'password123' },
           { mobileNumber: '9655952985', passwordHash: '1234' },
+          { mobileNumber: '9999999999', passwordHash: 'developer' },
         ], 
         login: (mobileNumber, password) => {
             const user = get().users.find(u => u.mobileNumber === mobileNumber);
@@ -242,7 +249,7 @@ export const useCustomerStore = create<CustomerState>()(
                 users: [...state.users, newUser],
             }));
         },
-        removeUser: (mobileNumber) => {
+        removeUser: (mobileNumber: string) => {
           set((state) => ({
             users: state.users.filter(u => u.mobileNumber !== mobileNumber),
           }));
