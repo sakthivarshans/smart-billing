@@ -50,17 +50,20 @@ export function AdminDashboardLayout({
   const activeTab = pathname.split('/')[2] || 'dashboard';
 
   const visibleTabs = ALL_TABS.filter(tab => {
-    if (tab.value === 'developer') {
-        return loggedInRole === 'developer';
+    if (loggedInRole === 'developer') {
+        // Developers see everything except owner-only tabs
+        return !tab.ownerOnly;
     }
-    if (tab.ownerOnly) {
-        return loggedInRole === 'owner';
+    if (loggedInRole === 'owner') {
+        // Owners see everything except developer-only tabs
+        return !tab.developerOnly;
     }
     if (loggedInRole === 'manager') {
+        // Managers see only what's in their permissions
         return managerPermissions.includes(tab.value);
     }
-    // Default for owner
-    return loggedInRole === 'owner';
+    // Default to no tabs if role is not recognized
+    return false;
   });
 
 
