@@ -118,6 +118,8 @@ export type Role = 'owner' | 'manager' | 'developer';
 type AdminState = {
     isAuthenticated: boolean;
     isDeveloper: boolean;
+    loggedInRole: Role | null;
+    permissions: string[];
     storeDetails: StoreDetails;
     apiKeys: ApiKeys;
     productCatalog: Product[];
@@ -147,6 +149,8 @@ export const useAdminStore = create<AdminState>()(
       (set, get) => ({
         isAuthenticated: false,
         isDeveloper: false,
+        loggedInRole: null,
+        permissions: [],
         storeDetails: {
           storeName: 'Zudio Store',
           gstin: '27ABCDE1234F1Z5',
@@ -175,10 +179,17 @@ export const useAdminStore = create<AdminState>()(
         },
         login: (role: Role) => {
             const isDev = role === 'developer';
-            set({ isAuthenticated: true, isDeveloper: isDev });
+            let permissions: string[] = [];
+            if (role === 'manager') {
+              const defaultUser = get().users.find(u => u.operatorMobileNumber === '9999999999');
+              if (defaultUser) {
+                permissions = defaultUser.managerPermissions || [];
+              }
+            }
+            set({ isAuthenticated: true, isDeveloper: isDev, loggedInRole: role, permissions });
             return true;
         },
-        logout: () => set({ isAuthenticated: false, isDeveloper: false }),
+        logout: () => set({ isAuthenticated: false, isDeveloper: false, loggedInRole: null, permissions: [] }),
         updateStoreDetails: (details) =>
           set((state) => ({
             storeDetails: { ...state.storeDetails, ...details },
@@ -255,6 +266,7 @@ export type CustomerUser = {
   operatorMobileNumber: string;
   ownerPassword?: string;
   managerPassword?: string;
+  managerPermissions: string[];
 }
 
 type CustomerState = {
@@ -263,7 +275,7 @@ type CustomerState = {
     users: CustomerUser[];
     login: (mobileNumber: string) => boolean;
     logout: () => void;
-    addUser: (shopName: string, emailId: string, operatorMobile: string, ownerPassword: string, managerPassword: string) => void;
+    addUser: (shopName: string, emailId: string, operatorMobile: string, ownerPassword: string, managerPassword: string, managerPermissions: string[]) => void;
     removeUser: (operatorMobile: string) => void;
 };
 
@@ -273,7 +285,7 @@ export const useCustomerStore = create<CustomerState>()(
         isAuthenticated: false,
         phoneNumber: '',
         users: [
-          { shopName: 'Default Shop', emailId: 'default@example.com', operatorMobileNumber: '9999999999', ownerPassword: 'password', managerPassword: 'password' },
+          { shopName: 'Default Shop', emailId: 'default@example.com', operatorMobileNumber: '9999999999', ownerPassword: 'password', managerPassword: 'password', managerPermissions: ['dashboard', 'sales', 'stock-inward', 'inventory', 'returns'] },
         ], 
         login: (mobileNumber) => {
           const user = get().users.find(u => u.operatorMobileNumber === mobileNumber);
@@ -286,7 +298,7 @@ export const useCustomerStore = create<CustomerState>()(
         logout: () => {
           set({ isAuthenticated: false, phoneNumber: ''});
         },
-        addUser: (shopName, emailId, operatorMobile, ownerPassword, managerPassword) => {
+        addUser: (shopName, emailId, operatorMobile, ownerPassword, managerPassword, managerPermissions) => {
           set((state) => {
             const userExists = state.users.some(u => u.operatorMobileNumber === operatorMobile);
             const newUser: CustomerUser = { 
@@ -294,7 +306,8 @@ export const useCustomerStore = create<CustomerState>()(
               emailId, 
               operatorMobileNumber: operatorMobile,
               ownerPassword,
-              managerPassword
+              managerPassword,
+              managerPermissions
             };
             if (userExists) {
               return {
@@ -314,7 +327,7 @@ export const useCustomerStore = create<CustomerState>()(
       }),
       {
         name: 'customer-storage',
-        storage: createJSONStorage(() => localStorage), 
+        storage: createJSONStorage(() => localStorage),
       }
     )
   );

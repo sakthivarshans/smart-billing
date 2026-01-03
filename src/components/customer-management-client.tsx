@@ -21,6 +21,16 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Trash2, UserPlus, Users, Download } from 'lucide-react';
+import { Checkbox } from './ui/checkbox';
+
+const ADMIN_TABS = [
+    { id: 'dashboard', label: 'Store Details' },
+    { id: 'api-keys', label: 'API Keys' },
+    { id: 'sales', label: 'Sales' },
+    { id: 'stock-inward', label: 'Stock Inward' },
+    { id: 'inventory', label: 'Inventory' },
+    { id: 'returns', label: 'Returns' },
+];
 
 export function CustomerManagementClient() {
   const { toast } = useToast();
@@ -31,6 +41,17 @@ export function CustomerManagementClient() {
   const [operatorMobile, setOperatorMobile] = useState('');
   const [ownerPassword, setOwnerPassword] = useState('');
   const [managerPassword, setManagerPassword] = useState('');
+  const [managerPermissions, setManagerPermissions] = useState<string[]>([]);
+
+  const handlePermissionChange = (tabId: string, checked: boolean) => {
+    setManagerPermissions(prev => {
+        if (checked) {
+            return [...prev, tabId];
+        } else {
+            return prev.filter(id => id !== tabId);
+        }
+    });
+  };
 
   const handleAddUser = () => {
     if (!shopName) {
@@ -54,7 +75,7 @@ export function CustomerManagementClient() {
         return;
     }
 
-    addUser(shopName, emailId, operatorMobile, ownerPassword, managerPassword);
+    addUser(shopName, emailId, operatorMobile, ownerPassword, managerPassword, managerPermissions);
     toast({
       title: 'User Added',
       description: `User for ${shopName} has been added.`,
@@ -64,6 +85,7 @@ export function CustomerManagementClient() {
     setOperatorMobile('');
     setOwnerPassword('');
     setManagerPassword('');
+    setManagerPermissions([]);
   };
 
   const handleRemoveUser = (numberToRemove: string) => {
@@ -84,7 +106,7 @@ export function CustomerManagementClient() {
       return;
     }
 
-    const headers = ['Shop Name', 'Email ID', 'Operator Number', 'Owner Password', 'Manager Password'];
+    const headers = ['Shop Name', 'Email ID', 'Operator Number', 'Owner Password', 'Manager Password', 'Manager Permissions'];
     const csvContent = [
       headers.join(','),
       ...users.map(user => {
@@ -94,6 +116,7 @@ export function CustomerManagementClient() {
           user.operatorMobileNumber,
           user.ownerPassword,
           user.managerPassword,
+          user.managerPermissions.join('; '),
         ];
         return row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
       }),
@@ -162,6 +185,23 @@ export function CustomerManagementClient() {
           </div>
         </div>
 
+        <div className="space-y-2">
+            <Label>Manager Permissions</Label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 p-4 border rounded-md">
+                {ADMIN_TABS.map(tab => (
+                    <div key={tab.id} className="flex items-center space-x-2">
+                        <Checkbox
+                            id={`perm-${tab.id}`}
+                            checked={managerPermissions.includes(tab.id)}
+                            onCheckedChange={(checked) => handlePermissionChange(tab.id, !!checked)}
+                        />
+                        <Label htmlFor={`perm-${tab.id}`} className="font-normal">{tab.label}</Label>
+                    </div>
+                ))}
+            </div>
+        </div>
+
+
         <div className="border rounded-lg overflow-hidden">
           <Table>
             <TableHeader>
@@ -171,6 +211,7 @@ export function CustomerManagementClient() {
                 <TableHead>Login Mobile</TableHead>
                 <TableHead>Owner Password</TableHead>
                 <TableHead>Manager Password</TableHead>
+                <TableHead>Manager Permissions</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -183,6 +224,7 @@ export function CustomerManagementClient() {
                     <TableCell className="font-mono">{user.operatorMobileNumber}</TableCell>
                     <TableCell className="font-mono">••••••••</TableCell>
                     <TableCell className="font-mono">••••••••</TableCell>
+                    <TableCell className="text-xs">{user.managerPermissions?.join(', ') || 'None'}</TableCell>
                     <TableCell className="text-right">
                       <AlertDialog>
                         <AlertDialogTrigger asChild>

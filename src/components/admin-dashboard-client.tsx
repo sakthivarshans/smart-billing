@@ -16,6 +16,16 @@ import { Button } from './ui/button';
 import { LogOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
+const ALL_TABS = [
+    { value: 'dashboard', label: 'Store Details' },
+    { value: 'api-keys', label: 'API Keys' },
+    { value: 'sales', label: 'Sales' },
+    { value: 'stock-inward', label: 'Stock Inward' },
+    { value: 'inventory', label: 'Inventory' },
+    { value: 'returns', label: 'Returns' },
+    { value: 'developer', label: 'Developer', developerOnly: true },
+];
+
 export function AdminDashboardLayout({
   children,
 }: {
@@ -23,7 +33,7 @@ export function AdminDashboardLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { isDeveloper, logout } = useAdminStore();
+  const { loggedInRole, permissions, logout } = useAdminStore();
   const { toast } = useToast();
 
   const handleTabChange = (value: string) => {
@@ -37,6 +47,17 @@ export function AdminDashboardLayout({
   };
 
   const activeTab = pathname.split('/')[2] || 'dashboard';
+
+  const visibleTabs = ALL_TABS.filter(tab => {
+    if (loggedInRole === 'owner' || loggedInRole === 'developer') {
+        return loggedInRole === 'developer' ? true : !tab.developerOnly;
+    }
+    if (loggedInRole === 'manager') {
+        return permissions.includes(tab.value) && !tab.developerOnly;
+    }
+    // Fallback for no role, should not happen if auth is working
+    return !tab.developerOnly;
+  });
 
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8">
@@ -61,14 +82,10 @@ export function AdminDashboardLayout({
             value={activeTab}
             onValueChange={handleTabChange}
           >
-            <TabsList className={`grid w-full ${isDeveloper ? 'grid-cols-7' : 'grid-cols-6'}`}>
-              <TabsTrigger value="dashboard">Store Details</TabsTrigger>
-              <TabsTrigger value="api-keys">API Keys</TabsTrigger>
-              <TabsTrigger value="sales">Sales</TabsTrigger>
-              <TabsTrigger value="stock-inward">Stock Inward</TabsTrigger>
-              <TabsTrigger value="inventory">Inventory</TabsTrigger>
-              <TabsTrigger value="returns">Returns</TabsTrigger>
-              {isDeveloper && <TabsTrigger value="developer">Developer</TabsTrigger>}
+            <TabsList className={`grid w-full`} style={{ gridTemplateColumns: `repeat(${visibleTabs.length}, minmax(0, 1fr))` }}>
+              {visibleTabs.map(tab => (
+                <TabsTrigger key={tab.value} value={tab.value}>{tab.label}</TabsTrigger>
+              ))}
             </TabsList>
             {children}
           </Tabs>
