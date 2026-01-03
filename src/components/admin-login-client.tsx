@@ -9,13 +9,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { KeyRound, User } from 'lucide-react';
+import { KeyRound, User, LogOut } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 
 export function AdminLoginClient() {
   const router = useRouter();
   const { toast } = useToast();
-  const { login, isAuthenticated } = useAdminStore();
+  const { login, isAuthenticated, logout } = useAdminStore();
   
   const [role, setRole] = useState<'owner' | 'manager' | 'developer'>('owner');
   const [password, setPassword] = useState('');
@@ -38,18 +38,31 @@ export function AdminLoginClient() {
     }
   };
 
+  const handleLogoutAndRedirect = () => {
+    logout();
+    router.push('/billing');
+  };
+
   if (isAuthenticated) {
     return null; // Don't render anything if already authenticated and redirecting
   }
 
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8 flex items-center justify-center min-h-screen">
-      <Card className="w-full max-w-sm shadow-2xl">
+      <Card className="w-full max-w-sm shadow-2xl relative">
         <CardHeader>
-          <CardTitle className="text-2xl">Admin Login</CardTitle>
-          <CardDescription>Enter your credentials to access the admin dashboard.</CardDescription>
+          <div className="flex justify-between items-start">
+            <div>
+                <CardTitle className="text-2xl">Admin Login</CardTitle>
+                <CardDescription>Enter your credentials to access the admin dashboard.</CardDescription>
+            </div>
+            <Button variant="ghost" size="icon" onClick={handleLogoutAndRedirect} className="absolute top-4 right-4">
+                <LogOut className="h-5 w-5" />
+                <span className="sr-only">Logout</span>
+            </Button>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 pt-6">
             <RadioGroup defaultValue="owner" onValueChange={(value) => setRole(value as any)} className="grid grid-cols-3 gap-4">
                 <div>
                     <RadioGroupItem value="owner" id="owner" className="peer sr-only" />
