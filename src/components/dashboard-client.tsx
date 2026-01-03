@@ -17,7 +17,7 @@ export function DashboardClient() {
   const router = useRouter();
   const { toast } = useToast();
   const { items, total, addItem, setPhoneNumber: setBillPhoneNumber, resetBill, phoneNumber: billPhoneNumber } = useBillStore();
-  const { storeDetails, productCatalog, login: adminLogin } = useAdminStore();
+  const { storeDetails, productCatalog, login: adminLogin, developers } = useAdminStore();
   const { users, isAuthenticated, login, logout, phoneNumber: loggedInPhoneNumber } = useCustomerStore();
   
   const [loginAttemptMobile, setLoginAttemptMobile] = useState('');
@@ -40,6 +40,17 @@ export function DashboardClient() {
   }, [isAuthenticated]);
 
   const handleLogin = () => {
+    const isDeveloper = developers.some(d => d.mobileNumber === loginAttemptMobile);
+
+    if (isDeveloper) {
+        const success = adminLogin('developer');
+        if (success) {
+            toast({ title: 'Developer Login Successful', description: 'Welcome, developer!' });
+            router.push('/admin/dashboard');
+        }
+        return;
+    }
+
     const success = login(loginAttemptMobile);
     if (success) {
         toast({ title: 'Login Successful', description: `Welcome!` });
@@ -112,11 +123,7 @@ export function DashboardClient() {
   }
 
   const handleAdminLoginClick = () => {
-    const success = adminLogin('developer');
-    if (success) {
-        toast({ title: 'Login Successful', description: 'Welcome, developer!' });
-        router.push('/admin/dashboard');
-    }
+    router.push('/admin/login');
   };
 
   if (!isAuthenticated) {

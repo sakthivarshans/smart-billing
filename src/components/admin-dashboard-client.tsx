@@ -25,7 +25,7 @@ const ALL_TABS = [
     { value: 'inventory', label: 'Inventory' },
     { value: 'returns', label: 'Returns' },
     { value: 'manager-access', label: 'Manager Access', ownerOnly: true },
-    { value: 'developer', label: 'Customers', ownerOnly: true },
+    { value: 'developer', label: 'Customers & Developers', ownerOnly: true },
 ];
 
 export function AdminDashboardLayout({
@@ -52,7 +52,7 @@ export function AdminDashboardLayout({
 
   const visibleTabs = ALL_TABS.filter(tab => {
     if (loggedInRole === 'developer') {
-        return !tab.ownerOnly;
+      return true; // Developers see all tabs
     }
     if (tab.ownerOnly) {
         return loggedInRole === 'owner';
@@ -62,6 +62,7 @@ export function AdminDashboardLayout({
     }
     return loggedInRole === 'owner';
   });
+
 
   useEffect(() => {
     // If the user is a manager and their current tab is not in their list of visible tabs,

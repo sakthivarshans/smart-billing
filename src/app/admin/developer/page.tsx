@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 export default function DeveloperPage() {
   return (
     <AdminDashboardLayout>
-      <Tabs defaultValue="customer-list">
+      <Tabs defaultValue="customer-list" className="pt-4">
         <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="customer-list">Customer List</TabsTrigger>
             <TabsTrigger value="developer-list">Developer List</TabsTrigger>
