@@ -1,9 +1,9 @@
 
 'use server';
 /**
- * @fileOverview A flow to send a PDF via Fast2Sms WhatsApp API.
+ * @fileOverview A flow to send a PDF via a generic WhatsApp API.
  *
- * - sendWhatsAppPdf - Calls the Fast2Sms API to send the message.
+ * - sendWhatsAppPdf - Calls the WhatsApp API to send the message and file.
  */
 import { ai } from '@/ai/genkit';
 import { 
@@ -30,39 +30,37 @@ const whatsAppPdfFlow = ai.defineFlow(
     if (!whatsappApiKey) {
       return {
         success: false,
-        message: 'Fast2Sms API Key is not configured in the admin dashboard.',
+        message: 'WhatsApp API Key is not configured in the admin dashboard.',
       };
     }
 
     try {
-      const apiUrl = 'https://www.fast2sms.com/dev/bulkV2';
+      // This is a generic endpoint structure. The actual URL may differ based on the provider.
+      // E.g., for WABlas: https://wablas.com/api/v2/send-document
+      const apiUrl = 'https://proxy.wablas.com/api/v2/send-document'; // Example provider URL
 
-      const params = {
-        authorization: whatsappApiKey,
-        // The 'p' route is for promotional SMS and is less strict than 'dlt'.
-        route: 'p',
-        // The 'message' content will be sent as a standard SMS.
-        message: message, 
-        // The numbers to send the SMS to.
-        numbers: to,
+      const data = {
+        phone: to,
+        document: pdfBase64,
+        filename: filename,
+        caption: message,
       };
 
-      const response = await axios.get(apiUrl, {
-        params,
+      const response = await axios.post(apiUrl, data, {
         headers: {
+          'Authorization': whatsappApiKey,
+          'Content-Type': 'application/json',
           'Accept': 'application/json',
         }
       });
       
-      if (response.data?.return === true) {
+      if (response.data?.status === 'success') {
         return {
           success: true,
-          // We modify the message to reflect that only the text was sent.
-          message: `Text message sent successfully. (PDF attachment not supported by this API endpoint).`,
+          message: `WhatsApp message with PDF sent successfully.`,
         };
       } else {
-        const errorMessage = response.data?.message || 'Unknown error from Fast2Sms.';
-        // This will catch API issues.
+        const errorMessage = response.data?.message || 'Unknown error from WhatsApp provider.';
         return {
           success: false,
           message: `Failed to send message: ${errorMessage}`,
@@ -70,7 +68,7 @@ const whatsAppPdfFlow = ai.defineFlow(
       }
 
     } catch (error: any) {
-      console.error('Fast2Sms API error:', error.response?.data || error.message);
+      console.error('WhatsApp API error:', error.response?.data || error.message);
       const errorMessage = error.response?.data?.message || error.message || 'An unknown network error occurred';
       return {
         success: false,
