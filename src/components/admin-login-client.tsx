@@ -23,6 +23,7 @@ export function AdminLoginClient() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Sign In State
+  const [signInMobile, setSignInMobile] = useState('');
   const [signInPassword, setSignInPassword] = useState('');
 
   // Sign Up State
@@ -46,8 +47,19 @@ export function AdminLoginClient() {
 
   const handleSignIn = () => {
     setIsProcessing(true);
+
+    if (!/^\d{10}$/.test(signInMobile)) {
+        toast({
+            variant: 'destructive',
+            title: 'Invalid Mobile Number',
+            description: 'Please enter a valid 10-digit mobile number.',
+        });
+        setIsProcessing(false);
+        return;
+    }
+
     setTimeout(() => {
-      const success = login(signInPassword);
+      const success = login(signInMobile, signInPassword);
       if (success) {
         toast({
           title: 'Login Successful',
@@ -58,7 +70,7 @@ export function AdminLoginClient() {
         toast({
           variant: 'destructive',
           title: 'Login Failed',
-          description: 'Incorrect password. Please try again.',
+          description: 'Incorrect mobile number or password.',
         });
         setSignInPassword('');
       }
@@ -96,10 +108,10 @@ export function AdminLoginClient() {
     }, 500);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>, action: 'signin' | 'signup') => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      if (action === 'signin') handleSignIn();
-      if (action === 'signup') handleSignUp();
+      if (activeTab === 'signin') handleSignIn();
+      if (activeTab === 'signup') handleSignUp();
     }
   }
 
@@ -131,15 +143,28 @@ export function AdminLoginClient() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                 <div className="space-y-2">
+                    <Label htmlFor="mobile-signin">Mobile Number</Label>
+                    <Input
+                      id="mobile-signin"
+                      type="tel"
+                      value={signInMobile}
+                      onChange={(e) => setSignInMobile(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="10-digit mobile number"
+                      maxLength={10}
+                      disabled={isProcessing}
+                    />
+                </div>
+                <div className="space-y-2">
                     <Label htmlFor="password-signin">Password</Label>
                     <Input
-                    id="password-signin"
-                    type="password"
-                    value={signInPassword}
-                    onChange={(e) => setSignInPassword(e.target.value)}
-                    onKeyPress={(e) => handleKeyPress(e, 'signin')}
-                    placeholder="••••••••"
-                    disabled={isProcessing}
+                      id="password-signin"
+                      type="password"
+                      value={signInPassword}
+                      onChange={(e) => setSignInPassword(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="••••••••"
+                      disabled={isProcessing}
                     />
                 </div>
                 <Button onClick={handleSignIn} className="w-full" disabled={isProcessing}>
@@ -156,24 +181,25 @@ export function AdminLoginClient() {
                 <div className="space-y-2">
                     <Label htmlFor="password-signup">New Password</Label>
                     <Input
-                    id="password-signup"
-                    type="password"
-                    value={signUpPassword}
-                    onChange={(e) => setSignUpPassword(e.target.value)}
-                    placeholder="••••••••"
-                    disabled={isProcessing}
+                      id="password-signup"
+                      type="password"
+                      value={signUpPassword}
+                      onChange={(e) => setSignUpPassword(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="••••••••"
+                      disabled={isProcessing}
                     />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="confirm-password">Confirm Password</Label>
                     <Input
-                    id="confirm-password"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    onKeyPress={(e) => handleKeyPress(e, 'signup')}
-                    placeholder="••••••••"
-                    disabled={isProcessing}
+                      id="confirm-password"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="••••••••"
+                      disabled={isProcessing}
                     />
                 </div>
                 <Button onClick={handleSignUp} className="w-full" disabled={isProcessing}>

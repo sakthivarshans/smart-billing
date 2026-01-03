@@ -104,6 +104,11 @@ export type ColumnMapping = {
   optionalColumn2: string;
 }
 
+export type AdminUser = {
+  mobileNumber: string;
+  passwordHash: string;
+};
+
 export type DeveloperUser = {
   mobileNumber: string;
   passwordHash: string;
@@ -111,7 +116,7 @@ export type DeveloperUser = {
 
 type AdminState = {
     isAuthenticated: boolean;
-    password: string | null;
+    adminUser: AdminUser | null;
     hasBeenSetup: boolean;
     isDeveloper: boolean;
     storeDetails: StoreDetails;
@@ -121,7 +126,7 @@ type AdminState = {
     sales: Sale[];
     columnMapping: ColumnMapping;
     developers: DeveloperUser[];
-    login: (password: string) => boolean;
+    login: (mobileNumber: string, password: string) => boolean;
     logout: () => void;
     setPassword: (password: string) => void;
     updateStoreDetails: (details: Partial<StoreDetails>) => void;
@@ -140,7 +145,7 @@ export const useAdminStore = create<AdminState>()(
     persist(
       (set, get) => ({
         isAuthenticated: false,
-        password: null,
+        adminUser: null,
         hasBeenSetup: false,
         isDeveloper: false,
         storeDetails: {
@@ -167,22 +172,29 @@ export const useAdminStore = create<AdminState>()(
           optionalColumn1: 'Optional 1',
           optionalColumn2: 'Optional 2',
         },
-        login: (password: string) => {
-          const storedPassword = get().password;
-          
-          if (password === 'developer') {
-            set({ isAuthenticated: true, isDeveloper: true });
-            return true;
+        login: (mobileNumber, password) => {
+          const admin = get().adminUser;
+          const developer = get().developers.find(d => d.mobileNumber === mobileNumber);
+
+          // Check for developer login first
+          if (developer && developer.passwordHash === password) {
+              set({ isAuthenticated: true, isDeveloper: true });
+              return true;
           }
 
-          if (storedPassword && password === storedPassword) {
-            set({ isAuthenticated: true, isDeveloper: false });
-            return true;
+          // Check for standard admin login
+          if (admin && admin.mobileNumber === mobileNumber && admin.passwordHash === password) {
+              set({ isAuthenticated: true, isDeveloper: false });
+              return true;
           }
+          
           return false;
         },
         logout: () => set({ isAuthenticated: false, isDeveloper: false }),
-        setPassword: (password: string) => set({ password: password, hasBeenSetup: true }),
+        setPassword: (password: string) => set({ 
+            adminUser: { mobileNumber: '0000000000', passwordHash: password },
+            hasBeenSetup: true 
+        }),
         updateStoreDetails: (details) =>
           set((state) => ({
             storeDetails: { ...state.storeDetails, ...details },
@@ -219,6 +231,20 @@ export const useAdminStore = create<AdminState>()(
       {
         name: 'admin-storage', 
         storage: createJSONStorage(() => localStorage), 
+        // This part is important to handle the change from 'password' to 'adminUser'
+        onRehydrateStorage: () => (state, error) => {
+          if (error) {
+            console.log('an error happened during hydration', error)
+          } else {
+            // @ts-ignore
+            if (state && state.password && !state.adminUser) {
+              // @ts-ignore
+              state.adminUser = { mobileNumber: '0000000000', passwordHash: state.password };
+              // @ts-ignore
+              delete state.password;
+            }
+          }
+        },
       }
     )
   );
@@ -259,9 +285,9 @@ export const useCustomerStore = create<CustomerState>()(
                 set({ isAuthenticated: true, phoneNumber: mobileNumber });
                 return true;
             }
+            // Also allow developers to log in via the customer portal
             if (developer && password === developer.passwordHash) {
               set({ isAuthenticated: true, phoneNumber: mobileNumber });
-              useAdminStore.getState().login(developer.passwordHash);
               return true;
             }
             return false;
