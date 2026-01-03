@@ -10,20 +10,22 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { KeyRound, ShieldCheck, Send, ArrowLeft } from 'lucide-react';
+import { KeyRound, ShieldCheck, Send, ArrowLeft, Loader2 } from 'lucide-react';
+import { sendWhatsAppText } from '@/ai/flows/whatsapp-text-flow';
 
 export function ForgotPasswordClient() {
   const router = useRouter();
   const { toast } = useToast();
   const { users: customerUsers } = useCustomerStore();
-  const { developers } = useAdminStore();
+  const { developers, apiKeys } = useAdminStore();
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState(1); // 1: Enter number, 2: Enter OTP
   const [mobileNumber, setMobileNumber] = useState('');
   const [otp, setOtp] = useState('');
+  const [generatedOtp, setGeneratedOtp] = useState('');
 
-  const handleSendOtp = () => {
+  const handleSendOtp = async () => {
     if (!/^\d{10}$/.test(mobileNumber)) {
         toast({
             variant: 'destructive',
@@ -45,21 +47,43 @@ export function ForgotPasswordClient() {
     }
 
     setIsProcessing(true);
-    // Simulate sending OTP
-    setTimeout(() => {
-        toast({
-            title: 'OTP Sent!',
-            description: 'An OTP has been sent to your mobile number (mocked as 1234).',
+    
+    const randomOtp = Math.floor(1000 + Math.random() * 9000).toString();
+    setGeneratedOtp(randomOtp);
+    
+    const message = `Your OTP to retrieve your password is: ${randomOtp}`;
+
+    try {
+        const result = await sendWhatsAppText({
+            apiUrl: 'https://api.botbee.ai/v1/messages', 
+            to: mobileNumber,
+            message: message,
+            whatsappApiKey: apiKeys.whatsappApiKey,
         });
-        setStep(2);
+
+        if (result.success) {
+            toast({
+                title: 'OTP Sent!',
+                description: 'An OTP has been sent to your WhatsApp number.',
+            });
+            setStep(2);
+        } else {
+            throw new Error(result.message);
+        }
+    } catch (err: any) {
+        toast({
+            variant: "destructive",
+            title: "Failed to Send OTP",
+            description: err.message || "Could not send the OTP. Please ensure the API key and URL are correct.",
+        });
+    } finally {
         setIsProcessing(false);
-    }, 1000);
+    }
   };
 
   const handleVerifyOtp = () => {
     setIsProcessing(true);
-    // For this mock, the OTP is always '1234'.
-    if (otp === '1234') {
+    if (otp === generatedOtp) {
         const customer = customerUsers.find(u => u.operatorMobileNumber === mobileNumber);
         const admin = customerUsers.find(u => u.adminMobileNumber === mobileNumber);
         const developer = developers.find(d => d.mobileNumber === mobileNumber);
@@ -97,7 +121,7 @@ export function ForgotPasswordClient() {
             <CardTitle className="text-2xl">Forgot Password</CardTitle>
             <CardDescription>
                 {step === 1 
-                    ? 'Enter your registered mobile number to receive an OTP.' 
+                    ? 'Enter your registered mobile number to receive an OTP on WhatsApp.' 
                     : 'Enter the 4-digit OTP sent to your mobile.'}
             </CardDescription>
         </CardHeader>
@@ -138,11 +162,11 @@ export function ForgotPasswordClient() {
         <CardFooter className="flex flex-col gap-4">
             {step === 1 ? (
                  <Button onClick={handleSendOtp} className="w-full" disabled={isProcessing}>
-                    {isProcessing ? 'Sending...' : <><Send className="mr-2 h-4 w-4" /> Send OTP</>}
+                    {isProcessing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/>Sending...</> : <><Send className="mr-2 h-4 w-4" /> Send OTP</>}
                 </Button>
             ) : (
                 <Button onClick={handleVerifyOtp} className="w-full" disabled={isProcessing}>
-                    {isProcessing ? 'Verifying...' : <><ShieldCheck className="mr-2 h-4 w-4" /> Verify OTP & Get Password</>}
+                    {isProcessing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/>Verifying...</> : <><ShieldCheck className="mr-2 h-4 w-4" /> Verify OTP & Get Password</>}
                 </Button>
             )}
            
