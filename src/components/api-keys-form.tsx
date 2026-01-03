@@ -36,6 +36,17 @@ export function ApiKeysForm() {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
+        <Label htmlFor="whatsappApiUrl">WhatsApp API URL</Label>
+        <Input
+          id="whatsappApiUrl"
+          name="whatsappApiUrl"
+          type="text"
+          value={formState.whatsappApiUrl}
+          onChange={handleInputChange}
+          placeholder="e.g., https://api.botbee.ai/v1/messages"
+        />
+      </div>
+      <div className="space-y-2">
         <Label htmlFor="whatsappApiKey">WhatsApp API Key</Label>
         <Input
           id="whatsappApiKey"

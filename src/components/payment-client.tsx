@@ -297,8 +297,7 @@ Thanks for shopping at ${storeDetails.storeName}. As part of our green initiativ
 Happy Shopping`;
 
         const result = await sendWhatsAppPdf({
-            // IMPORTANT: Replace this with your actual API endpoint from Bot Bee AI or another provider.
-            apiUrl: 'https://api.botbee.ai/v1/messages', 
+            apiUrl: apiKeys.whatsappApiUrl, 
             to: phoneNumber,
             pdfBase64,
             filename: `invoice-${billNumber}.pdf`,
@@ -457,7 +456,7 @@ Happy Shopping`;
                         className="w-full" 
                         size="lg" 
                         onClick={handleSendReceipt}
-                        disabled={isSending || !apiKeys.whatsappApiKey}
+                        disabled={isSending || !apiKeys.whatsappApiKey || !apiKeys.whatsappApiUrl}
                     >
                         {isSending ? (
                             <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</>
