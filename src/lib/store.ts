@@ -12,13 +12,14 @@ export type BillItem = {
   rfid: string;
   optional1?: string;
   optional2?: string;
+  status: 'sold' | 'returned';
 };
 
 type BillState = {
   items: BillItem[];
   phoneNumber: string;
   total: number;
-  addItem: (item: Omit<BillItem, 'id' | 'timestamp'>) => void;
+  addItem: (item: Omit<BillItem, 'id' | 'timestamp' | 'status'>) => void;
   setPhoneNumber: (number: string) => void;
   resetBill: () => void;
 };
@@ -35,6 +36,7 @@ export const useBillStore = create<BillState>()(
             ...item,
             id: state.items.length + 1,
             timestamp: new Date().toLocaleString(),
+            status: 'sold',
           };
           return {
             items: [...state.items, newItem],
@@ -137,6 +139,7 @@ type AdminState = {
     addStockItem: (item: IndividualStockItem) => void;
     getApiKeys: () => ApiKeys;
     addSale: (sale: Sale) => void;
+    processReturn: (saleId: string, itemId: number) => void;
     setProductCatalog: (products: Product[]) => void;
     setColumnMapping: (mapping: ColumnMapping) => void;
     clearInventory: () => void;
@@ -202,7 +205,7 @@ export const useAdminStore = create<AdminState>()(
           // This function sets up the initial Owner and Manager accounts
           // with hardcoded mobile numbers and a specified password.
           addUser('Default Owner', 'owner@example.com', '0000000000', 'default-op', '0000000000', '12345'); // Owner
-          addUser('Default Manager', 'manager@example.com', '1111111111', 'default-op', '1111111111', '12345'); // Manager
+          addUser('Default Manager', 'manager@example.com', '1111111111', 'default-op', '1111111111', password); // Manager
       
           set({ hasBeenSetup: true });
         },
@@ -220,6 +223,23 @@ export const useAdminStore = create<AdminState>()(
         addSale: (sale) => set((state) => ({
             sales: [...state.sales, sale],
         })),
+        processReturn: (saleId, itemId) => {
+          set(state => {
+            const updatedSales = state.sales.map(sale => {
+              if (sale.id === saleId) {
+                const updatedItems = sale.items.map(item => {
+                  if (item.id === itemId) {
+                    return { ...item, status: 'returned' as const };
+                  }
+                  return item;
+                });
+                return { ...sale, items: updatedItems };
+              }
+              return sale;
+            });
+            return { sales: updatedSales };
+          });
+        },
         getApiKeys: () => get().apiKeys,
         setProductCatalog: (products) => set({ productCatalog: products }),
         setColumnMapping: (mapping: ColumnMapping) => set({ columnMapping: mapping }),
@@ -359,4 +379,5 @@ export const useCustomerStore = create<CustomerState>()(
       }
     )
   );
+
 

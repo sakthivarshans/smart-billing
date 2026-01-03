@@ -53,7 +53,7 @@ export function AdminDashboardLayout({
     return null; // or a loading skeleton
   }
 
-  const gridColsClass = isDeveloper ? 'grid-cols-6' : 'grid-cols-5';
+  const gridColsClass = isDeveloper ? 'grid-cols-7' : 'grid-cols-6';
 
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8">
@@ -91,6 +91,7 @@ export function AdminDashboardLayout({
               <TabsTrigger value="sales">Sales</TabsTrigger>
               <TabsTrigger value="stock-inward">Stock Inward</TabsTrigger>
               <TabsTrigger value="inventory">Inventory</TabsTrigger>
+              <TabsTrigger value="returns">Returns</TabsTrigger>
               {isDeveloper && <TabsTrigger value="developer">Developer</TabsTrigger>}
             </TabsList>
             {children}
