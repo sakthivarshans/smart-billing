@@ -52,7 +52,7 @@ export function AdminDashboardLayout({
 
   const visibleTabs = ALL_TABS.filter(tab => {
     if (loggedInRole === 'developer') {
-      return true; // Developers see all tabs
+      return tab.value !== 'manager-access';
     }
     if (tab.ownerOnly) {
         return loggedInRole === 'owner';
