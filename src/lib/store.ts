@@ -117,7 +117,6 @@ export type Role = 'owner' | 'manager' | 'developer';
 
 type AdminState = {
     isAuthenticated: boolean;
-    isDeveloper: boolean;
     loggedInRole: Role | null;
     managerPermissions: string[];
     storeDetails: StoreDetails;
@@ -148,7 +147,6 @@ export const useAdminStore = create<AdminState>()(
     persist(
       (set, get) => ({
         isAuthenticated: false,
-        isDeveloper: false,
         loggedInRole: null,
         managerPermissions: ['dashboard', 'sales', 'stock-inward', 'inventory', 'returns'],
         storeDetails: {
@@ -177,11 +175,10 @@ export const useAdminStore = create<AdminState>()(
           optionalColumn2: 'Optional 2',
         },
         login: (role) => {
-            const isDev = role === 'developer';
-            set({ isAuthenticated: true, isDeveloper: isDev, loggedInRole: role });
+            set({ isAuthenticated: true, loggedInRole: role });
             return true;
         },
-        logout: () => set({ isAuthenticated: false, isDeveloper: false, loggedInRole: null }),
+        logout: () => set({ isAuthenticated: false, loggedInRole: null }),
         updateStoreDetails: (details) =>
           set((state) => ({
             storeDetails: { ...state.storeDetails, ...details },

@@ -24,7 +24,7 @@ const ALL_TABS = [
     { value: 'inventory', label: 'Inventory' },
     { value: 'returns', label: 'Returns' },
     { value: 'manager-access', label: 'Manager Access', ownerOnly: true },
-    { value: 'developer', label: 'Developer', developerOnly: true },
+    { value: 'developer', label: 'Customers', ownerOnly: true },
 ];
 
 export function AdminDashboardLayout({
@@ -50,8 +50,9 @@ export function AdminDashboardLayout({
   const activeTab = pathname.split('/')[2] || 'dashboard';
 
   const visibleTabs = ALL_TABS.filter(tab => {
-    if (tab.developerOnly) {
-        return loggedInRole === 'developer';
+    if (loggedInRole === 'developer') {
+        // Developer sees all tabs except owner-only ones
+        return !tab.ownerOnly;
     }
     if (tab.ownerOnly) {
         return loggedInRole === 'owner';
@@ -59,8 +60,7 @@ export function AdminDashboardLayout({
     if (loggedInRole === 'manager') {
         return managerPermissions.includes(tab.value);
     }
-    // Owner and Developer see all non-special-cased tabs
-    return loggedInRole === 'owner' || loggedInRole === 'developer';
+    return loggedInRole === 'owner';
   });
   
 
