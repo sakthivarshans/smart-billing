@@ -17,7 +17,7 @@ export function DashboardClient() {
   const router = useRouter();
   const { toast } = useToast();
   const { items, total, addItem, setPhoneNumber: setBillPhoneNumber, resetBill, phoneNumber: billPhoneNumber } = useBillStore();
-  const { storeDetails, productCatalog } = useAdminStore();
+  const { storeDetails, productCatalog, login: adminLogin } = useAdminStore();
   const { users, isAuthenticated, login, logout, phoneNumber: loggedInPhoneNumber } = useCustomerStore();
   
   const [loginAttemptMobile, setLoginAttemptMobile] = useState('');
@@ -112,8 +112,12 @@ export function DashboardClient() {
   }
 
   const handleAdminLoginClick = () => {
-    router.push('/admin/login');
-  }
+    const success = adminLogin('developer');
+    if (success) {
+        toast({ title: 'Login Successful', description: 'Welcome, developer!' });
+        router.push('/admin/dashboard');
+    }
+  };
 
   if (!isAuthenticated) {
     return (

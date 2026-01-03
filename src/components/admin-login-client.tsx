@@ -17,7 +17,7 @@ export function AdminLoginClient() {
   const { toast } = useToast();
   const { login, isAuthenticated, logout } = useAdminStore();
   
-  const [role, setRole] = useState<'owner' | 'manager' | 'developer'>('owner');
+  const [role, setRole] = useState<'owner' | 'manager'>('owner');
   const [password, setPassword] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
 
@@ -63,7 +63,7 @@ export function AdminLoginClient() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4 pt-6">
-            <RadioGroup defaultValue="owner" onValueChange={(value) => setRole(value as any)} className="grid grid-cols-3 gap-4">
+            <RadioGroup defaultValue="owner" onValueChange={(value) => setRole(value as any)} className="grid grid-cols-2 gap-4">
                 <div>
                     <RadioGroupItem value="owner" id="owner" className="peer sr-only" />
                     <Label htmlFor="owner" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
@@ -76,31 +76,7 @@ export function AdminLoginClient() {
                         Manager
                     </Label>
                 </div>
-                <div>
-                    <RadioGroupItem value="developer" id="developer" className="peer sr-only" />
-                    <Label htmlFor="developer" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
-                        Developer
-                    </Label>
-                </div>
             </RadioGroup>
-
-            {role === 'developer' && (
-                <div className="space-y-2">
-                    <Label htmlFor="mobileNumber">Mobile Number</Label>
-                    <div className="relative">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                        <Input 
-                            id="mobileNumber" 
-                            type="tel" 
-                            placeholder="10-digit number"
-                            className="pl-10"
-                            maxLength={10}
-                            value={mobileNumber}
-                            onChange={(e) => setMobileNumber(e.target.value)}
-                        />
-                    </div>
-                </div>
-            )}
             
             <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
