@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useCustomerStore } from '@/lib/store';
+import { useCustomerStore, useAdminStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -15,7 +15,8 @@ import { KeyRound, ShieldCheck, Send, ArrowLeft } from 'lucide-react';
 export function ForgotPasswordClient() {
   const router = useRouter();
   const { toast } = useToast();
-  const { users } = useCustomerStore();
+  const { users: customerUsers } = useCustomerStore();
+  const { developers } = useAdminStore();
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState(1); // 1: Enter number, 2: Enter OTP
@@ -31,10 +32,10 @@ export function ForgotPasswordClient() {
         });
         return;
     }
-    const customer = users.find(u => u.operatorMobileNumber === mobileNumber);
-    const admin = users.find(u => u.adminMobileNumber === mobileNumber);
+    
+    const isRegistered = customerUsers.some(u => u.operatorMobileNumber === mobileNumber || u.adminMobileNumber === mobileNumber) || developers.some(d => d.mobileNumber === mobileNumber);
 
-    if (!customer && !admin) {
+    if (!isRegistered) {
         toast({
             variant: 'destructive',
             title: 'Unregistered Number',
@@ -45,28 +46,31 @@ export function ForgotPasswordClient() {
 
     setIsProcessing(true);
     // Simulate sending OTP
-    toast({
-        title: 'OTP Sent!',
-        description: 'An OTP has been sent to your mobile number (mocked).',
-    });
-    setStep(2);
-    setIsProcessing(false);
+    setTimeout(() => {
+        toast({
+            title: 'OTP Sent!',
+            description: 'An OTP has been sent to your mobile number (mocked as 1234).',
+        });
+        setStep(2);
+        setIsProcessing(false);
+    }, 1000);
   };
 
   const handleVerifyOtp = () => {
     setIsProcessing(true);
-    // Simulate verifying OTP
-    // In a real app, you would verify the OTP here.
-    // For this mock, any 4-digit OTP is accepted.
-    if (otp.length === 4) {
-        // Find which password to show
-        const customer = users.find(u => u.operatorMobileNumber === mobileNumber);
-        const admin = users.find(u => u.adminMobileNumber === mobileNumber);
+    // For this mock, the OTP is always '1234'.
+    if (otp === '1234') {
+        const customer = customerUsers.find(u => u.operatorMobileNumber === mobileNumber);
+        const admin = customerUsers.find(u => u.adminMobileNumber === mobileNumber);
+        const developer = developers.find(d => d.mobileNumber === mobileNumber);
+        
         let passwordToShow = '';
         if (customer) {
             passwordToShow = customer.operatorPassword;
         } else if (admin) {
             passwordToShow = admin.adminPassword;
+        } else if (developer) {
+            passwordToShow = developer.passwordHash;
         }
 
         toast({
