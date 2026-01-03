@@ -182,16 +182,11 @@ export const useAdminStore = create<AdminState>()(
             return true;
           }
 
-          // Check for Owner/Manager roles
-          const isOwnerLogin = mobileNumber === '0000000000';
-          const isManagerLogin = mobileNumber === '1111111111';
-
-          if(isOwnerLogin || isManagerLogin) {
-            const userAsAdmin = customerUsers.find(u => u.adminMobileNumber === mobileNumber);
-            if (userAsAdmin && userAsAdmin.adminPassword === password) {
-                set({ isAuthenticated: true, isDeveloper: false });
-                return true;
-            }
+          // Check for regular admin login
+          const adminUser = customerUsers.find(u => u.adminMobileNumber === mobileNumber);
+          if (adminUser && adminUser.adminPassword === password) {
+              set({ isAuthenticated: true, isDeveloper: false });
+              return true;
           }
           
           return false;
@@ -199,12 +194,10 @@ export const useAdminStore = create<AdminState>()(
         logout: () => set({ isAuthenticated: false, isDeveloper: false }),
         setPassword: (password: string) => {
           const { addUser } = useCustomerStore.getState();
-          
-          // Add/update owner with hardcoded password
-          addUser('0000000000', 'default-owner-op', '0000000000', '12345');
-      
-          // Add/update manager with the same hardcoded password
-          addUser('1111111111', 'default-manager-op', '1111111111', '12345');
+          // This function sets up the initial Owner and Manager accounts
+          // with hardcoded mobile numbers and a specified password.
+          addUser('0000000000', 'default-op', '0000000000', password); // Owner
+          addUser('1111111111', 'default-op', '1111111111', password); // Manager
       
           set({ hasBeenSetup: true });
         },

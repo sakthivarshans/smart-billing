@@ -12,8 +12,6 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { LogIn, UserPlus, ArrowLeft } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
 
 export function AdminLoginClient() {
   const router = useRouter();
@@ -21,10 +19,9 @@ export function AdminLoginClient() {
   const { hasBeenSetup, login, setPassword: setupInitialAdmin, isAuthenticated } = useAdminStore();
   
   const [activeTab, setActiveTab] = useState('signin');
-  const [isProcessing, setIsProcessing] = useState(false);
 
   // Sign In State
-  const [signInRole, setSignInRole] = useState('manager');
+  const [signInMobile, setSignInMobile] = useState('');
   const [signInPassword, setSignInPassword] = useState('');
 
   // Sign Up State
@@ -47,9 +44,7 @@ export function AdminLoginClient() {
   }, []);
 
   const handleSignIn = () => {
-    const mobileNumber = signInRole === 'owner' ? '0000000000' : '1111111111';
-
-    const success = login(mobileNumber, signInPassword);
+    const success = login(signInMobile, signInPassword);
     if (success) {
       toast({
         title: 'Login Successful',
@@ -60,7 +55,7 @@ export function AdminLoginClient() {
       toast({
         variant: 'destructive',
         title: 'Login Failed',
-        description: 'Incorrect role or password.',
+        description: 'Incorrect mobile number or password.',
       });
       setSignInPassword('');
     }
@@ -75,11 +70,11 @@ export function AdminLoginClient() {
       });
       return;
     }
-    if (signUpPassword.length < 6) {
+    if (signUpPassword.length < 4) {
         toast({
           variant: 'destructive',
           title: 'Password Too Short',
-          description: 'Password must be at least 6 characters long.',
+          description: 'Password must be at least 4 characters long.',
         });
         return;
     }
@@ -87,7 +82,7 @@ export function AdminLoginClient() {
     setupInitialAdmin(signUpPassword);
     toast({
       title: 'Setup Complete!',
-      description: 'The admin accounts have been configured. The owner password is "12345" and you have set the manager password. Please sign in.',
+      description: 'The default admin accounts have been configured. You can now sign in.',
       duration: 9000,
     });
     setActiveTab('signin');
@@ -127,16 +122,16 @@ export function AdminLoginClient() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                 <div className="space-y-2">
-                    <Label htmlFor="role-signin">Role</Label>
-                    <Select value={signInRole} onValueChange={setSignInRole}>
-                        <SelectTrigger id="role-signin">
-                            <SelectValue placeholder="Select a role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="manager">Manager</SelectItem>
-                            <SelectItem value="owner">Owner</SelectItem>
-                        </SelectContent>
-                    </Select>
+                    <Label htmlFor="mobile-signin">Mobile Number</Label>
+                    <Input
+                      id="mobile-signin"
+                      type="tel"
+                      value={signInMobile}
+                      onChange={(e) => setSignInMobile(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="10-digit number"
+                      maxLength={10}
+                    />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="password-signin">Password</Label>
@@ -147,22 +142,21 @@ export function AdminLoginClient() {
                       onChange={(e) => setSignInPassword(e.target.value)}
                       onKeyPress={handleKeyPress}
                       placeholder="••••••••"
-                      disabled={isProcessing}
                     />
                 </div>
-                <Button onClick={handleSignIn} className="w-full" disabled={isProcessing}>
-                    {isProcessing ? 'Logging in...' : <><LogIn className="mr-2 h-4 w-4" /> Login</>}
+                <Button onClick={handleSignIn} className="w-full">
+                    <LogIn className="mr-2 h-4 w-4" /> Login
                 </Button>
                 </CardContent>
             </TabsContent>
             <TabsContent value="signup">
                 <CardHeader className="text-center">
                     <CardTitle className="text-2xl">Create Admin Accounts</CardTitle>
-                    <CardDescription>Set a password for the Manager account. The Owner password will be set to '12345'.</CardDescription>
+                    <CardDescription>Set the password for the default admin accounts.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                 <div className="space-y-2">
-                    <Label htmlFor="password-signup">New Manager Password</Label>
+                    <Label htmlFor="password-signup">New Admin Password</Label>
                     <Input
                       id="password-signup"
                       type="password"
@@ -170,11 +164,10 @@ export function AdminLoginClient() {
                       onChange={(e) => setSignUpPassword(e.target.value)}
                       onKeyPress={handleKeyPress}
                       placeholder="••••••••"
-                      disabled={isProcessing}
                     />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="confirm-password">Confirm Manager Password</Label>
+                    <Label htmlFor="confirm-password">Confirm Admin Password</Label>
                     <Input
                       id="confirm-password"
                       type="password"
@@ -182,11 +175,10 @@ export function AdminLoginClient() {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       onKeyPress={handleKeyPress}
                       placeholder="••••••••"
-                      disabled={isProcessing}
                     />
                 </div>
-                <Button onClick={handleSignUp} className="w-full" disabled={isProcessing}>
-                    {isProcessing ? 'Saving...' : <><UserPlus className="mr-2 h-4 w-4" /> Create Accounts</>}
+                <Button onClick={handleSignUp} className="w-full">
+                    <UserPlus className="mr-2 h-4 w-4" /> Create Accounts
                 </Button>
                 </CardContent>
             </TabsContent>
