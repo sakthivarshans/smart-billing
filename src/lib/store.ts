@@ -190,7 +190,7 @@ export const useAdminStore = create<AdminState>()(
           }
           
           if (mobileNumber === '0000000000' && password === '12345') {
-              set({ isAuthenticated: true, isDeveloper: true, role: 'owner' });
+              set({ isAuthenticated: true, isDeveloper: false, role: 'owner' });
               return true;
           }
           
@@ -385,8 +385,4 @@ export const useCustomerStore = create<CustomerState>()(
       }
     )
   );
-
-
-
-
 
