@@ -11,7 +11,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { LogIn, UserPlus, ArrowLeft, UserCog } from 'lucide-react';
+import { LogIn, UserPlus, ArrowLeft } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 
 export function AdminLoginClient() {
   const router = useRouter();
@@ -22,7 +24,7 @@ export function AdminLoginClient() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Sign In State
-  const [signInMobile, setSignInMobile] = useState('');
+  const [signInRole, setSignInRole] = useState('manager');
   const [signInPassword, setSignInPassword] = useState('');
 
   // Sign Up State
@@ -46,18 +48,9 @@ export function AdminLoginClient() {
 
   const handleSignIn = () => {
     setIsProcessing(true);
+    const mobileNumber = signInRole === 'owner' ? '0000000000' : '1111111111';
 
-    if (!/^\d{10}$/.test(signInMobile)) {
-        toast({
-            variant: 'destructive',
-            title: 'Invalid Mobile Number',
-            description: 'Please enter a valid 10-digit mobile number.',
-        });
-        setIsProcessing(false);
-        return;
-    }
-
-    const success = login(signInMobile, signInPassword);
+    const success = login(mobileNumber, signInPassword);
     if (success) {
       toast({
         title: 'Login Successful',
@@ -68,7 +61,7 @@ export function AdminLoginClient() {
       toast({
         variant: 'destructive',
         title: 'Login Failed',
-        description: 'Incorrect mobile number or password.',
+        description: 'Incorrect role or password.',
       });
       setSignInPassword('');
     }
@@ -97,7 +90,7 @@ export function AdminLoginClient() {
     setupInitialAdmin(signUpPassword);
     toast({
       title: 'Setup Complete!',
-      description: 'Your initial admin account has been created. Please sign in.',
+      description: 'Your initial owner account has been created. Please sign in.',
     });
     setActiveTab('signin');
     setIsProcessing(false);
@@ -137,17 +130,16 @@ export function AdminLoginClient() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                 <div className="space-y-2">
-                    <Label htmlFor="mobile-signin">Mobile Number</Label>
-                    <Input
-                      id="mobile-signin"
-                      type="tel"
-                      value={signInMobile}
-                      onChange={(e) => setSignInMobile(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      placeholder="10-digit mobile number"
-                      maxLength={10}
-                      disabled={isProcessing}
-                    />
+                    <Label htmlFor="role-signin">Role</Label>
+                    <Select value={signInRole} onValueChange={setSignInRole}>
+                        <SelectTrigger id="role-signin">
+                            <SelectValue placeholder="Select a role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="manager">Manager</SelectItem>
+                            <SelectItem value="owner">Owner</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="password-signin">Password</Label>

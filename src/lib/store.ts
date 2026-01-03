@@ -193,11 +193,15 @@ export const useAdminStore = create<AdminState>()(
         logout: () => set({ isAuthenticated: false, isDeveloper: false }),
         setPassword: (password: string) => {
           const { addUser } = useCustomerStore.getState();
-          const initialAdminMobile = '0000000000';
-          // Avoid creating duplicate initial admin
+          const initialOwnerMobile = '0000000000';
+          const initialManagerMobile = '1111111111';
+          
           const { users } = useCustomerStore.getState();
-          if (!users.some(u => u.adminMobileNumber === initialAdminMobile)) {
-            addUser('0000000000', 'default', initialAdminMobile, password);
+          if (!users.some(u => u.adminMobileNumber === initialOwnerMobile)) {
+            addUser('0000000000', 'default-owner', initialOwnerMobile, password);
+          }
+          if (!users.some(u => u.adminMobileNumber === initialManagerMobile)) {
+            addUser('1111111111', 'default-manager', initialManagerMobile, 'manager');
           }
           set({ hasBeenSetup: true });
         },
@@ -290,8 +294,10 @@ export const useCustomerStore = create<CustomerState>()(
         addUser: (operatorMobile, operatorPass, adminMobile, adminPass) => {
           const userExists = get().users.some(u => u.operatorMobileNumber === operatorMobile);
           if (userExists) {
-            // Or throw an error, depending on desired behavior
-            console.error("User with this operator mobile number already exists.");
+            console.warn("User with this operator mobile number already exists, updating it.");
+            set((state) => ({
+                users: state.users.map(u => u.operatorMobileNumber === operatorMobile ? { operatorMobileNumber: operatorMobile, operatorPassword: operatorPass, adminMobileNumber: adminMobile, adminPassword: adminPass } : u)
+            }));
             return;
           }
             const newUser: CustomerUser = {
