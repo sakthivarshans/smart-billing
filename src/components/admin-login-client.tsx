@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAdminStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -144,10 +144,17 @@ export function AdminLoginClient() {
                       placeholder="••••••••"
                     />
                 </div>
-                <Button onClick={handleSignIn} className="w-full">
-                    <LogIn className="mr-2 h-4 w-4" /> Login
-                </Button>
                 </CardContent>
+                <CardFooter className="flex flex-col gap-4">
+                    <Button onClick={handleSignIn} className="w-full">
+                        <LogIn className="mr-2 h-4 w-4" /> Login
+                    </Button>
+                    <div className="text-sm text-center w-full">
+                        <Link href="/forgot-password" passHref>
+                            <span className="text-sm text-muted-foreground hover:text-primary underline">Forgot Password?</span>
+                        </Link>
+                    </div>
+                </CardFooter>
             </TabsContent>
             <TabsContent value="signup">
                 <CardHeader className="text-center">
