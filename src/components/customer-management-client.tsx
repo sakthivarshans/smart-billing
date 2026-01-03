@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Trash2, UserPlus, Users } from 'lucide-react';
+import { Trash2, UserPlus, Users, Download } from 'lucide-react';
 
 export function CustomerManagementClient() {
   const { toast } = useToast();
@@ -80,6 +80,51 @@ export function CustomerManagementClient() {
     });
   };
 
+  const handleDownloadCustomers = () => {
+    if (users.length === 0) {
+      toast({
+        variant: 'destructive',
+        title: 'No Customers to Export',
+        description: 'There are no customers to download.',
+      });
+      return;
+    }
+
+    const headers = ['Shop Name', 'Email ID', 'Operator Number', 'Operator Password', 'Admin Number', 'Admin Password'];
+    const csvContent = [
+      headers.join(','),
+      ...users.map(user => {
+        const row = [
+          user.shopName,
+          user.emailId,
+          user.operatorMobileNumber,
+          user.operatorPassword,
+          user.adminMobileNumber,
+          user.adminPassword,
+        ];
+        return row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
+      }),
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.href) {
+      URL.revokeObjectURL(link.href);
+    }
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'customer_details.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: 'Download Started',
+      description: 'Your customer details are being downloaded.',
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -90,9 +135,14 @@ export function CustomerManagementClient() {
                 Add or remove mobile numbers that are allowed to use the operator login.
                 </CardDescription>
             </div>
-            <Button onClick={handleAddUser} className="ml-auto">
-                <UserPlus className="mr-2 h-4 w-4" /> Add Customer
-            </Button>
+            <div className="flex gap-2">
+                <Button onClick={handleDownloadCustomers} variant="outline">
+                    <Download className="mr-2 h-4 w-4" /> Download
+                </Button>
+                <Button onClick={handleAddUser} className="ml-auto">
+                    <UserPlus className="mr-2 h-4 w-4" /> Add Customer
+                </Button>
+            </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
