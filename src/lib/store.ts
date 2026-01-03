@@ -207,7 +207,7 @@ export const useAdminStore = create<AdminState>()(
         setPassword: (password: string) => {
             const { addUser } = useCustomerStore.getState();
             // This function now sets up both the Owner and Manager accounts
-            addUser('Default Owner', 'owner@example.com', '0000000000', 'default-op-owner', '0000000000', '12345'); 
+            addUser('Default Owner', 'owner@example.com', '0000000000', 'default-op-owner', '0000000000', password); 
             addUser('Default Manager', 'manager@example.com', '1111111111', 'default-op-manager', '1111111111', password); 
         
             set({ hasBeenSetup: true });
@@ -385,4 +385,5 @@ export const useCustomerStore = create<CustomerState>()(
       }
     )
   );
+
 
