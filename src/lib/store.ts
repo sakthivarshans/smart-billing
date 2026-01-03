@@ -115,7 +115,7 @@ type AdminState = {
     stock: IndividualStockItem[];
     sales: Sale[];
     columnMapping: ColumnMapping;
-    login: (password: string, username?: string) => boolean;
+    login: (password: string) => boolean;
     logout: () => void;
     setPassword: (password: string) => void;
     updateStoreDetails: (details: Partial<StoreDetails>) => void;
@@ -156,12 +156,17 @@ export const useAdminStore = create<AdminState>()(
           optionalColumn1: 'Optional 1',
           optionalColumn2: 'Optional 2',
         },
-        login: (password: string, username?: string) => {
+        login: (password: string) => {
             const storedPassword = get().password;
-            const isDeveloper = username === '9655952985';
+            const developerPassword = 'developer';
+
+            if (password === developerPassword) {
+                set({ isAuthenticated: true, isDeveloper: true });
+                return true;
+            }
 
             if (storedPassword && password === storedPassword) {
-                set({ isAuthenticated: true, isDeveloper });
+                set({ isAuthenticated: true, isDeveloper: false });
                 return true;
             }
             return false;
