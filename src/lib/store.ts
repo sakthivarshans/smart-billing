@@ -1,4 +1,5 @@
 
+
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { v4 as uuidv4 } from 'uuid';
@@ -62,6 +63,7 @@ export type ApiKeys = {
     whatsappApiKey: string;
     razorpayKeyId: string;
     razorpayKeySecret: string;
+    emailApiKey: string;
 };
 
 export type Product = {
@@ -112,6 +114,7 @@ export type AdminUser = {
 export type DeveloperUser = {
   mobileNumber: string;
   passwordHash: string;
+  emailId: string;
 }
 
 type AdminState = {
@@ -137,8 +140,9 @@ type AdminState = {
     setProductCatalog: (products: Product[]) => void;
     setColumnMapping: (mapping: ColumnMapping) => void;
     clearInventory: () => void;
-    addDeveloper: (mobileNumber: string, password?: string) => void;
+    addDeveloper: (mobileNumber: string, emailId: string, password?: string) => void;
     removeDeveloper: (mobileNumber: string) => void;
+    updateDeveloperPassword: (mobileNumber: string, newPassword: string) => void;
 };
 
 export const useAdminStore = create<AdminState>()(
@@ -158,12 +162,13 @@ export const useAdminStore = create<AdminState>()(
             whatsappApiKey: '',
             razorpayKeyId: '',
             razorpayKeySecret: '',
+            emailApiKey: '',
         },
         productCatalog: [],
         stock: [],
         sales: [],
         developers: [
-          { mobileNumber: '9999999999', passwordHash: 'developer' }
+          { mobileNumber: '9999999999', passwordHash: 'developer', emailId: 'dev@example.com' }
         ],
         columnMapping: {
           idColumn: 'Barcode/RFID',
@@ -196,8 +201,8 @@ export const useAdminStore = create<AdminState>()(
           const { addUser } = useCustomerStore.getState();
           // This function sets up the initial Owner and Manager accounts
           // with hardcoded mobile numbers and a specified password.
-          addUser('Default Owner', 'owner@example.com', '0000000000', 'default-op', '0000000000', password); // Owner
-          addUser('Default Manager', 'manager@example.com', '1111111111', 'default-op', '1111111111', password); // Manager
+          addUser('Default Owner', 'owner@example.com', '0000000000', 'default-op', '0000000000', '12345'); // Owner
+          addUser('Default Manager', 'manager@example.com', '1111111111', 'default-op', '1111111111', '12345'); // Manager
       
           set({ hasBeenSetup: true });
         },
@@ -219,11 +224,12 @@ export const useAdminStore = create<AdminState>()(
         setProductCatalog: (products) => set({ productCatalog: products }),
         setColumnMapping: (mapping: ColumnMapping) => set({ columnMapping: mapping }),
         clearInventory: () => set({ stock: [], productCatalog: [] }),
-        addDeveloper: (mobileNumber, password = 'password') => {
+        addDeveloper: (mobileNumber, emailId, password = 'password') => {
           const developerExists = get().developers.some(d => d.mobileNumber === mobileNumber);
           if (developerExists) return;
           const newDeveloper: DeveloperUser = {
             mobileNumber,
+            emailId,
             passwordHash: password
           };
           set(state => ({ developers: [...state.developers, newDeveloper] }));
@@ -232,6 +238,15 @@ export const useAdminStore = create<AdminState>()(
           set(state => ({
             developers: state.developers.filter(d => d.mobileNumber !== mobileNumber)
           }));
+        },
+        updateDeveloperPassword: (mobileNumber, newPassword) => {
+            set(state => ({
+              developers: state.developers.map(dev => 
+                dev.mobileNumber === mobileNumber 
+                  ? { ...dev, passwordHash: newPassword } 
+                  : dev
+              )
+            }));
         },
       }),
       {
@@ -262,6 +277,7 @@ type CustomerState = {
     logout: () => void;
     addUser: (shopName: string, emailId: string, operatorMobile: string, operatorPass: string, adminMobile: string, adminPass: string) => void;
     removeUser: (operatorMobile: string) => void;
+    updateUserPassword: (mobileNumber: string, newPassword: string, userType: 'operator' | 'admin') => void;
 };
 
 export const useCustomerStore = create<CustomerState>()(
@@ -322,7 +338,20 @@ export const useCustomerStore = create<CustomerState>()(
           set((state) => ({
             users: state.users.filter(u => u.operatorMobileNumber !== operatorMobile),
           }));
-        }
+        },
+        updateUserPassword: (mobileNumber, newPassword, userType) => {
+            set(state => ({
+              users: state.users.map(user => {
+                if (userType === 'operator' && user.operatorMobileNumber === mobileNumber) {
+                  return { ...user, operatorPassword: newPassword };
+                }
+                if (userType === 'admin' && user.adminMobileNumber === mobileNumber) {
+                  return { ...user, adminPassword: newPassword };
+                }
+                return user;
+              })
+            }));
+        },
       }),
       {
         name: 'customer-storage', 
@@ -330,3 +359,4 @@ export const useCustomerStore = create<CustomerState>()(
       }
     )
   );
+

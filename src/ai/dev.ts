@@ -2,3 +2,4 @@
 import './flows/razorpay-flow';
 import './flows/whatsapp-flow';
 import './flows/whatsapp-text-flow';
+import './flows/email-flow';

@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState } from 'react';
@@ -26,6 +27,7 @@ export function DeveloperManagementClient() {
   const { toast } = useToast();
   const { developers, addDeveloper, removeDeveloper } = useAdminStore();
   const [mobileNumber, setMobileNumber] = useState('');
+  const [emailId, setEmailId] = useState('');
   const [password, setPassword] = useState('');
 
   const handleAddUser = () => {
@@ -37,6 +39,10 @@ export function DeveloperManagementClient() {
       });
       return;
     }
+    if (!emailId || !/^\S+@\S+\.\S+$/.test(emailId)) {
+        toast({ variant: 'destructive', title: 'Invalid Email ID', description: 'Please enter a valid email address.' });
+        return;
+    }
     if (password.length < 4) {
         toast({
           variant: 'destructive',
@@ -45,12 +51,13 @@ export function DeveloperManagementClient() {
         });
         return;
     }
-    addDeveloper(mobileNumber, password);
+    addDeveloper(mobileNumber, emailId, password);
     toast({
       title: 'Developer Added',
       description: `Developer with mobile number ${mobileNumber} has been added.`,
     });
     setMobileNumber('');
+    setEmailId('');
     setPassword('');
   };
 
@@ -84,6 +91,16 @@ export function DeveloperManagementClient() {
             />
           </div>
           <div className="flex-grow space-y-2">
+            <Label htmlFor="new-dev-email">Email ID</Label>
+            <Input
+              id="new-dev-email"
+              type="email"
+              value={emailId}
+              onChange={(e) => setEmailId(e.target.value)}
+              placeholder="developer@example.com"
+            />
+          </div>
+          <div className="flex-grow space-y-2">
             <Label htmlFor="new-dev-password">Password</Label>
             <Input
               id="new-dev-password"
@@ -105,6 +122,7 @@ export function DeveloperManagementClient() {
             <TableHeader>
               <TableRow>
                 <TableHead>Mobile Number</TableHead>
+                <TableHead>Email ID</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -113,6 +131,7 @@ export function DeveloperManagementClient() {
                 developers.map((user) => (
                   <TableRow key={user.mobileNumber}>
                     <TableCell className="font-mono">{user.mobileNumber}</TableCell>
+                    <TableCell>{user.emailId}</TableCell>
                     <TableCell className="text-right">
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -141,7 +160,7 @@ export function DeveloperManagementClient() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={2} className="h-24 text-center text-muted-foreground">
+                  <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
                     <div className="flex flex-col items-center gap-2">
                       <Users className="h-8 w-8" />
                       <span>No developers found.</span>

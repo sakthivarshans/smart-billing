@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState } from 'react';
@@ -41,6 +42,16 @@ export function ApiKeysForm() {
           name="whatsappApiKey"
           type="password"
           value={formState.whatsappApiKey}
+          onChange={handleInputChange}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="emailApiKey">Email API Key</Label>
+        <Input
+          id="emailApiKey"
+          name="emailApiKey"
+          type="password"
+          value={formState.emailApiKey}
           onChange={handleInputChange}
         />
       </div>
