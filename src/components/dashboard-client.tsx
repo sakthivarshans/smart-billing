@@ -8,32 +8,55 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { IndianRupee, ShoppingCart, Smartphone, Trash2, ScanLine } from 'lucide-react';
+import { IndianRupee, ShoppingCart, Smartphone, Trash2, ScanLine, LogOut, KeyRound, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { RFIDScanner } from './rfid-scanner';
+import { Label } from './ui/label';
 
 export function DashboardClient() {
   const router = useRouter();
   const { toast } = useToast();
-  const { items, total, addItem, setPhoneNumber, resetBill, phoneNumber } = useBillStore();
-  const { phoneNumber: customerPhoneNumber } = useCustomerStore();
+  const { items, total, addItem, setPhoneNumber: setBillPhoneNumber, resetBill, phoneNumber: billPhoneNumber } = useBillStore();
   const { storeDetails, productCatalog } = useAdminStore();
+  const { users, isAuthenticated, login, logout, phoneNumber: loggedInPhoneNumber } = useCustomerStore();
   
-  const [currentPhoneNumber, setCurrentPhoneNumber] = useState(phoneNumber || customerPhoneNumber);
+  const [loginAttempt, setLoginAttempt] = useState({ mobileNumber: '', password: ''});
+  const [currentPhoneNumber, setCurrentPhoneNumber] = useState(billPhoneNumber);
   const [rfidInput, setRfidInput] = useState('');
   const rfidInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (customerPhoneNumber) {
-        setCurrentPhoneNumber(customerPhoneNumber);
-        setPhoneNumber(customerPhoneNumber);
+    if (isAuthenticated) {
+        setCurrentPhoneNumber(loggedInPhoneNumber);
+        setBillPhoneNumber(loggedInPhoneNumber);
     }
-  }, [customerPhoneNumber, setPhoneNumber]);
+  }, [isAuthenticated, loggedInPhoneNumber, setBillPhoneNumber]);
   
   useEffect(() => {
-    rfidInputRef.current?.focus();
-  }, []);
+    if(isAuthenticated) {
+      rfidInputRef.current?.focus();
+    }
+  }, [isAuthenticated]);
 
+  const handleLogin = () => {
+    const user = users.find(u => u.operatorMobileNumber === loginAttempt.mobileNumber);
+    if (!user) {
+        toast({ variant: 'destructive', title: 'Login Failed', description: 'This mobile number is not registered.' });
+        return;
+    }
+    const success = login(loginAttempt.mobileNumber, loginAttempt.password);
+    if (success) {
+        toast({ title: 'Login Successful', description: `Welcome!` });
+    } else {
+        toast({ variant: 'destructive', title: 'Login Failed', description: 'Invalid mobile number or password.' });
+    }
+  }
+
+  const handleLogout = () => {
+    logout();
+    resetBill();
+    toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
+  }
 
   const handleItemScanned = (scannedId: string) => {
     if (!scannedId) return;
@@ -79,17 +102,65 @@ export function DashboardClient() {
         return;
     }
 
-    setPhoneNumber(currentPhoneNumber);
+    setBillPhoneNumber(currentPhoneNumber);
     router.push('/payment');
   };
 
   const handleClearBill = () => {
     resetBill();
-    setCurrentPhoneNumber(customerPhoneNumber);
+    setCurrentPhoneNumber(loggedInPhoneNumber);
     toast({
       title: 'Cart Cleared',
       description: 'All items have been removed from the bill.',
     });
+  }
+
+  if (!isAuthenticated) {
+    return (
+        <div className="container mx-auto p-4 sm:p-6 md:p-8 flex items-center justify-center min-h-screen">
+            <Card className="w-full max-w-sm shadow-2xl">
+                <CardHeader>
+                    <CardTitle className="text-2xl">Operator Login</CardTitle>
+                    <CardDescription>Enter your credentials to access the billing system.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="mobileNumber">Mobile Number</Label>
+                        <div className="relative">
+                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                            <Input 
+                                id="mobileNumber" 
+                                type="tel" 
+                                placeholder="10-digit mobile number"
+                                className="pl-10"
+                                maxLength={10}
+                                value={loginAttempt.mobileNumber}
+                                onChange={(e) => setLoginAttempt(prev => ({...prev, mobileNumber: e.target.value}))}
+                            />
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="password">Password</Label>
+                        <div className="relative">
+                             <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                             <Input 
+                                id="password" 
+                                type="password"
+                                placeholder="Password" 
+                                className="pl-10"
+                                value={loginAttempt.password}
+                                onChange={(e) => setLoginAttempt(prev => ({...prev, password: e.target.value}))}
+                                onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                            />
+                        </div>
+                    </div>
+                </CardContent>
+                <CardFooter>
+                    <Button className="w-full" onClick={handleLogin}>Login</Button>
+                </CardFooter>
+            </Card>
+        </div>
+    );
   }
 
   return (
@@ -104,6 +175,10 @@ export function DashboardClient() {
               Smart Billing System
             </CardDescription>
           </div>
+          <Button variant="ghost" size="icon" className="absolute top-4 right-4" onClick={handleLogout}>
+              <LogOut className="h-5 w-5" />
+              <span className="sr-only">Logout</span>
+          </Button>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex flex-col sm:flex-row justify-end gap-2">

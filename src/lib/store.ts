@@ -239,7 +239,7 @@ export type CustomerUser = {
   shopName: string;
   emailId: string;
   operatorMobileNumber: string;
-  operatorPassword?: string; // Made optional for existing users
+  operatorPassword?: string;
   ownerPassword?: string;
   managerPassword?: string;
 }
@@ -248,6 +248,8 @@ type CustomerState = {
     isAuthenticated: boolean;
     phoneNumber: string;
     users: CustomerUser[];
+    login: (mobileNumber: string, password?: string) => boolean;
+    logout: () => void;
     addUser: (shopName: string, emailId: string, operatorMobile: string, operatorPassword: string, ownerPassword: string, managerPassword: string) => void;
     removeUser: (operatorMobile: string) => void;
 };
@@ -255,11 +257,26 @@ type CustomerState = {
 export const useCustomerStore = create<CustomerState>()(
     persist(
       (set, get) => ({
-        isAuthenticated: true,
-        phoneNumber: '1234567890',
+        isAuthenticated: false,
+        phoneNumber: '',
         users: [
-          { shopName: 'Default Shop', emailId: 'default@example.com', operatorMobileNumber: '1234567890' },
+          { shopName: 'Default Shop', emailId: 'default@example.com', operatorMobileNumber: '1234567890', operatorPassword: 'password' },
         ], 
+        login: (mobileNumber, password) => {
+          const user = get().users.find(u => u.operatorMobileNumber === mobileNumber);
+          if (user && user.operatorPassword === password) {
+              set({ isAuthenticated: true, phoneNumber: mobileNumber });
+              return true;
+          }
+          if (user && !user.operatorPassword) { // For users without a password set yet
+              set({isAuthenticated: true, phoneNumber: mobileNumber});
+              return true;
+          }
+          return false;
+        },
+        logout: () => {
+          set({ isAuthenticated: false, phoneNumber: ''});
+        },
         addUser: (shopName, emailId, operatorMobile, operatorPassword, ownerPassword, managerPassword) => {
           set((state) => {
             const userExists = state.users.some(u => u.operatorMobileNumber === operatorMobile);
