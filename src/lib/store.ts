@@ -195,12 +195,12 @@ export const useAdminStore = create<AdminState>()(
             // Owner Login
             const owner = customerUsers.find(u => u.adminMobileNumber === '0000000000');
             if (mobileNumber === '0000000000' && owner && password === owner.adminPassword) {
-              set({ isAuthenticated: true, isDeveloper: true, role: 'owner' }); // Owner is also a developer
+              set({ isAuthenticated: true, isDeveloper: true, role: 'owner' });
               return true;
             }
           
             // Manager Login
-            const manager = customerUsers.find(u => u.adminMobileNumber === mobileNumber);
+            const manager = customerUsers.find(u => u.adminMobileNumber === mobileNumber && u.adminMobileNumber !== '0000000000');
             if (manager && password === manager.adminPassword) {
               set({ isAuthenticated: true, isDeveloper: false, role: 'manager' });
               return true;
@@ -212,10 +212,10 @@ export const useAdminStore = create<AdminState>()(
         setPassword: (password: string) => {
             const { addUser } = useCustomerStore.getState();
             // This function now sets up both the Owner and Manager accounts
-            // Owner has a fixed mobile and password
-            addUser('Default Owner', 'owner@example.com', '0000000000', 'default-op', '0000000000', '12345'); 
+            // Owner has a hardcoded password
+            addUser('Default Owner', 'owner@example.com', '0000000000', 'default-op-owner', '0000000000', '12345'); 
             // Manager uses the provided password
-            addUser('Default Manager', 'manager@example.com', '1111111111', 'default-op', '1111111111', password);
+            addUser('Default Manager', 'manager@example.com', '1111111111', 'default-op-manager', '1111111111', password);
         
             set({ hasBeenSetup: true });
         },
@@ -392,6 +392,7 @@ export const useCustomerStore = create<CustomerState>()(
       }
     )
   );
+
 
 
 
