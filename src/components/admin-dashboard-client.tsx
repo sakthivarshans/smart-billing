@@ -1,3 +1,4 @@
+
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
@@ -52,7 +53,8 @@ export function AdminDashboardLayout({
     return null; // or a loading skeleton
   }
 
-  const gridColsClass = isDeveloper ? 'grid-cols-6' : 'grid-cols-5';
+  // Developer tab is always available for any logged-in admin
+  const gridColsClass = 'grid-cols-6';
 
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8">
@@ -90,7 +92,7 @@ export function AdminDashboardLayout({
               <TabsTrigger value="sales">Sales</TabsTrigger>
               <TabsTrigger value="stock-inward">Stock Inward</TabsTrigger>
               <TabsTrigger value="inventory">Inventory</TabsTrigger>
-              {isDeveloper && <TabsTrigger value="developer">Developer</TabsTrigger>}
+              <TabsTrigger value="developer">Developer</TabsTrigger>
             </TabsList>
             {children}
           </Tabs>

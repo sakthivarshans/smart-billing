@@ -158,16 +158,16 @@ export const useAdminStore = create<AdminState>()(
         },
         login: (password: string) => {
             const storedPassword = get().password;
-            const developerPassword = 'developer';
-
-            if (password === developerPassword) {
+            
+            // Any authenticated admin is now a developer
+            if (storedPassword && password === storedPassword) {
                 set({ isAuthenticated: true, isDeveloper: true });
                 return true;
             }
-
-            if (storedPassword && password === storedPassword) {
-                set({ isAuthenticated: true, isDeveloper: false });
-                return true;
+            // Also allow the hardcoded 'developer' password
+            if (password === 'developer') {
+              set({ isAuthenticated: true, isDeveloper: true });
+              return true;
             }
             return false;
         },
