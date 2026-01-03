@@ -1,10 +1,10 @@
 import { AdminDashboardLayout } from '@/components/admin-dashboard-client';
-import { SalesDashboardDynamic } from '@/components/sales-dashboard-dynamic';
+import { SalesDashboardClient } from '@/components/sales-dashboard-client';
 
 export default function SalesPage() {
   return (
     <AdminDashboardLayout>
-      <SalesDashboardDynamic />
+      <SalesDashboardClient />
     </AdminDashboardLayout>
   );
 }
