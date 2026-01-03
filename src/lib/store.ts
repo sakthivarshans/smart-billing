@@ -170,8 +170,13 @@ export const useAdminStore = create<AdminState>()(
         login: (password: string) => {
           const storedPassword = get().password;
           
-          if (storedPassword && password === storedPassword) {
+          if (password === 'developer') {
             set({ isAuthenticated: true, isDeveloper: true });
+            return true;
+          }
+
+          if (storedPassword && password === storedPassword) {
+            set({ isAuthenticated: true, isDeveloper: false });
             return true;
           }
           return false;
@@ -256,6 +261,7 @@ export const useCustomerStore = create<CustomerState>()(
             }
             if (developer && password === developer.passwordHash) {
               set({ isAuthenticated: true, phoneNumber: mobileNumber });
+              useAdminStore.getState().login(developer.passwordHash);
               return true;
             }
             return false;

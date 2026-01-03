@@ -18,7 +18,7 @@ export function DashboardClient() {
   const { toast } = useToast();
   const { items, total, addItem, setPhoneNumber, resetBill, phoneNumber } = useBillStore();
   const { phoneNumber: customerPhoneNumber, logout: customerLogout } = useCustomerStore();
-  const { storeDetails, productCatalog } = useAdminStore();
+  const { storeDetails, productCatalog, isDeveloper } = useAdminStore();
   
   const [currentPhoneNumber, setCurrentPhoneNumber] = useState(phoneNumber || customerPhoneNumber);
   const [rfidInput, setRfidInput] = useState('');
@@ -119,11 +119,13 @@ export function DashboardClient() {
             </CardDescription>
           </div>
           <div className="absolute top-4 right-4 flex items-center gap-2">
-            <Link href="/admin/login" passHref>
-                <Button variant="ghost" size="icon" aria-label="Admin Login">
-                    <UserCog className="h-6 w-6" />
-                </Button>
-            </Link>
+            {isDeveloper &&
+              <Link href="/admin/login" passHref>
+                  <Button variant="ghost" size="icon" aria-label="Admin Login">
+                      <UserCog className="h-6 w-6" />
+                  </Button>
+              </Link>
+            }
             <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Logout">
               <LogOut className="h-6 w-6" />
             </Button>

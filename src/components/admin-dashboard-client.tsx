@@ -91,7 +91,7 @@ export function AdminDashboardLayout({
               <TabsTrigger value="sales">Sales</TabsTrigger>
               <TabsTrigger value="stock-inward">Stock Inward</TabsTrigger>
               <TabsTrigger value="inventory">Inventory</TabsTrigger>
-              <TabsTrigger value="developer">Developer</TabsTrigger>
+              {isDeveloper && <TabsTrigger value="developer">Developer</TabsTrigger>}
             </TabsList>
             {children}
           </Tabs>

@@ -1,15 +1,16 @@
+
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useCustomerStore } from '@/lib/store';
+import { useCustomerStore, useAdminStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { LogIn } from 'lucide-react';
+import { LogIn, UserCog } from 'lucide-react';
 
 export function CustomerLoginClient() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export function CustomerLoginClient() {
   const [password, setPassword] = useState('');
 
   const handleSignIn = () => {
-    if (!/^\d{10}$/.test(mobileNumber)) {
+    if (!/^\d{10}$/.test(mobileNumber) && mobileNumber !== 'admin') {
         toast({
             variant: 'destructive',
             title: 'Invalid Mobile Number',
@@ -58,6 +59,13 @@ export function CustomerLoginClient() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background relative">
+      <div className="absolute top-4 right-4">
+          <Link href="/admin/login" passHref>
+              <Button variant="ghost" size="icon" aria-label="Admin Login">
+                  <UserCog className="h-6 w-6" />
+              </Button>
+          </Link>
+      </div>
       <Card className="w-full max-w-sm shadow-2xl">
         <CardHeader className="text-center">
             <CardTitle className="text-2xl">Operator Login</CardTitle>
