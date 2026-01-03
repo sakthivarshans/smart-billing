@@ -151,7 +151,7 @@ export function PaymentClient() {
         console.error('Razorpay payment failed:', response);
         
         addSale({
-            id: response.error?.metadata?.payment_id || uuidv4(),
+            id: response?.error?.metadata?.payment_id || uuidv4(),
             items,
             total,
             phoneNumber,
@@ -164,7 +164,7 @@ export function PaymentClient() {
         toast({
             variant: "destructive",
             title: "Payment Failed",
-            description: response.error.description || "Your payment was not successful.",
+            description: response?.error?.description || "Your payment was not successful.",
         });
         setError("Payment failed. Please try again.");
     });
