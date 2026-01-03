@@ -28,7 +28,6 @@ export function DeveloperManagementClient() {
   const { developers, addDeveloper, removeDeveloper } = useAdminStore();
   const [mobileNumber, setMobileNumber] = useState('');
   const [emailId, setEmailId] = useState('');
-  const [password, setPassword] = useState('');
 
   const handleAddUser = () => {
     if (!/^\d{10}$/.test(mobileNumber)) {
@@ -43,22 +42,14 @@ export function DeveloperManagementClient() {
         toast({ variant: 'destructive', title: 'Invalid Email ID', description: 'Please enter a valid email address.' });
         return;
     }
-    if (password.length < 4) {
-        toast({
-          variant: 'destructive',
-          title: 'Password Too Short',
-          description: 'Password must be at least 4 characters long.',
-        });
-        return;
-    }
-    addDeveloper(mobileNumber, emailId, password);
+    
+    addDeveloper(mobileNumber, emailId);
     toast({
       title: 'Developer Added',
       description: `Developer with mobile number ${mobileNumber} has been added.`,
     });
     setMobileNumber('');
     setEmailId('');
-    setPassword('');
   };
 
   const handleRemoveUser = (numberToRemove: string) => {
@@ -98,16 +89,6 @@ export function DeveloperManagementClient() {
               value={emailId}
               onChange={(e) => setEmailId(e.target.value)}
               placeholder="developer@example.com"
-            />
-          </div>
-          <div className="flex-grow space-y-2">
-            <Label htmlFor="new-dev-password">Password</Label>
-            <Input
-              id="new-dev-password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Min. 4 characters"
             />
           </div>
           <div className="flex-shrink-0 self-end">

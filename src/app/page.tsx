@@ -1,6 +1,13 @@
 
-import { CustomerLoginClient } from '@/components/customer-login-client';
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-  return <CustomerLoginClient />;
+  const router = useRouter();
+  useEffect(() => {
+    router.replace('/billing');
+  }, [router]);
+  return null;
 }

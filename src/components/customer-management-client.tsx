@@ -90,7 +90,7 @@ export function CustomerManagementClient() {
       return;
     }
 
-    const headers = ['Shop Name', 'Email ID', 'Operator Number', 'Operator Password', 'Owner Password', 'Manager Password'];
+    const headers = ['Shop Name', 'Email ID', 'Operator Number'];
     const csvContent = [
       headers.join(','),
       ...users.map(user => {
@@ -98,9 +98,6 @@ export function CustomerManagementClient() {
           user.shopName,
           user.emailId,
           user.operatorMobileNumber,
-          user.operatorPassword,
-          user.ownerPassword,
-          user.managerPassword,
         ];
         return row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
       }),
@@ -146,7 +143,7 @@ export function CustomerManagementClient() {
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="space-y-2 lg:col-span-1">
             <Label htmlFor="new-shop-name">Shop Name</Label>
             <Input id="new-shop-name" type="text" value={shopName} onChange={(e) => setShopName(e.target.value)} placeholder="Shop Name" />
@@ -159,18 +156,6 @@ export function CustomerManagementClient() {
             <Label htmlFor="new-operator-mobile">Login Mobile</Label>
             <Input id="new-operator-mobile" type="tel" value={operatorMobile} onChange={(e) => setOperatorMobile(e.target.value)} placeholder="10-digit number" maxLength={10} />
           </div>
-          <div className="space-y-2 lg:col-span-1">
-            <Label htmlFor="new-operator-password">Operator Password</Label>
-            <Input id="new-operator-password" type="password" value={operatorPassword} onChange={(e) => setOperatorPassword(e.target.value)} placeholder="Min. 4 chars" />
-          </div>
-          <div className="space-y-2 lg:col-span-1">
-            <Label htmlFor="new-owner-password">Owner Password</Label>
-            <Input id="new-owner-password" type="password" value={ownerPassword} onChange={(e) => setOwnerPassword(e.target.value)} placeholder="Min. 4 chars" />
-          </div>
-          <div className="space-y-2 lg:col-span-1">
-            <Label htmlFor="new-manager-password">Manager Password</Label>
-            <Input id="new-manager-password" type="password" value={managerPassword} onChange={(e) => setManagerPassword(e.target.value)} placeholder="Min. 4 chars" />
-          </div>
         </div>
 
         <div className="border rounded-lg overflow-hidden">
@@ -180,9 +165,6 @@ export function CustomerManagementClient() {
                 <TableHead>Shop Name</TableHead>
                 <TableHead>Email ID</TableHead>
                 <TableHead>Login Mobile</TableHead>
-                <TableHead>Operator Password</TableHead>
-                <TableHead>Owner Password</TableHead>
-                <TableHead>Manager Password</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -193,9 +175,6 @@ export function CustomerManagementClient() {
                     <TableCell>{user.shopName}</TableCell>
                     <TableCell>{user.emailId}</TableCell>
                     <TableCell className="font-mono">{user.operatorMobileNumber}</TableCell>
-                    <TableCell className="font-mono">••••••••</TableCell>
-                    <TableCell className="font-mono">••••••••</TableCell>
-                    <TableCell className="font-mono">••••••••</TableCell>
                     <TableCell className="text-right">
                       <AlertDialog>
                         <AlertDialogTrigger asChild>

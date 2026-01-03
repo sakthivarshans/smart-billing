@@ -3,13 +3,12 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useBillStore, useAdminStore, useCustomerStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { IndianRupee, ShoppingCart, Smartphone, Trash2, UserCog, LogOut, ScanLine } from 'lucide-react';
+import { IndianRupee, ShoppingCart, Smartphone, Trash2, ScanLine } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { RFIDScanner } from './rfid-scanner';
 
@@ -17,15 +16,14 @@ export function DashboardClient() {
   const router = useRouter();
   const { toast } = useToast();
   const { items, total, addItem, setPhoneNumber, resetBill, phoneNumber } = useBillStore();
-  const { phoneNumber: customerPhoneNumber, logout: customerLogout } = useCustomerStore();
-  const { storeDetails, productCatalog, isDeveloper } = useAdminStore();
+  const { phoneNumber: customerPhoneNumber } = useCustomerStore();
+  const { storeDetails, productCatalog } = useAdminStore();
   
   const [currentPhoneNumber, setCurrentPhoneNumber] = useState(phoneNumber || customerPhoneNumber);
   const [rfidInput, setRfidInput] = useState('');
   const rfidInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Sync phone number from customer store to bill store when component mounts
     if (customerPhoneNumber) {
         setCurrentPhoneNumber(customerPhoneNumber);
         setPhoneNumber(customerPhoneNumber);
@@ -33,7 +31,6 @@ export function DashboardClient() {
   }, [customerPhoneNumber, setPhoneNumber]);
   
   useEffect(() => {
-    // Auto-focus the RFID input field on component mount
     rfidInputRef.current?.focus();
   }, []);
 
@@ -54,7 +51,6 @@ export function DashboardClient() {
             description: `No item found with ID: ${scannedId}`,
         });
     }
-    // Clear input for next scan
     setRfidInput('');
   };
 
@@ -89,21 +85,11 @@ export function DashboardClient() {
 
   const handleClearBill = () => {
     resetBill();
-    setCurrentPhoneNumber(customerPhoneNumber); // Reset to logged in user's number
+    setCurrentPhoneNumber(customerPhoneNumber);
     toast({
       title: 'Cart Cleared',
       description: 'All items have been removed from the bill.',
     });
-  }
-
-  const handleLogout = () => {
-    customerLogout();
-    resetBill(); // This clears the phoneNumber from the bill store
-    toast({
-      title: 'Logged Out',
-      description: 'You have been successfully logged out.',
-    });
-    router.push('/');
   }
 
   return (
@@ -117,18 +103,6 @@ export function DashboardClient() {
             <CardDescription className="text-lg">
               Smart Billing System
             </CardDescription>
-          </div>
-          <div className="absolute top-4 right-4 flex items-center gap-2">
-            
-              <Link href="/admin/login" passHref>
-                  <Button variant="ghost" size="icon" aria-label="Admin Login">
-                      <UserCog className="h-6 w-6" />
-                  </Button>
-              </Link>
-            
-            <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Logout">
-              <LogOut className="h-6 w-6" />
-            </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">

@@ -1,5 +1,12 @@
-import { ForgotPasswordClient } from '@/components/forgot-password-client';
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function ForgotPasswordPage() {
-    return <ForgotPasswordClient />
+  const router = useRouter();
+  useEffect(() => {
+    router.replace('/');
+  }, [router]);
+  return null;
 }
