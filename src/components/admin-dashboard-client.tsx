@@ -39,7 +39,7 @@ export function AdminDashboardLayout({
       title: 'Logged Out',
       description: 'You have been successfully logged out.',
     });
-    router.push('/');
+    router.push('/admin/login');
   };
 
   const handleTabChange = (value: string) => {

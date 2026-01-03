@@ -173,16 +173,16 @@ export const useAdminStore = create<AdminState>()(
           optionalColumn2: 'Optional 2',
         },
         login: (mobileNumber, password) => {
-          const { users } = useCustomerStore.getState();
-          const customerAsAdmin = users.find(u => u.adminMobileNumber === mobileNumber);
-
           // Check for developer login first
-          if (mobileNumber === '9999999999' && password === 'developer') {
+          const dev = get().developers.find(d => d.mobileNumber === mobileNumber);
+          if (dev && password === dev.passwordHash) {
             set({ isAuthenticated: true, isDeveloper: true });
             return true;
           }
 
           // Check for standard admin login from customer list
+          const { users } = useCustomerStore.getState();
+          const customerAsAdmin = users.find(u => u.adminMobileNumber === mobileNumber);
           if (customerAsAdmin && customerAsAdmin.adminPassword === password) {
               set({ isAuthenticated: true, isDeveloper: false });
               return true;
@@ -192,11 +192,13 @@ export const useAdminStore = create<AdminState>()(
         },
         logout: () => set({ isAuthenticated: false, isDeveloper: false }),
         setPassword: (password: string) => {
-          // This function is now less relevant as admins are managed in the customer list
-          // But we can keep it for the initial setup.
           const { addUser } = useCustomerStore.getState();
           const initialAdminMobile = '0000000000';
-          addUser(initialAdminMobile, 'password', initialAdminMobile, password);
+          // Avoid creating duplicate initial admin
+          const { users } = useCustomerStore.getState();
+          if (!users.some(u => u.adminMobileNumber === initialAdminMobile)) {
+            addUser('0000000000', 'default', initialAdminMobile, password);
+          }
           set({ hasBeenSetup: true });
         },
         updateStoreDetails: (details) =>
