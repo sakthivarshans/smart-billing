@@ -16,9 +16,8 @@ import { LogIn, UserPlus, ArrowLeft } from 'lucide-react';
 export function AdminLoginClient() {
   const router = useRouter();
   const { toast } = useToast();
-  const { hasBeenSetup, login, setPassword: setAdminPassword, isAuthenticated } = useAdminStore();
+  const { hasBeenSetup, login, setPassword: setupInitialAdmin, isAuthenticated } = useAdminStore();
   
-  // Initialize state to 'signin' to avoid SSR issues with hasBeenSetup
   const [activeTab, setActiveTab] = useState('signin');
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -37,13 +36,13 @@ export function AdminLoginClient() {
   }, [isAuthenticated, router]);
 
   useEffect(() => {
-    // This effect runs on the client and sets the correct tab
-    if (!hasBeenSetup) {
+    const isSetup = useAdminStore.getState().hasBeenSetup;
+    if (!isSetup) {
       setActiveTab('signup');
     } else {
       setActiveTab('signin');
     }
-  }, [hasBeenSetup]);
+  }, []);
 
   const handleSignIn = () => {
     setIsProcessing(true);
@@ -98,10 +97,10 @@ export function AdminLoginClient() {
 
     setIsProcessing(true);
     setTimeout(() => {
-      setAdminPassword(signUpPassword);
+      setupInitialAdmin(signUpPassword);
       toast({
         title: 'Setup Complete!',
-        description: 'Your admin account has been created. Please sign in.',
+        description: 'Your initial admin account has been created. Please sign in.',
       });
       setActiveTab('signin');
       setIsProcessing(false);
@@ -116,7 +115,6 @@ export function AdminLoginClient() {
   }
 
   if (isAuthenticated) {
-    // Render nothing while redirecting
     return null;
   }
 
@@ -174,8 +172,8 @@ export function AdminLoginClient() {
             </TabsContent>
             <TabsContent value="signup">
                 <CardHeader className="text-center">
-                    <CardTitle className="text-2xl">Create Admin Account</CardTitle>
-                    <CardDescription>Set up a secure password to manage your store.</CardDescription>
+                    <CardTitle className="text-2xl">Create Initial Admin</CardTitle>
+                    <CardDescription>Set up a secure password for the first admin account.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                 <div className="space-y-2">

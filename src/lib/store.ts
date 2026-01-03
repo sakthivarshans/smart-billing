@@ -173,17 +173,17 @@ export const useAdminStore = create<AdminState>()(
           optionalColumn2: 'Optional 2',
         },
         login: (mobileNumber, password) => {
-          const admin = get().adminUser;
-          const developer = get().developers.find(d => d.mobileNumber === mobileNumber);
+          const { users } = useCustomerStore.getState();
+          const customerAsAdmin = users.find(u => u.adminMobileNumber === mobileNumber);
 
           // Check for developer login first
-          if (developer && developer.passwordHash === password) {
-              set({ isAuthenticated: true, isDeveloper: true });
-              return true;
+          if (mobileNumber === '9999999999' && password === 'developer') {
+            set({ isAuthenticated: true, isDeveloper: true });
+            return true;
           }
 
-          // Check for standard admin login
-          if (admin && admin.mobileNumber === mobileNumber && admin.passwordHash === password) {
+          // Check for standard admin login from customer list
+          if (customerAsAdmin && customerAsAdmin.adminPassword === password) {
               set({ isAuthenticated: true, isDeveloper: false });
               return true;
           }
@@ -191,10 +191,14 @@ export const useAdminStore = create<AdminState>()(
           return false;
         },
         logout: () => set({ isAuthenticated: false, isDeveloper: false }),
-        setPassword: (password: string) => set({ 
-            adminUser: { mobileNumber: '0000000000', passwordHash: password },
-            hasBeenSetup: true 
-        }),
+        setPassword: (password: string) => {
+          // This function is now less relevant as admins are managed in the customer list
+          // But we can keep it for the initial setup.
+          const { addUser } = useCustomerStore.getState();
+          const initialAdminMobile = '0000000000';
+          addUser(initialAdminMobile, 'password', initialAdminMobile, password);
+          set({ hasBeenSetup: true });
+        },
         updateStoreDetails: (details) =>
           set((state) => ({
             storeDetails: { ...state.storeDetails, ...details },
@@ -230,21 +234,7 @@ export const useAdminStore = create<AdminState>()(
       }),
       {
         name: 'admin-storage', 
-        storage: createJSONStorage(() => localStorage), 
-        // This part is important to handle the change from 'password' to 'adminUser'
-        onRehydrateStorage: () => (state, error) => {
-          if (error) {
-            console.log('an error happened during hydration', error)
-          } else {
-            // @ts-ignore
-            if (state && state.password && !state.adminUser) {
-              // @ts-ignore
-              state.adminUser = { mobileNumber: '0000000000', passwordHash: state.password };
-              // @ts-ignore
-              delete state.password;
-            }
-          }
-        },
+        storage: createJSONStorage(() => localStorage),
       }
     )
   );
@@ -254,8 +244,10 @@ export const useApiKeys = () => useAdminStore((state) => state.apiKeys);
 
 
 export type CustomerUser = {
-  mobileNumber: string;
-  passwordHash: string;
+  operatorMobileNumber: string;
+  operatorPassword: string;
+  adminMobileNumber: string;
+  adminPassword: string;
 }
 
 type CustomerState = {
@@ -264,8 +256,8 @@ type CustomerState = {
     users: CustomerUser[];
     login: (mobileNumber: string, password: string) => boolean;
     logout: () => void;
-    addUser: (mobileNumber: string, password?: string) => void;
-    removeUser: (mobileNumber: string) => void;
+    addUser: (operatorMobile: string, operatorPass: string, adminMobile: string, adminPass: string) => void;
+    removeUser: (operatorMobile: string) => void;
 };
 
 export const useCustomerStore = create<CustomerState>()(
@@ -274,41 +266,45 @@ export const useCustomerStore = create<CustomerState>()(
         isAuthenticated: false,
         phoneNumber: '',
         users: [
-          { mobileNumber: '1234567890', passwordHash: 'password123' },
-          { mobileNumber: '9655952985', passwordHash: '1234' },
+          { operatorMobileNumber: '1234567890', operatorPassword: 'password123', adminMobileNumber: '0123456789', adminPassword: 'admin123' },
         ], 
         login: (mobileNumber, password) => {
-            const user = get().users.find(u => u.mobileNumber === mobileNumber);
-            const developer = useAdminStore.getState().developers.find(d => d.mobileNumber === mobileNumber);
+            const user = get().users.find(u => u.operatorMobileNumber === mobileNumber);
 
-            if (user && password === user.passwordHash) {
+            if (user && password === user.operatorPassword) {
                 set({ isAuthenticated: true, phoneNumber: mobileNumber });
                 return true;
             }
-            // Also allow developers to log in via the customer portal
-            if (developer && password === developer.passwordHash) {
+            
+            // Allow developer to log in via customer portal for testing
+            const dev = useAdminStore.getState().developers.find(d => d.mobileNumber === mobileNumber);
+            if (dev && password === dev.passwordHash) {
               set({ isAuthenticated: true, phoneNumber: mobileNumber });
               return true;
             }
             return false;
         },
         logout: () => set({ isAuthenticated: false, phoneNumber: '' }),
-        addUser: (mobileNumber, password = 'password') => {
-          const userExists = get().users.some(u => u.mobileNumber === mobileNumber);
+        addUser: (operatorMobile, operatorPass, adminMobile, adminPass) => {
+          const userExists = get().users.some(u => u.operatorMobileNumber === operatorMobile);
           if (userExists) {
-            return; // Or throw an error, depending on desired behavior
+            // Or throw an error, depending on desired behavior
+            console.error("User with this operator mobile number already exists.");
+            return;
           }
             const newUser: CustomerUser = {
-                mobileNumber: mobileNumber,
-                passwordHash: password, 
+                operatorMobileNumber: operatorMobile,
+                operatorPassword: operatorPass, 
+                adminMobileNumber: adminMobile,
+                adminPassword: adminPass,
             };
             set((state) => ({
                 users: [...state.users, newUser],
             }));
         },
-        removeUser: (mobileNumber: string) => {
+        removeUser: (operatorMobile: string) => {
           set((state) => ({
-            users: state.users.filter(u => u.mobileNumber !== mobileNumber),
+            users: state.users.filter(u => u.operatorMobileNumber !== operatorMobile),
           }));
         }
       }),
