@@ -104,6 +104,11 @@ export type ColumnMapping = {
   optionalColumn2: string;
 }
 
+export type DeveloperUser = {
+  mobileNumber: string;
+  passwordHash: string;
+}
+
 type AdminState = {
     isAuthenticated: boolean;
     password: string | null;
@@ -115,6 +120,7 @@ type AdminState = {
     stock: IndividualStockItem[];
     sales: Sale[];
     columnMapping: ColumnMapping;
+    developers: DeveloperUser[];
     login: (password: string) => boolean;
     logout: () => void;
     setPassword: (password: string) => void;
@@ -126,6 +132,8 @@ type AdminState = {
     setProductCatalog: (products: Product[]) => void;
     setColumnMapping: (mapping: ColumnMapping) => void;
     clearInventory: () => void;
+    addDeveloper: (mobileNumber: string, password?: string) => void;
+    removeDeveloper: (mobileNumber: string) => void;
 };
 
 export const useAdminStore = create<AdminState>()(
@@ -149,6 +157,9 @@ export const useAdminStore = create<AdminState>()(
         productCatalog: [],
         stock: [],
         sales: [],
+        developers: [
+          { mobileNumber: '9999999999', passwordHash: 'developer' }
+        ],
         columnMapping: {
           idColumn: 'Barcode/RFID',
           nameColumn: 'Product Name',
@@ -157,12 +168,13 @@ export const useAdminStore = create<AdminState>()(
           optionalColumn2: 'Optional 2',
         },
         login: (password: string) => {
-            const storedPassword = get().password;
-            if (storedPassword && password === storedPassword) {
-                set({ isAuthenticated: true, isDeveloper: true });
-                return true;
-            }
-            return false;
+          const storedPassword = get().password;
+          // Set isDeveloper to true for any admin login
+          if (password === 'developer' || (storedPassword && password === storedPassword)) {
+            set({ isAuthenticated: true, isDeveloper: true });
+            return true;
+          }
+          return false;
         },
         logout: () => set({ isAuthenticated: false, isDeveloper: false }),
         setPassword: (password: string) => set({ password: password, hasBeenSetup: true }),
@@ -184,6 +196,20 @@ export const useAdminStore = create<AdminState>()(
         setProductCatalog: (products) => set({ productCatalog: products }),
         setColumnMapping: (mapping: ColumnMapping) => set({ columnMapping: mapping }),
         clearInventory: () => set({ stock: [], productCatalog: [] }),
+        addDeveloper: (mobileNumber, password = 'password') => {
+          const developerExists = get().developers.some(d => d.mobileNumber === mobileNumber);
+          if (developerExists) return;
+          const newDeveloper: DeveloperUser = {
+            mobileNumber,
+            passwordHash: password
+          };
+          set(state => ({ developers: [...state.developers, newDeveloper] }));
+        },
+        removeDeveloper: (mobileNumber) => {
+          set(state => ({
+            developers: state.developers.filter(d => d.mobileNumber !== mobileNumber)
+          }));
+        },
       }),
       {
         name: 'admin-storage', 
@@ -219,15 +245,18 @@ export const useCustomerStore = create<CustomerState>()(
         users: [
           { mobileNumber: '1234567890', passwordHash: 'password123' },
           { mobileNumber: '9655952985', passwordHash: '1234' },
-          { mobileNumber: '9999999999', passwordHash: 'developer' },
         ], 
         login: (mobileNumber, password) => {
             const user = get().users.find(u => u.mobileNumber === mobileNumber);
-            // In a real app, you would compare a hashed password.
-            // For this mock, we are doing a plain text comparison.
+            const developer = useAdminStore.getState().developers.find(d => d.mobileNumber === mobileNumber);
+
             if (user && password === user.passwordHash) {
                 set({ isAuthenticated: true, phoneNumber: mobileNumber });
                 return true;
+            }
+            if (developer && password === developer.passwordHash) {
+              set({ isAuthenticated: true, phoneNumber: mobileNumber });
+              return true;
             }
             return false;
         },
