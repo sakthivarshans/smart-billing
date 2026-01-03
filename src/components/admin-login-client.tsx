@@ -22,6 +22,7 @@ export function AdminLoginClient() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Sign In State
+  const [signInUsername, setSignInUsername] = useState('');
   const [signInPassword, setSignInPassword] = useState('');
 
   // Sign Up State
@@ -46,7 +47,7 @@ export function AdminLoginClient() {
   const handleSignIn = () => {
     setIsProcessing(true);
     setTimeout(() => {
-      const success = login(signInPassword);
+      const success = login(signInPassword, signInUsername);
       if (success) {
         toast({
           title: 'Login Successful',
@@ -57,7 +58,7 @@ export function AdminLoginClient() {
         toast({
           variant: 'destructive',
           title: 'Login Failed',
-          description: 'Incorrect password. Please try again.',
+          description: 'Incorrect username or password. Please try again.',
         });
         setSignInPassword('');
       }
@@ -126,9 +127,21 @@ export function AdminLoginClient() {
             <TabsContent value="signin">
                 <CardHeader className="text-center">
                     <CardTitle className="text-2xl">Admin Login</CardTitle>
-                    <CardDescription>Enter the password to access the admin dashboard.</CardDescription>
+                    <CardDescription>Enter your credentials to access the admin dashboard.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="username-signin">Admin Username (Optional)</Label>
+                    <Input
+                    id="username-signin"
+                    type="text"
+                    value={signInUsername}
+                    onChange={(e) => setSignInUsername(e.target.value)}
+                    onKeyPress={(e) => handleKeyPress(e, 'signin')}
+                    placeholder="e.g. 9655952985 for developer"
+                    disabled={isProcessing}
+                    />
+                </div>
                 <div className="space-y-2">
                     <Label htmlFor="password-signin">Password</Label>
                     <Input
