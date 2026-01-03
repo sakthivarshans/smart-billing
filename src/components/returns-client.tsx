@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { Search, History, Undo, Info, Package, IndianRupee, Calendar, Phone } from 'lucide-react';
+import { Search, History, Undo, Info, Package, IndianRupee, Calendar, Phone, Download } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import type { Sale, BillItem } from '@/lib/store';
 
@@ -64,13 +64,59 @@ export function ReturnsClient() {
     setIsProcessing(false);
   };
   
-  const recentReturns = useMemo(() => {
+  const allReturns = useMemo(() => {
     return sales
       .flatMap(sale => sale.items.map(item => ({ ...item, saleDate: sale.date, saleId: sale.id })))
       .filter(item => item.status === 'returned')
-      .sort((a, b) => new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime())
-      .slice(0, 5);
+      .sort((a, b) => new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime());
   }, [sales]);
+
+  const recentReturns = useMemo(() => {
+    return allReturns.slice(0, 5);
+  }, [allReturns]);
+  
+  const handleDownloadReturns = () => {
+    if (allReturns.length === 0) {
+      toast({
+        variant: 'destructive',
+        title: 'No Returns to Export',
+        description: 'There are no returned items to download.',
+      });
+      return;
+    }
+
+    const headers = ['Product Name', 'Barcode/RFID', 'Original Sale Date', 'Price'];
+    const csvContent = [
+      headers.join(','),
+      ...allReturns.map(item => {
+        const row = [
+          item.name,
+          item.rfid,
+          new Date(item.saleDate).toLocaleString(),
+          item.price.toFixed(2),
+        ];
+        return row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
+      }),
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.href) {
+      URL.revokeObjectURL(link.href);
+    }
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'returns_report.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: 'Download Started',
+      description: 'Your returns report is being downloaded.',
+    });
+  };
 
 
   return (
@@ -155,9 +201,14 @@ export function ReturnsClient() {
       </Card>
       
       <Card>
-        <CardHeader>
-            <CardTitle>Recent Returns</CardTitle>
-            <CardDescription>A list of the most recently processed returns.</CardDescription>
+        <CardHeader className="flex flex-row items-start justify-between">
+            <div>
+                <CardTitle>Recent Returns</CardTitle>
+                <CardDescription>A list of the most recently processed returns.</CardDescription>
+            </div>
+            <Button onClick={handleDownloadReturns} variant="outline">
+                <Download className="mr-2 h-4 w-4" /> Download Returns
+            </Button>
         </CardHeader>
         <CardContent>
             <Table>
