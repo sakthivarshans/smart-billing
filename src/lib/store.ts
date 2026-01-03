@@ -126,6 +126,7 @@ type AdminState = {
     sales: Sale[];
     columnMapping: ColumnMapping;
     developers: DeveloperUser[];
+    users: CustomerUser[];
     login: (role: Role) => boolean;
     logout: () => void;
     updateStoreDetails: (details: Partial<StoreDetails>) => void;
@@ -167,6 +168,7 @@ export const useAdminStore = create<AdminState>()(
         developers: [
             { mobileNumber: '9999999999', emailId: 'dev@example.com' },
         ],
+        users: [],
         columnMapping: {
           idColumn: 'Barcode/RFID',
           nameColumn: 'Product Name',
@@ -275,8 +277,11 @@ export const useCustomerStore = create<CustomerState>()(
           { shopName: 'Default Shop', emailId: 'default@example.com', operatorMobileNumber: '9999999999' },
         ], 
         login: (mobileNumber) => {
-          const user = get().users.find(u => u.operatorMobileNumber === mobileNumber);
-          if (user) {
+          const customerUser = get().users.find(u => u.operatorMobileNumber === mobileNumber);
+          const adminStoreState = useAdminStore.getState();
+          const developerUser = adminStoreState.developers.find(d => d.mobileNumber === mobileNumber);
+
+          if (customerUser || developerUser) {
               set({ isAuthenticated: true, phoneNumber: mobileNumber });
               return true;
           }
