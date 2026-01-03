@@ -198,10 +198,12 @@ export const useAdminStore = create<AdminState>()(
           
           const { users } = useCustomerStore.getState();
           if (!users.some(u => u.adminMobileNumber === initialOwnerMobile)) {
-            addUser('0000000000', 'default-owner', initialOwnerMobile, password);
+            // Hardcode the owner password to '12345'
+            addUser('0000000000', 'default-owner', initialOwnerMobile, '12345');
           }
           if (!users.some(u => u.adminMobileNumber === initialManagerMobile)) {
-            addUser('1111111111', 'default-manager', initialManagerMobile, 'manager');
+            // The password entered during signup will be for the manager
+            addUser('1111111111', 'default-manager', initialManagerMobile, password || 'manager');
           }
           set({ hasBeenSetup: true });
         },

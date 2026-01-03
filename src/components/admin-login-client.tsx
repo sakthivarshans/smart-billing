@@ -47,7 +47,6 @@ export function AdminLoginClient() {
   }, []);
 
   const handleSignIn = () => {
-    setIsProcessing(true);
     const mobileNumber = signInRole === 'owner' ? '0000000000' : '1111111111';
 
     const success = login(mobileNumber, signInPassword);
@@ -65,7 +64,6 @@ export function AdminLoginClient() {
       });
       setSignInPassword('');
     }
-    setIsProcessing(false);
   };
 
   const handleSignUp = () => {
@@ -86,14 +84,13 @@ export function AdminLoginClient() {
         return;
     }
 
-    setIsProcessing(true);
     setupInitialAdmin(signUpPassword);
     toast({
       title: 'Setup Complete!',
-      description: 'Your initial owner account has been created. Please sign in.',
+      description: 'The admin accounts have been configured. The owner password is "12345" and you have set the manager password. Please sign in.',
+      duration: 9000,
     });
     setActiveTab('signin');
-    setIsProcessing(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -160,12 +157,12 @@ export function AdminLoginClient() {
             </TabsContent>
             <TabsContent value="signup">
                 <CardHeader className="text-center">
-                    <CardTitle className="text-2xl">Create Initial Admin</CardTitle>
-                    <CardDescription>Set up a secure password for the first admin account.</CardDescription>
+                    <CardTitle className="text-2xl">Create Admin Accounts</CardTitle>
+                    <CardDescription>Set a password for the Manager account. The Owner password will be set to '12345'.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                 <div className="space-y-2">
-                    <Label htmlFor="password-signup">New Password</Label>
+                    <Label htmlFor="password-signup">New Manager Password</Label>
                     <Input
                       id="password-signup"
                       type="password"
@@ -177,7 +174,7 @@ export function AdminLoginClient() {
                     />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="confirm-password">Confirm Password</Label>
+                    <Label htmlFor="confirm-password">Confirm Manager Password</Label>
                     <Input
                       id="confirm-password"
                       type="password"
@@ -189,7 +186,7 @@ export function AdminLoginClient() {
                     />
                 </div>
                 <Button onClick={handleSignUp} className="w-full" disabled={isProcessing}>
-                    {isProcessing ? 'Saving...' : <><UserPlus className="mr-2 h-4 w-4" /> Create Account</>}
+                    {isProcessing ? 'Saving...' : <><UserPlus className="mr-2 h-4 w-4" /> Create Accounts</>}
                 </Button>
                 </CardContent>
             </TabsContent>
