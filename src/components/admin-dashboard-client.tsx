@@ -50,7 +50,7 @@ export function AdminDashboardLayout({
   const activeTab = pathname.split('/')[2] || 'dashboard';
 
   const visibleTabs = ALL_TABS.filter(tab => {
-    if (tab.developerOnly) {
+    if (tab.value === 'developer') {
         return loggedInRole === 'developer';
     }
     if (tab.ownerOnly) {
@@ -59,9 +59,7 @@ export function AdminDashboardLayout({
     if (loggedInRole === 'manager') {
         return managerPermissions.includes(tab.value);
     }
-    if (loggedInRole === 'developer') {
-        return tab.value !== 'manager-access';
-    }
+    // Default for owner
     return loggedInRole === 'owner';
   });
 
