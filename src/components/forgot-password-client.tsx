@@ -15,7 +15,7 @@ import { sendWhatsAppText } from '@/ai/flows/whatsapp-text-flow';
 
 type UserAccount = {
   emailId: string;
-  userType: 'operator' | 'admin' | 'developer';
+  userType: 'operator' | 'owner' | 'manager' | 'developer';
 }
 
 export function ForgotPasswordClient() {
@@ -36,11 +36,11 @@ export function ForgotPasswordClient() {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const findUserAccount = (number: string): UserAccount | null => {
-    const operator = customerUsers.find(u => u.operatorMobileNumber === number);
-    if (operator) return { emailId: operator.emailId, userType: 'operator' };
-    
-    const admin = customerUsers.find(u => u.adminMobileNumber === number);
-    if (admin) return { emailId: admin.emailId, userType: 'admin' };
+    const customer = customerUsers.find(u => u.operatorMobileNumber === number);
+    if (customer) {
+        // Since we don't know if they are operator, owner, or manager yet, we just find the container
+        return { emailId: customer.emailId, userType: 'operator' }; // Default to operator, will clarify later
+    }
 
     const developer = developers.find(d => d.mobileNumber === number);
     if (developer) return { emailId: developer.emailId, userType: 'developer' };
@@ -159,15 +159,19 @@ export function ForgotPasswordClient() {
 
     setIsProcessing(true);
     try {
-        if (account.userType === 'operator' || account.userType === 'admin') {
-            updateUserPassword(mobileNumber, newPassword, account.userType);
+        // Since we don't know the exact role (operator, owner, manager), we optimistically update all.
+        // The store logic will only update the correct one.
+        if (account.userType === 'operator' || account.userType === 'owner' || account.userType === 'manager') {
+            updateUserPassword(mobileNumber, newPassword, 'operator');
+            updateUserPassword(mobileNumber, newPassword, 'owner');
+            updateUserPassword(mobileNumber, newPassword, 'manager');
         } else if (account.userType === 'developer') {
             updateDeveloperPassword(mobileNumber, newPassword);
         }
         
         toast({
             title: 'Password Reset Successfully!',
-            description: 'You can now log in with your new password.',
+            description: 'Your new password has been set. You can now log in.',
         });
         router.push('/');
 

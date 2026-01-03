@@ -30,8 +30,8 @@ export function CustomerManagementClient() {
   const [emailId, setEmailId] = useState('');
   const [operatorMobile, setOperatorMobile] = useState('');
   const [operatorPassword, setOperatorPassword] = useState('');
-  const [adminMobile, setAdminMobile] = useState('');
-  const [adminPassword, setAdminPassword] = useState('');
+  const [ownerPassword, setOwnerPassword] = useState('');
+  const [managerPassword, setManagerPassword] = useState('');
 
   const handleAddUser = () => {
     if (!shopName) {
@@ -50,16 +50,16 @@ export function CustomerManagementClient() {
       toast({ variant: 'destructive', title: 'Operator Password Too Short', description: 'Password must be at least 4 characters long.' });
       return;
     }
-    if (!/^\d{10}$/.test(adminMobile)) {
-        toast({ variant: 'destructive', title: 'Invalid Admin Mobile', description: 'Please enter a valid 10-digit mobile number.' });
+    if (ownerPassword.length < 4) {
+        toast({ variant: 'destructive', title: 'Owner Password Too Short', description: 'Password must be at least 4 characters long.' });
         return;
     }
-    if (adminPassword.length < 4) {
-        toast({ variant: 'destructive', title: 'Admin Password Too Short', description: 'Password must be at least 4 characters long.' });
+    if (managerPassword.length < 4) {
+        toast({ variant: 'destructive', title: 'Manager Password Too Short', description: 'Password must be at least 4 characters long.' });
         return;
     }
 
-    addUser(shopName, emailId, operatorMobile, operatorPassword, adminMobile, adminPassword);
+    addUser(shopName, emailId, operatorMobile, operatorPassword, ownerPassword, managerPassword);
     toast({
       title: 'User Added',
       description: `User for ${shopName} has been added.`,
@@ -68,8 +68,8 @@ export function CustomerManagementClient() {
     setEmailId('');
     setOperatorMobile('');
     setOperatorPassword('');
-    setAdminMobile('');
-    setAdminPassword('');
+    setOwnerPassword('');
+    setManagerPassword('');
   };
 
   const handleRemoveUser = (numberToRemove: string) => {
@@ -90,7 +90,7 @@ export function CustomerManagementClient() {
       return;
     }
 
-    const headers = ['Shop Name', 'Email ID', 'Operator Number', 'Operator Password', 'Admin Number', 'Admin Password'];
+    const headers = ['Shop Name', 'Email ID', 'Operator Number', 'Operator Password', 'Owner Password', 'Manager Password'];
     const csvContent = [
       headers.join(','),
       ...users.map(user => {
@@ -99,8 +99,8 @@ export function CustomerManagementClient() {
           user.emailId,
           user.operatorMobileNumber,
           user.operatorPassword,
-          user.adminMobileNumber,
-          user.adminPassword,
+          user.ownerPassword,
+          user.managerPassword,
         ];
         return row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
       }),
@@ -156,7 +156,7 @@ export function CustomerManagementClient() {
             <Input id="new-email-id" type="email" value={emailId} onChange={(e) => setEmailId(e.target.value)} placeholder="Email ID" />
           </div>
           <div className="space-y-2 lg:col-span-1">
-            <Label htmlFor="new-operator-mobile">Operator Number</Label>
+            <Label htmlFor="new-operator-mobile">Login Mobile</Label>
             <Input id="new-operator-mobile" type="tel" value={operatorMobile} onChange={(e) => setOperatorMobile(e.target.value)} placeholder="10-digit number" maxLength={10} />
           </div>
           <div className="space-y-2 lg:col-span-1">
@@ -164,12 +164,12 @@ export function CustomerManagementClient() {
             <Input id="new-operator-password" type="password" value={operatorPassword} onChange={(e) => setOperatorPassword(e.target.value)} placeholder="Min. 4 chars" />
           </div>
           <div className="space-y-2 lg:col-span-1">
-            <Label htmlFor="new-admin-mobile">Admin Number</Label>
-            <Input id="new-admin-mobile" type="tel" value={adminMobile} onChange={(e) => setAdminMobile(e.target.value)} placeholder="10-digit number" maxLength={10} />
+            <Label htmlFor="new-owner-password">Owner Password</Label>
+            <Input id="new-owner-password" type="password" value={ownerPassword} onChange={(e) => setOwnerPassword(e.target.value)} placeholder="Min. 4 chars" />
           </div>
           <div className="space-y-2 lg:col-span-1">
-            <Label htmlFor="new-admin-password">Admin Password</Label>
-            <Input id="new-admin-password" type="password" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} placeholder="Min. 4 chars" />
+            <Label htmlFor="new-manager-password">Manager Password</Label>
+            <Input id="new-manager-password" type="password" value={managerPassword} onChange={(e) => setManagerPassword(e.target.value)} placeholder="Min. 4 chars" />
           </div>
         </div>
 
@@ -179,10 +179,10 @@ export function CustomerManagementClient() {
               <TableRow>
                 <TableHead>Shop Name</TableHead>
                 <TableHead>Email ID</TableHead>
-                <TableHead>Operator Number</TableHead>
+                <TableHead>Login Mobile</TableHead>
                 <TableHead>Operator Password</TableHead>
-                <TableHead>Admin Number</TableHead>
-                <TableHead>Admin Password</TableHead>
+                <TableHead>Owner Password</TableHead>
+                <TableHead>Manager Password</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -194,8 +194,8 @@ export function CustomerManagementClient() {
                     <TableCell>{user.emailId}</TableCell>
                     <TableCell className="font-mono">{user.operatorMobileNumber}</TableCell>
                     <TableCell className="font-mono">{user.operatorPassword}</TableCell>
-                    <TableCell className="font-mono">{user.adminMobileNumber}</TableCell>
-                    <TableCell className="font-mono">{user.adminPassword}</TableCell>
+                    <TableCell className="font-mono">{user.ownerPassword}</TableCell>
+                    <TableCell className="font-mono">{user.managerPassword}</TableCell>
                     <TableCell className="text-right">
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
