@@ -105,6 +105,7 @@ export function CustomerManagementClient() {
             <TableHeader>
               <TableRow>
                 <TableHead>Mobile Number</TableHead>
+                <TableHead>Password</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -113,6 +114,7 @@ export function CustomerManagementClient() {
                 users.map((user) => (
                   <TableRow key={user.mobileNumber}>
                     <TableCell className="font-mono">{user.mobileNumber}</TableCell>
+                    <TableCell className="font-mono">{user.passwordHash}</TableCell>
                     <TableCell className="text-right">
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -141,7 +143,7 @@ export function CustomerManagementClient() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={2} className="h-24 text-center text-muted-foreground">
+                  <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
                     <div className="flex flex-col items-center gap-2">
                       <Users className="h-8 w-8" />
                       <span>No customers found.</span>
