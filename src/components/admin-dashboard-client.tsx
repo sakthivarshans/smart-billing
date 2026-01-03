@@ -25,7 +25,7 @@ const ALL_TABS = [
     { value: 'inventory', label: 'Inventory' },
     { value: 'returns', label: 'Returns' },
     { value: 'manager-access', label: 'Manager Access', ownerOnly: true },
-    { value: 'developer', label: 'Customers & Developers', ownerOnly: true },
+    { value: 'developer', label: 'Customers & Developers', developerOnly: true },
 ];
 
 export function AdminDashboardLayout({
@@ -51,14 +51,17 @@ export function AdminDashboardLayout({
   const activeTab = pathname.split('/')[2] || 'dashboard';
 
   const visibleTabs = ALL_TABS.filter(tab => {
-    if (loggedInRole === 'developer') {
-      return tab.value !== 'manager-access';
+    if (tab.developerOnly) {
+        return loggedInRole === 'developer';
     }
     if (tab.ownerOnly) {
         return loggedInRole === 'owner';
     }
     if (loggedInRole === 'manager') {
         return managerPermissions.includes(tab.value);
+    }
+    if (loggedInRole === 'developer') {
+        return tab.value !== 'manager-access';
     }
     return loggedInRole === 'owner';
   });
