@@ -24,7 +24,7 @@ const ALL_TABS = [
     { value: 'inventory', label: 'Inventory' },
     { value: 'returns', label: 'Returns' },
     { value: 'manager-access', label: 'Manager Access', ownerOnly: true },
-    { value: 'developer', label: 'Developers', developerOnly: true },
+    { value: 'developer', label: 'developer', developerOnly: true },
 ];
 
 export function AdminDashboardLayout({
