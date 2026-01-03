@@ -110,6 +110,10 @@ export function DashboardClient() {
     });
   }
 
+  const handleAdminLoginClick = () => {
+    router.push('/admin/login');
+  }
+
   if (!isAuthenticated) {
     return (
         <div className="container mx-auto p-4 sm:p-6 md:p-8 flex items-center justify-center min-h-screen">
@@ -157,6 +161,10 @@ export function DashboardClient() {
             </CardDescription>
           </div>
           <div className="absolute top-4 right-4 flex gap-2">
+            <Button variant="ghost" size="icon" onClick={handleAdminLoginClick}>
+                <KeyRound className="h-5 w-5" />
+                <span className="sr-only">Admin Login</span>
+            </Button>
             <Button variant="ghost" size="icon" onClick={handleLogout}>
                 <LogOut className="h-5 w-5" />
                 <span className="sr-only">Logout</span>
