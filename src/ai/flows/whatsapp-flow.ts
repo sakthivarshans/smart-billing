@@ -39,18 +39,11 @@ const whatsAppPdfFlow = ai.defineFlow(
 
       const params = {
         authorization: whatsappApiKey,
-        // The Sender ID is required by DLT regulations in India.
-        // 'FSTSMS' is a default that works for transactional text SMS.
-        // This might need to be changed to a registered ID from the telecom provider
-        // for promotional routes.
-        sender_id: 'FSTSMS',
-        route: 'dlt',
-        // In Fast2Sms, you need pre-approved DLT templates for the 'dlt' route.
-        // The 'message' content must match one of these templates.
-        // We are using the content from the payment screen.
+        // The 'p' route is for promotional SMS and is less strict than 'dlt'.
+        route: 'p',
+        // The 'message' content will be sent as a standard SMS.
         message: message, 
-        // This endpoint sends text messages. It does not support sending files.
-        // We will send the text message and return a success message that clarifies this.
+        // The numbers to send the SMS to.
         numbers: to,
       };
 
@@ -69,7 +62,7 @@ const whatsAppPdfFlow = ai.defineFlow(
         };
       } else {
         const errorMessage = response.data?.message || 'Unknown error from Fast2Sms.';
-        // This will catch DLT template errors or other API issues.
+        // This will catch API issues.
         return {
           success: false,
           message: `Failed to send message: ${errorMessage}`,
