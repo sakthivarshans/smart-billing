@@ -57,6 +57,17 @@ export function ApiKeysForm() {
         />
       </div>
       <div className="space-y-2">
+        <Label htmlFor="emailApiUrl">Email API URL</Label>
+        <Input
+          id="emailApiUrl"
+          name="emailApiUrl"
+          type="text"
+          value={formState.emailApiUrl}
+          onChange={handleInputChange}
+          placeholder="e.g., https://api.sendgrid.com/v3/mail/send"
+        />
+      </div>
+      <div className="space-y-2">
         <Label htmlFor="emailApiKey">Email API Key</Label>
         <Input
           id="emailApiKey"

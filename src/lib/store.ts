@@ -66,6 +66,7 @@ export type ApiKeys = {
     whatsappApiUrl: string;
     razorpayKeyId: string;
     razorpayKeySecret: string;
+    emailApiUrl: string;
     emailApiKey: string;
 };
 
@@ -162,6 +163,7 @@ export const useAdminStore = create<AdminState>()(
             whatsappApiUrl: 'https://api.botbee.ai/v1/messages',
             razorpayKeyId: '',
             razorpayKeySecret: '',
+            emailApiUrl: '',
             emailApiKey: '',
         },
         productCatalog: [],
