@@ -28,12 +28,13 @@ export function AdminLoginClient() {
   }, [isAuthenticated, router]);
 
   const handleLogin = () => {
-    const success = login(role, password, mobileNumber);
+    const success = login(role);
     if (success) {
         toast({ title: 'Login Successful', description: `Welcome, ${role}!` });
         router.push('/admin/dashboard');
     } else {
-        toast({ variant: 'destructive', title: 'Login Failed', description: 'Invalid credentials. Please try again.' });
+        // This case should ideally not be hit with the new logic
+        toast({ variant: 'destructive', title: 'Login Failed', description: 'Could not log in.' });
     }
   };
 

@@ -113,6 +113,8 @@ export type DeveloperUser = {
   emailId: string;
 }
 
+export type Role = 'owner' | 'manager' | 'developer';
+
 type AdminState = {
     isAuthenticated: boolean;
     isDeveloper: boolean;
@@ -123,7 +125,8 @@ type AdminState = {
     sales: Sale[];
     columnMapping: ColumnMapping;
     developers: DeveloperUser[];
-    login: (mobileNumber: string) => boolean;
+    users: CustomerUser[];
+    login: (role: Role, mobileNumber?: string) => boolean;
     logout: () => void;
     updateStoreDetails: (details: Partial<StoreDetails>) => void;
     updateApiKeys: (keys: Partial<ApiKeys>) => void;
@@ -159,7 +162,10 @@ export const useAdminStore = create<AdminState>()(
         productCatalog: [],
         stock: [],
         sales: [],
-        developers: [],
+        developers: [
+            { mobileNumber: '9999999999', emailId: 'dev@example.com' },
+        ],
+        users: [],
         columnMapping: {
           idColumn: 'Barcode/RFID',
           nameColumn: 'Product Name',
@@ -167,20 +173,11 @@ export const useAdminStore = create<AdminState>()(
           optionalColumn1: 'Optional 1',
           optionalColumn2: 'Optional 2',
         },
-        login: (mobileNumber) => {
-            const devUser = get().developers.find(d => d.mobileNumber === mobileNumber);
-            if (devUser) {
-              set({ isAuthenticated: true, isDeveloper: true });
-              return true;
-            }
-            // Add other admin login logic here if needed
-            const adminUser = get().users.find(u => u.operatorMobileNumber === mobileNumber);
-            if(adminUser) {
-              set({ isAuthenticated: true, isDeveloper: false });
-              return true;
-            }
-            return false;
-          },
+        login: (role: Role, mobileNumber?: string) => {
+            const isDev = role === 'developer';
+            set({ isAuthenticated: true, isDeveloper: isDev });
+            return true;
+        },
         logout: () => set({ isAuthenticated: false, isDeveloper: false }),
         updateStoreDetails: (details) =>
           set((state) => ({
@@ -244,11 +241,6 @@ export const useAdminStore = create<AdminState>()(
       {
         name: 'admin-storage', 
         storage: createJSONStorage(() => localStorage),
-        // This part is crucial for making sure the non-serializable `login` function is not persisted
-        partialize: (state) =>
-          Object.fromEntries(
-            Object.entries(state).filter(([key]) => !['login', 'logout'].includes(key))
-        ),
       }
     )
   );
@@ -321,7 +313,7 @@ export const useCustomerStore = create<CustomerState>()(
         },
       }),
       {
-        name: 'customer-storage', 
+        name: 'customer-storage', _
         storage: createJSONStorage(() => localStorage), 
       }
     )
