@@ -119,7 +119,7 @@ type AdminState = {
     isAuthenticated: boolean;
     isDeveloper: boolean;
     loggedInRole: Role | null;
-    permissions: string[];
+    managerPermissions: string[];
     storeDetails: StoreDetails;
     apiKeys: ApiKeys;
     productCatalog: Product[];
@@ -127,7 +127,6 @@ type AdminState = {
     sales: Sale[];
     columnMapping: ColumnMapping;
     developers: DeveloperUser[];
-    users: CustomerUser[];
     login: (role: Role) => boolean;
     logout: () => void;
     updateStoreDetails: (details: Partial<StoreDetails>) => void;
@@ -141,6 +140,7 @@ type AdminState = {
     clearInventory: () => void;
     addDeveloper: (mobileNumber: string, emailId: string) => void;
     removeDeveloper: (mobileNumber: string) => void;
+    setManagerPermissions: (permissions: string[]) => void;
 };
 
 
@@ -150,7 +150,7 @@ export const useAdminStore = create<AdminState>()(
         isAuthenticated: false,
         isDeveloper: false,
         loggedInRole: null,
-        permissions: [],
+        managerPermissions: ['dashboard', 'sales', 'stock-inward', 'inventory', 'returns'],
         storeDetails: {
           storeName: 'Zudio Store',
           gstin: '27ABCDE1234F1Z5',
@@ -169,7 +169,6 @@ export const useAdminStore = create<AdminState>()(
         developers: [
             { mobileNumber: '9999999999', emailId: 'dev@example.com' },
         ],
-        users: [],
         columnMapping: {
           idColumn: 'Barcode/RFID',
           nameColumn: 'Product Name',
@@ -177,19 +176,12 @@ export const useAdminStore = create<AdminState>()(
           optionalColumn1: 'Optional 1',
           optionalColumn2: 'Optional 2',
         },
-        login: (role: Role) => {
+        login: (role) => {
             const isDev = role === 'developer';
-            let permissions: string[] = [];
-            if (role === 'manager') {
-              const defaultUser = get().users.find(u => u.operatorMobileNumber === '9999999999');
-              if (defaultUser) {
-                permissions = defaultUser.managerPermissions || [];
-              }
-            }
-            set({ isAuthenticated: true, isDeveloper: isDev, loggedInRole: role, permissions });
+            set({ isAuthenticated: true, isDeveloper: isDev, loggedInRole: role });
             return true;
         },
-        logout: () => set({ isAuthenticated: false, isDeveloper: false, loggedInRole: null, permissions: [] }),
+        logout: () => set({ isAuthenticated: false, isDeveloper: false, loggedInRole: null }),
         updateStoreDetails: (details) =>
           set((state) => ({
             storeDetails: { ...state.storeDetails, ...details },
@@ -248,6 +240,7 @@ export const useAdminStore = create<AdminState>()(
             developers: state.developers.filter(d => d.mobileNumber !== mobileNumber)
           }));
         },
+        setManagerPermissions: (permissions) => set({ managerPermissions: permissions }),
       }),
       {
         name: 'admin-storage', 
@@ -264,9 +257,6 @@ export type CustomerUser = {
   shopName: string;
   emailId: string;
   operatorMobileNumber: string;
-  ownerPassword?: string;
-  managerPassword?: string;
-  managerPermissions: string[];
 }
 
 type CustomerState = {
@@ -275,7 +265,7 @@ type CustomerState = {
     users: CustomerUser[];
     login: (mobileNumber: string) => boolean;
     logout: () => void;
-    addUser: (shopName: string, emailId: string, operatorMobile: string, ownerPassword: string, managerPassword: string, managerPermissions: string[]) => void;
+    addUser: (shopName: string, emailId: string, operatorMobile: string) => void;
     removeUser: (operatorMobile: string) => void;
 };
 
@@ -285,7 +275,7 @@ export const useCustomerStore = create<CustomerState>()(
         isAuthenticated: false,
         phoneNumber: '',
         users: [
-          { shopName: 'Default Shop', emailId: 'default@example.com', operatorMobileNumber: '9999999999', ownerPassword: 'password', managerPassword: 'password', managerPermissions: ['dashboard', 'sales', 'stock-inward', 'inventory', 'returns'] },
+          { shopName: 'Default Shop', emailId: 'default@example.com', operatorMobileNumber: '9999999999' },
         ], 
         login: (mobileNumber) => {
           const user = get().users.find(u => u.operatorMobileNumber === mobileNumber);
@@ -298,16 +288,13 @@ export const useCustomerStore = create<CustomerState>()(
         logout: () => {
           set({ isAuthenticated: false, phoneNumber: ''});
         },
-        addUser: (shopName, emailId, operatorMobile, ownerPassword, managerPassword, managerPermissions) => {
+        addUser: (shopName, emailId, operatorMobile) => {
           set((state) => {
             const userExists = state.users.some(u => u.operatorMobileNumber === operatorMobile);
             const newUser: CustomerUser = { 
               shopName, 
               emailId, 
               operatorMobileNumber: operatorMobile,
-              ownerPassword,
-              managerPassword,
-              managerPermissions
             };
             if (userExists) {
               return {

@@ -23,6 +23,7 @@ const ALL_TABS = [
     { value: 'stock-inward', label: 'Stock Inward' },
     { value: 'inventory', label: 'Inventory' },
     { value: 'returns', label: 'Returns' },
+    { value: 'manager-access', label: 'Manager Access', ownerOnly: true },
     { value: 'developer', label: 'Developer', developerOnly: true },
 ];
 
@@ -33,7 +34,7 @@ export function AdminDashboardLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { loggedInRole, permissions, logout } = useAdminStore();
+  const { loggedInRole, managerPermissions, logout } = useAdminStore();
   const { toast } = useToast();
 
   const handleTabChange = (value: string) => {
@@ -49,15 +50,19 @@ export function AdminDashboardLayout({
   const activeTab = pathname.split('/')[2] || 'dashboard';
 
   const visibleTabs = ALL_TABS.filter(tab => {
-    if (loggedInRole === 'owner' || loggedInRole === 'developer') {
-        return loggedInRole === 'developer' ? true : !tab.developerOnly;
+    if (tab.developerOnly) {
+        return loggedInRole === 'developer';
+    }
+    if (tab.ownerOnly) {
+        return loggedInRole === 'owner';
     }
     if (loggedInRole === 'manager') {
-        return permissions.includes(tab.value) && !tab.developerOnly;
+        return managerPermissions.includes(tab.value);
     }
-    // Fallback for no role, should not happen if auth is working
-    return !tab.developerOnly;
+    // Owner and Developer see all non-special-cased tabs
+    return loggedInRole === 'owner' || loggedInRole === 'developer';
   });
+  
 
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8">

@@ -21,16 +21,6 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Trash2, UserPlus, Users, Download } from 'lucide-react';
-import { Checkbox } from './ui/checkbox';
-
-const ADMIN_TABS = [
-    { id: 'dashboard', label: 'Store Details' },
-    { id: 'api-keys', label: 'API Keys' },
-    { id: 'sales', label: 'Sales' },
-    { id: 'stock-inward', label: 'Stock Inward' },
-    { id: 'inventory', label: 'Inventory' },
-    { id: 'returns', label: 'Returns' },
-];
 
 export function CustomerManagementClient() {
   const { toast } = useToast();
@@ -39,20 +29,7 @@ export function CustomerManagementClient() {
   const [shopName, setShopName] = useState('');
   const [emailId, setEmailId] = useState('');
   const [operatorMobile, setOperatorMobile] = useState('');
-  const [ownerPassword, setOwnerPassword] = useState('');
-  const [managerPassword, setManagerPassword] = useState('');
-  const [managerPermissions, setManagerPermissions] = useState<string[]>([]);
-
-  const handlePermissionChange = (tabId: string, checked: boolean) => {
-    setManagerPermissions(prev => {
-        if (checked) {
-            return [...prev, tabId];
-        } else {
-            return prev.filter(id => id !== tabId);
-        }
-    });
-  };
-
+  
   const handleAddUser = () => {
     if (!shopName) {
       toast({ variant: 'destructive', title: 'Shop Name Required', description: 'Please enter a shop name.' });
@@ -66,16 +43,8 @@ export function CustomerManagementClient() {
       toast({ variant: 'destructive', title: 'Invalid Operator Mobile', description: 'Please enter a valid 10-digit mobile number.' });
       return;
     }
-    if (ownerPassword.length < 4) {
-        toast({ variant: 'destructive', title: 'Owner Password Too Short', description: 'Password must be at least 4 characters long.' });
-        return;
-    }
-    if (managerPassword.length < 4) {
-        toast({ variant: 'destructive', title: 'Manager Password Too Short', description: 'Password must be at least 4 characters long.' });
-        return;
-    }
 
-    addUser(shopName, emailId, operatorMobile, ownerPassword, managerPassword, managerPermissions);
+    addUser(shopName, emailId, operatorMobile);
     toast({
       title: 'User Added',
       description: `User for ${shopName} has been added.`,
@@ -83,9 +52,6 @@ export function CustomerManagementClient() {
     setShopName('');
     setEmailId('');
     setOperatorMobile('');
-    setOwnerPassword('');
-    setManagerPassword('');
-    setManagerPermissions([]);
   };
 
   const handleRemoveUser = (numberToRemove: string) => {
@@ -106,7 +72,7 @@ export function CustomerManagementClient() {
       return;
     }
 
-    const headers = ['Shop Name', 'Email ID', 'Operator Number', 'Owner Password', 'Manager Password', 'Manager Permissions'];
+    const headers = ['Shop Name', 'Email ID', 'Operator Number'];
     const csvContent = [
       headers.join(','),
       ...users.map(user => {
@@ -114,9 +80,6 @@ export function CustomerManagementClient() {
           user.shopName,
           user.emailId,
           user.operatorMobileNumber,
-          user.ownerPassword,
-          user.managerPassword,
-          user.managerPermissions.join('; '),
         ];
         return row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
       }),
@@ -175,32 +138,7 @@ export function CustomerManagementClient() {
             <Label htmlFor="new-operator-mobile">Login Mobile</Label>
             <Input id="new-operator-mobile" type="tel" value={operatorMobile} onChange={(e) => setOperatorMobile(e.target.value)} placeholder="10-digit number" maxLength={10} />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="owner-password">Owner Password</Label>
-            <Input id="owner-password" type="password" value={ownerPassword} onChange={(e) => setOwnerPassword(e.target.value)} placeholder="Min. 4 characters" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="manager-password">Manager Password</Label>
-            <Input id="manager-password" type="password" value={managerPassword} onChange={(e) => setManagerPassword(e.target.value)} placeholder="Min. 4 characters" />
-          </div>
         </div>
-
-        <div className="space-y-2">
-            <Label>Manager Permissions</Label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 p-4 border rounded-md">
-                {ADMIN_TABS.map(tab => (
-                    <div key={tab.id} className="flex items-center space-x-2">
-                        <Checkbox
-                            id={`perm-${tab.id}`}
-                            checked={managerPermissions.includes(tab.id)}
-                            onCheckedChange={(checked) => handlePermissionChange(tab.id, !!checked)}
-                        />
-                        <Label htmlFor={`perm-${tab.id}`} className="font-normal">{tab.label}</Label>
-                    </div>
-                ))}
-            </div>
-        </div>
-
 
         <div className="border rounded-lg overflow-hidden">
           <Table>
@@ -209,9 +147,6 @@ export function CustomerManagementClient() {
                 <TableHead>Shop Name</TableHead>
                 <TableHead>Email ID</TableHead>
                 <TableHead>Login Mobile</TableHead>
-                <TableHead>Owner Password</TableHead>
-                <TableHead>Manager Password</TableHead>
-                <TableHead>Manager Permissions</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -222,9 +157,6 @@ export function CustomerManagementClient() {
                     <TableCell>{user.shopName}</TableCell>
                     <TableCell>{user.emailId}</TableCell>
                     <TableCell className="font-mono">{user.operatorMobileNumber}</TableCell>
-                    <TableCell className="font-mono">••••••••</TableCell>
-                    <TableCell className="font-mono">••••••••</TableCell>
-                    <TableCell className="text-xs">{user.managerPermissions?.join(', ') || 'None'}</TableCell>
                     <TableCell className="text-right">
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -253,7 +185,7 @@ export function CustomerManagementClient() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                  <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
                     <div className="flex flex-col items-center gap-2">
                       <Users className="h-8 w-8" />
                       <span>No customers found.</span>
