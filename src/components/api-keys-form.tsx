@@ -37,7 +37,7 @@ export function ApiKeysForm() {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="whatsappApiKey">WhatsApp Business API Key</Label>
+        <Label htmlFor="whatsappApiKey">Fast2Sms API Key</Label>
         <Input
           id="whatsappApiKey"
           name="whatsappApiKey"

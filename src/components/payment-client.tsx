@@ -291,7 +291,7 @@ export function PaymentClient() {
     try {
         const pdfBase64 = generatePDF();
         
-        const receiptCaption = 
+        const message = 
 `Dear Customer,
 Thanks for shopping at ${storeDetails.storeName}. As part of our green initiative, your digital bill is attached.
 Happy Shopping`;
@@ -300,7 +300,7 @@ Happy Shopping`;
             to: phoneNumber,
             pdfBase64,
             filename: `invoice-${billNumber}.pdf`,
-            caption: receiptCaption,
+            message: message,
             whatsappApiKey: apiKeys.whatsappApiKey,
         });
 
