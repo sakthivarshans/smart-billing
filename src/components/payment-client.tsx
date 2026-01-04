@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useBillStore, useAdminStore, useApiKeys } from '@/lib/store';
+import { useBillStore, useAdminStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { IndianRupee, CheckCircle, Loader2, AlertTriangle, CreditCard, Send, SkipForward } from 'lucide-react';
@@ -32,9 +32,7 @@ export function PaymentClient() {
   const router = useRouter();
   const { toast } = useToast();
   const { total, items, phoneNumber, resetBill } = useBillStore();
-  const { storeDetails, addSale } = useAdminStore();
-  const initialApiKeys = useApiKeys(); // Gets keys on initial render
-  const getApiKeys = useAdminStore((state) => state.getApiKeys);
+  const { storeDetails, addSale, getApiKeys } = useAdminStore();
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -42,8 +40,6 @@ export function PaymentClient() {
   const [error, setError] = useState<string | null>(null);
   const [paymentId, setPaymentId] = useState<string | null>(null);
   
-  // State to hold the API keys, which will be updated on the client
-  const [apiKeys, setApiKeys] = useState(initialApiKeys);
   const [billNumber, setBillNumber] = useState('');
 
   // Price breakup calculation
@@ -53,11 +49,8 @@ export function PaymentClient() {
   const cgst = gstAmount / 2;
 
   useEffect(() => {
-    // This effect runs only on the client, after the component has mounted.
-    // It fetches the latest API keys from localStorage via the store.
-    setApiKeys(getApiKeys());
     setBillNumber(String(Math.floor(100000 + Math.random() * 900000)));
-  }, [getApiKeys]);
+  }, []);
 
 
   const handlePaymentSuccess = async (response: any) => {
@@ -86,6 +79,7 @@ export function PaymentClient() {
   };
 
   const openRazorpayCheckout = (orderId: string) => {
+    const apiKeys = getApiKeys();
     const razorpayKeyId = apiKeys.razorpayKeyId; 
 
     const options = {
@@ -180,6 +174,7 @@ export function PaymentClient() {
   const handlePayAction = async () => {
     setIsProcessing(true);
     setError(null);
+    const apiKeys = getApiKeys();
     try {
       if (!apiKeys.razorpayKeyId || !apiKeys.razorpayKeySecret) {
         throw new Error("Razorpay Key ID or Key Secret is not configured in the admin dashboard.");
@@ -288,6 +283,8 @@ export function PaymentClient() {
     if (!paymentId) return;
 
     setIsSending(true);
+    const apiKeys = getApiKeys(); 
+
     try {
         const pdfBase64 = generatePDF();
         
@@ -442,7 +439,7 @@ Happy Shopping`;
                     className="w-full" 
                     size="lg" 
                     onClick={handlePayAction}
-                    disabled={isProcessing || !apiKeys.razorpayKeyId}
+                    disabled={isProcessing || !getApiKeys().razorpayKeyId}
                 >
                     {isProcessing ? (
                         <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Preparing...</>
@@ -456,7 +453,7 @@ Happy Shopping`;
                         className="w-full" 
                         size="lg" 
                         onClick={handleSendReceipt}
-                        disabled={isSending || !apiKeys.whatsappApiKey || !apiKeys.whatsappApiUrl}
+                        disabled={isSending || !getApiKeys().whatsappApiKey || !getApiKeys().whatsappApiUrl}
                     >
                         {isSending ? (
                             <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</>
