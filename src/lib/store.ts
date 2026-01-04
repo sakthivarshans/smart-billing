@@ -1,7 +1,6 @@
 
 
 import { create } from 'zustand';
-import { createJSONStorage } from 'zustand/middleware'
 import { v4 as uuidv4 } from 'uuid';
 
 export type BillItem = {
@@ -164,6 +163,7 @@ export const useAdminStore = create<AdminState>()(
         sales: [],
         developers: [
             { mobileNumber: '9999999999', emailId: 'dev@example.com' },
+            { mobileNumber: '9655952985', emailId: 'developer@example.com' },
         ],
         users: [],
         columnMapping: {
