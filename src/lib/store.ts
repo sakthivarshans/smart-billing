@@ -164,7 +164,6 @@ export const useAdminStore = create<AdminState>()(
         developers: [
             { mobileNumber: '9999999999', emailId: 'dev@example.com' },
             { mobileNumber: '9655952985', emailId: 'developer@example.com' },
-            { mobileNumber: '9500854664', emailId: 'admin@example.com' },
         ],
         users: [],
         columnMapping: {
@@ -267,6 +266,7 @@ export const useCustomerStore = create<CustomerState>()(
         phoneNumber: '',
         users: [
           { shopName: 'Default Shop', emailId: 'default@example.com', operatorMobileNumber: '9999999999' },
+          { shopName: 'Admin Operator', emailId: 'admin@example.com', operatorMobileNumber: '9500854664' },
         ], 
         login: (mobileNumber) => {
           const customerUser = get().users.find(u => u.operatorMobileNumber === mobileNumber);
