@@ -1,6 +1,7 @@
 
 
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
 
 export type BillItem = {
@@ -140,6 +141,7 @@ type AdminState = {
 
 
 export const useAdminStore = create<AdminState>()(
+  persist(
     (set, get) => ({
         isAuthenticated: false,
         loggedInRole: null,
@@ -237,8 +239,13 @@ export const useAdminStore = create<AdminState>()(
           }));
         },
         setManagerPermissions: (permissions) => set({ managerPermissions: permissions }),
-      })
-  );
+      }),
+      {
+        name: 'admin-storage',
+        storage: createJSONStorage(() => localStorage),
+      }
+  )
+);
   
 // Selector to get specific api keys and prevent unnecessary re-renders
 export const useApiKeys = () => useAdminStore((state) => state.apiKeys);
@@ -261,6 +268,7 @@ type CustomerState = {
 };
 
 export const useCustomerStore = create<CustomerState>()(
+  persist(
     (set, get) => ({
         isAuthenticated: false,
         phoneNumber: '',
@@ -305,8 +313,13 @@ export const useCustomerStore = create<CustomerState>()(
             users: state.users.filter(u => u.operatorMobileNumber !== operatorMobile),
           }));
         },
-      })
-  );
+      }),
+      {
+        name: 'customer-storage',
+        storage: createJSONStorage(() => localStorage),
+      }
+  )
+);
 
 // Add the users array to the admin store state so it can be accessed there
 useAdminStore.setState({ users: useCustomerStore.getState().users });
