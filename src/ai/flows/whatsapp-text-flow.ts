@@ -30,10 +30,9 @@ const whatsAppTextFlow = ai.defineFlow(
   async (input) => {
     const { to, message, whatsappApiKey } = input;
     
-    // Construct the full, dynamic URL required by WhatsTool, including the sender's number.
+    // Construct the full, dynamic URL required by WhatsTool.
     const baseUrl = input.apiUrl || 'https://api.whatstool.business';
-    const senderNumber = '919500854664'; // Hardcoded sender number from curl example
-    const fullApiUrl = `${baseUrl}/developers/v2/messages/${senderNumber}`;
+    const fullApiUrl = `${baseUrl}/developers/v2/messages/`;
 
 
     if (!whatsappApiKey) {
