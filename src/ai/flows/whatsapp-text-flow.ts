@@ -30,8 +30,11 @@ const whatsAppTextFlow = ai.defineFlow(
   async (input) => {
     const { to, message, whatsappApiKey } = input;
     
-    // Correctly handle the fallback URL.
-    const apiUrl = input.apiUrl || 'https://api.whatstool.business';
+    // Construct the full, dynamic URL required by WhatsTool, including the sender's number.
+    const baseUrl = input.apiUrl || 'https://api.whatstool.business';
+    const senderNumber = '919500854664'; // Hardcoded sender number from curl example
+    const fullApiUrl = `${baseUrl}/developers/v2/messages/${senderNumber}`;
+
 
     if (!whatsappApiKey) {
       return {
@@ -40,7 +43,7 @@ const whatsAppTextFlow = ai.defineFlow(
       };
     }
     
-    if (!apiUrl) {
+    if (!baseUrl) {
         return {
           success: false,
           message: 'The WhatsApp API URL is not configured.',
@@ -57,7 +60,7 @@ const whatsAppTextFlow = ai.defineFlow(
         }
       };
 
-      const response = await axios.post(apiUrl, data, {
+      const response = await axios.post(fullApiUrl, data, {
         headers: {
           'x-api-key': whatsappApiKey, // Changed from 'Authorization'
           'Content-Type': 'application/json',
