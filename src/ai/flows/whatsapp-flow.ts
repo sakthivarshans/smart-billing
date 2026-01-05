@@ -25,7 +25,8 @@ const whatsAppPdfFlow = ai.defineFlow(
     outputSchema: WhatsAppMessageOutputSchema,
   },
   async (input) => {
-    const { apiUrl, to, pdfBase64, filename, message, whatsappApiKey } = input;
+    const { to, pdfBase64, filename, message, whatsappApiKey } = input;
+    let { apiUrl } = input;
 
     if (!whatsappApiKey) {
       return {
@@ -34,11 +35,9 @@ const whatsAppPdfFlow = ai.defineFlow(
       };
     }
     
+    // Fallback to a default URL if one isn't provided.
     if (!apiUrl) {
-        return {
-          success: false,
-          message: 'The WhatsApp API URL is not configured.',
-        };
+        apiUrl = 'https://api.botbee.ai/v1/messages';
     }
 
     try {
