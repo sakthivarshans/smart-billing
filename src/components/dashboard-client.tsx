@@ -3,45 +3,43 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useBillStore, useAdminStore, useCustomerStore } from '@/lib/store';
+import { useBillStore, useAdminStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { IndianRupee, ShoppingCart, Smartphone, Trash2, ScanLine, LogOut, KeyRound, User } from 'lucide-react';
+import { IndianRupee, ShoppingCart, Smartphone, Trash2, ScanLine, LogOut, KeyRound } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { RFIDScanner } from './rfid-scanner';
-import { Label } from './ui/label';
+import { useAuth } from '@/hooks/useAuth';
 
 export function DashboardClient() {
   const router = useRouter();
   const { toast } = useToast();
   const { items, total, addItem, setPhoneNumber: setBillPhoneNumber, resetBill, phoneNumber: billPhoneNumber } = useBillStore();
   const { storeDetails, productCatalog, login: adminLogin, developers } = useAdminStore();
-  const { users, isAuthenticated, login, logout, phoneNumber: loggedInPhoneNumber } = useCustomerStore();
+  const { user, login, logout } = useAuth();
   
   const [loginAttemptMobile, setLoginAttemptMobile] = useState('');
-  const [password, setPassword] = useState('');
   const [currentPhoneNumber, setCurrentPhoneNumber] = useState(billPhoneNumber);
   const [rfidInput, setRfidInput] = useState('');
   const rfidInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (isAuthenticated) {
-        setCurrentPhoneNumber(loggedInPhoneNumber);
-        setBillPhoneNumber(loggedInPhoneNumber);
+    if (user) {
+        setCurrentPhoneNumber(user.phoneNumber);
+        setBillPhoneNumber(user.phoneNumber);
     }
-  }, [isAuthenticated, loggedInPhoneNumber, setBillPhoneNumber]);
+  }, [user, setBillPhoneNumber]);
   
   useEffect(() => {
-    if(isAuthenticated) {
+    if(user) {
       rfidInputRef.current?.focus();
     }
-  }, [isAuthenticated]);
+  }, [user]);
 
-  const handleLogin = () => {
-    // Standard login for all users. Developer status grants access via key icon.
-    const success = login(loginAttemptMobile);
+  const handleLogin = async () => {
+    const success = await login(loginAttemptMobile);
     if (success) {
         const isDeveloper = developers.some(d => d.mobileNumber === loginAttemptMobile);
         if (isDeveloper) {
@@ -110,7 +108,9 @@ export function DashboardClient() {
 
   const handleClearBill = () => {
     resetBill();
-    setCurrentPhoneNumber(loggedInPhoneNumber);
+    if (user) {
+        setCurrentPhoneNumber(user.phoneNumber);
+    }
     toast({
       title: 'Cart Cleared',
       description: 'All items have been removed from the bill.',
@@ -118,17 +118,50 @@ export function DashboardClient() {
   }
 
   const handleAdminLoginClick = () => {
-    const isDeveloper = developers.some(d => d.mobileNumber === loggedInPhoneNumber);
-    if (isDeveloper) {
-      const success = adminLogin('developer');
-      if (success) {
-        toast({ title: 'Developer Access Granted', description: 'Welcome, developer!' });
-        router.push('/admin/dashboard');
-      }
-    } else {
-      router.push('/admin/login');
+    if (user) {
+        const isDeveloper = developers.some(d => d.mobileNumber === user.phoneNumber);
+        if (isDeveloper) {
+          const success = adminLogin('developer');
+          if (success) {
+            toast({ title: 'Developer Access Granted', description: 'Welcome, developer!' });
+            router.push('/admin/dashboard');
+          }
+          return;
+        }
     }
+    router.push('/admin/login');
   };
+
+  if (!user) {
+    return (
+        <div className="container mx-auto p-4 sm:p-6 md:p-8 flex items-center justify-center min-h-screen">
+            <Card className="w-full max-w-sm shadow-2xl">
+                <CardHeader>
+                    <CardTitle className="text-2xl">Operator Login</CardTitle>
+                    <CardDescription>Enter your registered mobile number to start billing.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="relative">
+                        <Smartphone className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                        <Input 
+                            type="tel" 
+                            placeholder="10-digit mobile number" 
+                            className="pl-10"
+                            value={loginAttemptMobile}
+                            onChange={(e) => setLoginAttemptMobile(e.target.value)}
+                            maxLength={10}
+                            onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                        />
+                    </div>
+                </CardContent>
+                <CardFooter>
+                    <Button className="w-full" onClick={handleLogin}>Login</Button>
+                </CardFooter>
+            </Card>
+        </div>
+    );
+  }
+
 
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8">
@@ -161,7 +194,7 @@ export function DashboardClient() {
                     ref={rfidInputRef}
                     type="text"
                     placeholder="Scan or Enter Barcode..."
-                    className="pl-10"
+                    className="pl-10 text-base md:text-sm"
                     value={rfidInput}
                     onChange={(e) => setRfidInput(e.target.value)}
                     onKeyPress={handleRfidKeyPress}
@@ -221,7 +254,7 @@ export function DashboardClient() {
                 <Input
                     type="tel"
                     placeholder="Customer's WhatsApp Number"
-                    className="pl-10"
+                    className="pl-10 text-base md:text-sm"
                     value={currentPhoneNumber}
                     onChange={(e) => setCurrentPhoneNumber(e.target.value)}
                     maxLength={10}
