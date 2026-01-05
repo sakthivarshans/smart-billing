@@ -18,7 +18,7 @@ export function DashboardClient() {
   const { toast } = useToast();
   const { items, total, addItem, setPhoneNumber: setBillPhoneNumber, resetBill, phoneNumber: billPhoneNumber } = useBillStore();
   const { storeDetails, productCatalog, login: adminLogin, developers } = useAdminStore();
-  const { user, login, logout } = useAuth();
+  const { user, login, logout, isAuthenticated } = useAuth();
   
   const [loginAttemptMobile, setLoginAttemptMobile] = useState('');
   const [currentPhoneNumber, setCurrentPhoneNumber] = useState(billPhoneNumber);
@@ -26,17 +26,20 @@ export function DashboardClient() {
   const rfidInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (user) {
-        setCurrentPhoneNumber(user.phoneNumber);
-        setBillPhoneNumber(user.phoneNumber);
+    if (isAuthenticated) {
+        if(user?.phoneNumber) {
+            setCurrentPhoneNumber(user.phoneNumber);
+            setBillPhoneNumber(user.phoneNumber);
+        }
+        router.refresh(); // This will help re-render with the new auth state
     }
-  }, [user, setBillPhoneNumber]);
+  }, [isAuthenticated, user, setBillPhoneNumber, router]);
   
   useEffect(() => {
-    if(user) {
+    if(isAuthenticated) {
       rfidInputRef.current?.focus();
     }
-  }, [user]);
+  }, [isAuthenticated]);
 
   const handleLogin = async () => {
     const success = await login(loginAttemptMobile);
@@ -132,7 +135,7 @@ export function DashboardClient() {
     router.push('/admin/login');
   };
 
-  if (!user) {
+  if (!isAuthenticated) {
     return (
         <div className="container mx-auto p-4 sm:p-6 md:p-8 flex items-center justify-center min-h-screen">
             <Card className="w-full max-w-sm shadow-2xl">
