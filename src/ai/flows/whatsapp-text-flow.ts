@@ -31,7 +31,7 @@ const whatsAppTextFlow = ai.defineFlow(
     const { to, message, whatsappApiKey } = input;
     
     // Correctly handle the fallback URL.
-    const apiUrl = input.apiUrl || 'https://api.botbee.ai/v1/messages';
+    const apiUrl = input.apiUrl || 'https://api.whatstool.business/developers/v2/messages/{{WHATSAPP_API_NO}}';
 
     if (!whatsappApiKey) {
       return {
@@ -48,17 +48,18 @@ const whatsAppTextFlow = ai.defineFlow(
     }
 
     try {
-      // This is a generic endpoint structure for sending a text message.
-      // The actual data structure may differ based on the provider.
-      // E.g., BotBee might expect `number: to` instead of `phone: to`.
+      // This structure is now aligned with providers like WhatsTool
       const data = {
-        number: to,
-        text: message, // Using 'text' field, common for text messages
+        to: to,
+        type: 'text',
+        text: {
+          body: message
+        }
       };
 
       const response = await axios.post(apiUrl, data, {
         headers: {
-          'Authorization': whatsappApiKey,
+          'x-api-key': whatsappApiKey, // Changed from 'Authorization'
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         }
