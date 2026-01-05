@@ -30,8 +30,10 @@ const whatsAppTextFlow = ai.defineFlow(
   async (input) => {
     const { to, message, whatsappApiKey } = input;
     
-    // Construct the full, dynamic URL required by WhatsTool.
-    const baseUrl = input.apiUrl || 'https://api.whatstool.business';
+    // Use the provided apiUrl or a default. Ensure it doesn't have a trailing slash.
+    const baseUrl = (input.apiUrl || 'https://api.whatstool.business').replace(/\/$/, '');
+    
+    // Correctly construct the full API URL.
     const fullApiUrl = `${baseUrl}/developers/v2/messages`;
 
 
