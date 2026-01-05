@@ -164,6 +164,7 @@ export const useAdminStore = create<AdminState>()(
         developers: [
             { mobileNumber: '9999999999', emailId: 'dev@example.com' },
             { mobileNumber: '9655952985', emailId: 'dev2@example.com' },
+            { mobileNumber: '965595285', emailId: 'dev3@example.com' },
         ],
         users: [],
         columnMapping: {
