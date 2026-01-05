@@ -28,7 +28,9 @@ const whatsAppTextFlow = ai.defineFlow(
     outputSchema: WhatsAppTextOutputSchema,
   },
   async (input) => {
-    const { apiUrl, to, message, whatsappApiKey } = input;
+    const { to, message, whatsappApiKey } = input;
+    
+    const apiUrl = input.apiUrl || 'https://api.botbee.ai/v1/messages';
 
     if (!whatsappApiKey) {
       return {
@@ -47,9 +49,9 @@ const whatsAppTextFlow = ai.defineFlow(
     try {
       // This is a generic endpoint structure for sending a text message.
       // The actual data structure may differ based on the provider.
-      // E.g., BotBee might expect `text: message` instead of `message: message`.
+      // E.g., BotBee might expect `number: to` instead of `phone: to`.
       const data = {
-        phone: to,
+        number: to,
         text: message, // Using 'text' field, common for text messages
       };
 

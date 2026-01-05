@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { IndianRupee, CheckCircle, Loader2, AlertTriangle, CreditCard, Send, SkipForward } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { initiateRazorpayOrder } from '@/ai/flows/razorpay-flow';
-import { sendWhatsAppPdf } from '@/ai/flows/whatsapp-flow';
+import { sendWhatsAppText } from '@/ai/flows/whatsapp-text-flow';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -286,26 +286,19 @@ export function PaymentClient() {
     const apiKeys = getApiKeys(); 
 
     try {
-        const pdfBase64 = generatePDF();
-        
-        const message = 
-`Dear Customer,
-Thanks for shopping at ${storeDetails.storeName}. As part of our green initiative, your digital bill is attached.
-Happy Shopping`;
+        const message = `Thank you for shopping at ${storeDetails.storeName}! We appreciate your business.`;
 
-        const result = await sendWhatsAppPdf({
+        const result = await sendWhatsAppText({
             apiUrl: apiKeys.whatsappApiUrl, 
             to: phoneNumber,
-            pdfBase64,
-            filename: `invoice-${billNumber}.pdf`,
             message: message,
             whatsappApiKey: apiKeys.whatsappApiKey,
         });
 
         if (result.success) {
             toast({
-                title: 'Receipt Sent!',
-                description: 'The invoice has been sent via WhatsApp.',
+                title: 'Message Sent!',
+                description: 'The thank you message has been sent via WhatsApp.',
             });
             resetBillAndReturn();
         } else {
@@ -313,10 +306,10 @@ Happy Shopping`;
         }
 
     } catch (err: any) {
-        console.error("Failed to send receipt:", err);
+        console.error("Failed to send message:", err);
         toast({
             variant: "destructive",
-            title: "Failed to Send Receipt",
+            title: "Failed to Send Message",
             description: err.message || "Could not send the message. Please ensure the API key and URL are correct.",
         });
     } finally {
