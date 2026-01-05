@@ -30,6 +30,7 @@ const whatsAppTextFlow = ai.defineFlow(
   async (input) => {
     const { to, message, whatsappApiKey } = input;
     
+    // Correctly handle the fallback URL.
     const apiUrl = input.apiUrl || 'https://api.botbee.ai/v1/messages';
 
     if (!whatsappApiKey) {
