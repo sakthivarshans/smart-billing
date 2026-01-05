@@ -31,13 +31,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  devIndicators: {
-    buildActivity: false,
-  },
-  // Adding this experimental flag to address the cross-origin warning
-  experimental: {
-    allowedDevOrigins: ["**.¹.cloudworkstations.dev"],
-  },
 };
 
 export default nextConfig;
