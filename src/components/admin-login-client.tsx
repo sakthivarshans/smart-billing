@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { KeyRound, User, LogOut } from 'lucide-react';
+import { KeyRound, User, LogOut, ArrowRight } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 
 export function AdminLoginClient() {
@@ -38,8 +38,7 @@ export function AdminLoginClient() {
     }
   };
 
-  const handleLogoutAndRedirect = () => {
-    logout();
+  const handleGoToBilling = () => {
     router.push('/billing');
   };
 
@@ -56,9 +55,8 @@ export function AdminLoginClient() {
                 <CardTitle className="text-2xl">Admin Login</CardTitle>
                 <CardDescription>Enter your credentials to access the admin dashboard.</CardDescription>
             </div>
-            <Button variant="ghost" size="icon" onClick={handleLogoutAndRedirect} className="absolute top-4 right-4">
-                <LogOut className="h-5 w-5" />
-                <span className="sr-only">Logout</span>
+            <Button variant="outline" size="sm" onClick={handleGoToBilling} className="absolute top-4 right-4">
+                Go to Billing <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
         </CardHeader>
