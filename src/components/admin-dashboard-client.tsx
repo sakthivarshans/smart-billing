@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   Card,
@@ -43,6 +43,11 @@ export function AdminDashboardLayout({
   const pathname = usePathname();
   const { loggedInRole, managerPermissions, logout } = useAdminStore();
   const { toast } = useToast();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleTabChange = (value: string) => {
     router.push(`/admin/${value}`);
@@ -57,6 +62,7 @@ export function AdminDashboardLayout({
   const activeTab = pathname.split('/')[2] || 'dashboard';
 
   const visibleTabs = ALL_TABS.filter(tab => {
+    if (!isClient) return false; // Don't render tabs on the server
     if (loggedInRole === 'developer') {
         return !tab.ownerOnly;
     }
@@ -70,13 +76,13 @@ export function AdminDashboardLayout({
   });
 
   useEffect(() => {
-    if (loggedInRole === 'manager') {
+    if (isClient && loggedInRole === 'manager') {
         const canViewCurrentTab = visibleTabs.some(tab => tab.value === activeTab);
         if (!canViewCurrentTab && visibleTabs.length > 0) {
             router.replace(`/admin/${visibleTabs[0].value}`);
         }
     }
-  }, [activeTab, loggedInRole, router, visibleTabs]);
+  }, [activeTab, loggedInRole, router, visibleTabs, isClient]);
   
 
   return (
@@ -98,32 +104,36 @@ export function AdminDashboardLayout({
         </CardHeader>
         <CardContent>
           {/* Desktop Tabs */}
-          <Tabs
-            defaultValue={activeTab}
-            value={activeTab}
-            onValueChange={handleTabChange}
-            className="hidden sm:block"
-          >
-            <TabsList className={`grid w-full`} style={{ gridTemplateColumns: `repeat(${visibleTabs.length}, minmax(0, 1fr))` }}>
-              {visibleTabs.map(tab => (
-                <TabsTrigger key={tab.value} value={tab.value}>{tab.label}</TabsTrigger>
-              ))}
-            </TabsList>
-            <div className="pt-4">{children}</div>
-          </Tabs>
+          {isClient && (
+            <Tabs
+              defaultValue={activeTab}
+              value={activeTab}
+              onValueChange={handleTabChange}
+              className="hidden sm:block"
+            >
+              <TabsList className={`grid w-full`} style={{ gridTemplateColumns: `repeat(${visibleTabs.length > 0 ? visibleTabs.length : 1}, minmax(0, 1fr))` }}>
+                {visibleTabs.map(tab => (
+                  <TabsTrigger key={tab.value} value={tab.value}>{tab.label}</TabsTrigger>
+                ))}
+              </TabsList>
+              <div className="pt-4">{children}</div>
+            </Tabs>
+          )}
 
           {/* Mobile Select */}
           <div className="sm:hidden">
-            <Select onValueChange={handleTabChange} value={activeTab}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a page" />
-              </SelectTrigger>
-              <SelectContent>
-                {visibleTabs.map(tab => (
-                  <SelectItem key={tab.value} value={tab.value}>{tab.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {isClient && (
+              <Select onValueChange={handleTabChange} value={activeTab}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a page" />
+                </SelectTrigger>
+                <SelectContent>
+                  {visibleTabs.map(tab => (
+                    <SelectItem key={tab.value} value={tab.value}>{tab.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             <div className="pt-4">{children}</div>
           </div>
         </CardContent>
