@@ -17,13 +17,15 @@ export function DashboardClient() {
   const router = useRouter();
   const { toast } = useToast();
   const { items, total, addItem, setPhoneNumber: setBillPhoneNumber, resetBill, phoneNumber: billPhoneNumber } = useBillStore();
-  const { storeDetails, productCatalog, login: adminLogin, developers } = useAdminStore();
+  const { storeDetails, productCatalog, login: adminLogin, developers, sales } = useAdminStore();
   const { user, login, logout, isAuthenticated } = useAuth();
   
   const [loginAttemptMobile, setLoginAttemptMobile] = useState('');
   const [currentPhoneNumber, setCurrentPhoneNumber] = useState(billPhoneNumber);
   const [rfidInput, setRfidInput] = useState('');
   const rfidInputRef = useRef<HTMLInputElement>(null);
+
+  const recentPhoneNumbers = [...new Set(sales.map(s => s.phoneNumber).filter(Boolean))];
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -261,7 +263,11 @@ export function DashboardClient() {
                     value={currentPhoneNumber}
                     onChange={(e) => setCurrentPhoneNumber(e.target.value)}
                     maxLength={10}
+                    list="recent-phone-numbers"
                 />
+                <datalist id="recent-phone-numbers">
+                    {recentPhoneNumbers.map(num => <option key={num} value={num} />)}
+                </datalist>
             </div>
             <Button size="lg" className="w-full sm:w-1/2" onClick={handleProceedToPayment}>
                 Proceed to Payment
