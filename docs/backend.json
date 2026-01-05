@@ -1,0 +1,72 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Represents a user's profile in the system.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The user's unique ID."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email address."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The user's display name."
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "The user's phone number."
+        }
+      },
+      "required": ["uid", "email"]
+    },
+    "DeveloperProfile": {
+      "title": "Developer Profile",
+      "description": "Represents a developer's profile with special permissions.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The developer's unique ID."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The developer's email address."
+        },
+        "mobileNumber": {
+          "type": "string",
+          "description": "The developer's mobile number for login."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["developer"],
+          "description": "The role of the developer."
+        }
+      },
+      "required": ["uid", "email", "mobileNumber", "role"]
+    }
+  },
+  "auth": {
+    "providers": ["password"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserProfile"
+      },
+      "description": "Stores public profile information for each user."
+    },
+    "/developers/{developerId}": {
+      "schema": {
+        "$ref": "#/entities/DeveloperProfile"
+      },
+      "description": "Stores information about developer accounts."
+    }
+  }
+}

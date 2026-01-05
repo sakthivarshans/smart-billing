@@ -1,46 +1,29 @@
-
 'use client';
 
-import { create } from 'zustand';
-import { useAdminStore, useCustomerStore } from '@/lib/store';
+import { useAdminStore } from '@/lib/store';
+import { useUser } from '@/firebase';
 
-// This is a simplified auth store that will be replaced by Firebase Auth.
-// It uses Zustand for state management for now.
-
-type AuthUser = {
-    phoneNumber: string;
-    isDeveloper: boolean;
-};
-
-type AuthState = {
-    user: AuthUser | null;
-    login: (phoneNumber: string) => Promise<boolean>;
-    logout: () => void;
-};
-
-const useAuthStore = create<AuthState>((set, get) => ({
-    user: null,
-    login: async (phoneNumber: string) => {
-        // In a real app, this would be an API call to a backend with Firebase Auth
-        const { developers } = useAdminStore.getState();
-        const { users } = useCustomerStore.getState();
-
-        const isDeveloper = developers.some(d => d.mobileNumber === phoneNumber);
-        const isCustomer = users.some(u => u.operatorMobileNumber === phoneNumber);
-
-        if (isDeveloper || isCustomer) {
-            set({ user: { phoneNumber, isDeveloper } });
-            return true;
-        }
-
-        return false;
-    },
-    logout: () => {
-        set({ user: null });
-    },
-}));
-
-// A simple hook to expose the store's state and actions
 export function useAuth() {
-    return useAuthStore();
+  // This hook will be updated to use Firebase Authentication.
+  // The current implementation is a temporary placeholder.
+  const { user, loading, error } = useUser(); 
+  const { developers, users, login: customerLogin, logout: customerLogout, isAuthenticated } = useCustomerStore();
+
+  const login = async (mobileNumber: string): Promise<boolean> => {
+    const isDeveloper = developers.some(d => d.mobileNumber === mobileNumber);
+    const isUser = users.some(u => u.operatorMobileNumber === mobileNumber);
+    
+    if (isDeveloper || isUser) {
+      customerLogin(mobileNumber, isDeveloper ? 'developer' : 'owner');
+      return true;
+    }
+    
+    return false;
+  };
+  
+  const logout = () => {
+    customerLogout();
+  };
+
+  return { user, loading, error, login, logout, isAuthenticated };
 }

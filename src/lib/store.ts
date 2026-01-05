@@ -214,23 +214,20 @@ export const useAdminStore = create<AdminState>()(
         setColumnMapping: (mapping: ColumnMapping) => set({ columnMapping: mapping }),
         clearInventory: () => set({ stock: [], productCatalog: [] }),
         addDeveloper: (mobileNumber, emailId) => {
-          const developerExists = get().developers.some(d => d.mobileNumber === mobileNumber);
-          if (developerExists) {
-            set(state => ({
-              developers: state.developers.map(dev => 
-                dev.mobileNumber === mobileNumber 
-                ? { mobileNumber, emailId }
-                : dev
-              )
-            }));
-          } else {
-            const newDeveloper: DeveloperUser = {
-              mobileNumber,
-              emailId,
-            };
-            set(state => ({ developers: [...state.developers, newDeveloper] }));
-          }
-        },
+          set(state => {
+              const developerExists = state.developers.some(d => d.mobileNumber === mobileNumber);
+              if (developerExists) {
+                  return {
+                      developers: state.developers.map(dev =>
+                          dev.mobileNumber === mobileNumber ? { ...dev, emailId } : dev
+                      )
+                  };
+              }
+              return {
+                  developers: [...state.developers, { mobileNumber, emailId }]
+              };
+          });
+      },
         removeDeveloper: (mobileNumber) => {
           set(state => ({
             developers: state.developers.filter(d => d.mobileNumber !== mobileNumber)
@@ -251,30 +248,16 @@ export type CustomerUser = {
 }
 
 type CustomerState = {
-    isAuthenticated: boolean;
-    phoneNumber: string;
     users: CustomerUser[];
-    login: (mobileNumber: string) => boolean;
-    logout: () => void;
     addUser: (shopName: string, emailId: string, operatorMobile: string) => void;
     removeUser: (operatorMobile: string) => void;
 };
 
 export const useCustomerStore = create<CustomerState>()(
     (set, get) => ({
-        isAuthenticated: true,
-        phoneNumber: '',
         users: [
           { shopName: 'Default Shop', emailId: 'default@example.com', operatorMobileNumber: '9999999999' },
         ], 
-        login: (mobileNumber: string) => {
-            // This logic will be replaced with Firebase Auth
-            set({ isAuthenticated: true, phoneNumber: mobileNumber });
-            return true;
-        },
-        logout: () => {
-          set({ isAuthenticated: false, phoneNumber: ''});
-        },
         addUser: (shopName, emailId, operatorMobile) => {
           set((state) => {
             const userExists = state.users.some(u => u.operatorMobileNumber === operatorMobile);

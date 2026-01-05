@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Script from 'next/script';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
+import { ClientProviders } from '@/components/client-providers';
 
 export const metadata: Metadata = {
   title: 'SmartBill',
@@ -24,7 +25,7 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        {children}
+        <ClientProviders>{children}</ClientProviders>
         <Toaster />
         <Script src="https://checkout.razorpay.com/v1/checkout.js" />
       </body>
