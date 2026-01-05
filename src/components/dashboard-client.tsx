@@ -258,8 +258,8 @@ export function DashboardClient() {
             </Table>
           </div>
           <div className="flex justify-end items-center gap-4 pt-4 border-t-2 border-dashed">
-            <span className="text-2xl font-bold">TOTAL:</span>
-            <span className="text-3xl font-bold text-primary flex items-center">
+            <span className="text-xl sm:text-2xl font-bold">TOTAL:</span>
+            <span className="text-2xl sm:text-3xl font-bold text-primary flex items-center">
                 <IndianRupee size={24} className="mr-1"/>{total.toFixed(2)}
             </span>
           </div>

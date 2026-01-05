@@ -15,6 +15,13 @@ import { useAdminStore } from '@/lib/store';
 import { Button } from './ui/button';
 import { LogOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 const ALL_TABS = [
     { value: 'dashboard', label: 'Store Details' },
@@ -51,25 +58,18 @@ export function AdminDashboardLayout({
 
   const visibleTabs = ALL_TABS.filter(tab => {
     if (loggedInRole === 'developer') {
-        // Developers see everything except owner-only tabs
         return !tab.ownerOnly;
     }
     if (loggedInRole === 'owner') {
-        // Owners see everything except developer-only tabs
         return !tab.developerOnly;
     }
     if (loggedInRole === 'manager') {
-        // Managers see only what's in their permissions
         return managerPermissions.includes(tab.value);
     }
-    // Default to no tabs if role is not recognized
     return false;
   });
 
-
   useEffect(() => {
-    // If the user is a manager and their current tab is not in their list of visible tabs,
-    // redirect them to the first tab they DO have permission for.
     if (loggedInRole === 'manager') {
         const canViewCurrentTab = visibleTabs.some(tab => tab.value === activeTab);
         if (!canViewCurrentTab && visibleTabs.length > 0) {
@@ -83,32 +83,49 @@ export function AdminDashboardLayout({
     <div className="container mx-auto p-4 sm:p-6 md:p-8">
       <Card className="w-full max-w-6xl mx-auto shadow-2xl">
         <CardHeader>
-          <div className="flex justify-between items-start">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
             <div>
-              <CardTitle className="text-2xl">Admin Dashboard</CardTitle>
+              <CardTitle className="text-2xl sm:text-3xl">Admin Dashboard</CardTitle>
               <CardDescription>
                 Manage your store settings, sales, and inventory.
               </CardDescription>
             </div>
-            <Button variant="ghost" size="icon" onClick={handleLogout}>
+            <Button variant="ghost" size="icon" onClick={handleLogout} className="absolute top-4 right-4 sm:relative sm:top-auto sm:right-auto">
                 <LogOut className="h-5 w-5" />
                 <span className="sr-only">Logout</span>
             </Button>
           </div>
         </CardHeader>
         <CardContent>
+          {/* Desktop Tabs */}
           <Tabs
             defaultValue={activeTab}
             value={activeTab}
             onValueChange={handleTabChange}
+            className="hidden sm:block"
           >
             <TabsList className={`grid w-full`} style={{ gridTemplateColumns: `repeat(${visibleTabs.length}, minmax(0, 1fr))` }}>
               {visibleTabs.map(tab => (
                 <TabsTrigger key={tab.value} value={tab.value}>{tab.label}</TabsTrigger>
               ))}
             </TabsList>
-            {children}
+            <div className="pt-4">{children}</div>
           </Tabs>
+
+          {/* Mobile Select */}
+          <div className="sm:hidden">
+            <Select onValueChange={handleTabChange} value={activeTab}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a page" />
+              </SelectTrigger>
+              <SelectContent>
+                {visibleTabs.map(tab => (
+                  <SelectItem key={tab.value} value={tab.value}>{tab.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="pt-4">{children}</div>
+          </div>
         </CardContent>
       </Card>
     </div>

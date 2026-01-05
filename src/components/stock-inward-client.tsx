@@ -217,7 +217,7 @@ export function StockInwardClient() {
                 </div>
 
                 {csvHeaders.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 border p-4 rounded-md animate-in fade-in-0">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 border p-4 rounded-md animate-in fade-in-0">
                         {renderMappingSelector("Barcode/RFID Column", idColumn, setIdColumn, popoverOpenId, setPopoverOpenId, true)}
                         {renderMappingSelector("Product Name Column", nameColumn, setNameColumn, popoverOpenName, setPopoverOpenName, true)}
                         {renderMappingSelector("Price Column", priceColumn, setPriceColumn, popoverOpenPrice, setPopoverOpenPrice, true)}
