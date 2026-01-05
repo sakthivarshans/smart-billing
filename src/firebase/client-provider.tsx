@@ -1,10 +1,17 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { FirebaseClientInit } from './client-init';
+import { FirebaseProvider, type FirebaseContextValue } from './provider';
 
-// This provider is used to initialize Firebase on the client side.
-// It ensures that Firebase is initialized only once.
+// This provider is used to wrap the app and provide the Firebase context.
+// Initialization is handled on-demand by hooks or components that need it.
 export function FirebaseClientProvider({ children }: { children: ReactNode }) {
-  return <FirebaseClientInit>{children}</FirebaseClientInit>;
+  // The value is null initially and will be set by the initialization logic.
+  const initialValue: FirebaseContextValue = {
+    app: null,
+    auth: null,
+    firestore: null,
+  };
+
+  return <FirebaseProvider value={initialValue}>{children}</FirebaseProvider>;
 }

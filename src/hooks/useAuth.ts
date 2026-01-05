@@ -6,7 +6,7 @@ import { useUser } from '@/firebase';
 
 export function useAuth() {
   const { user, loading, error } = useUser(); 
-  const { developers, users, login: adminLogin, logout: adminLogout, isAuthenticated } = useAdminStore();
+  const { login: adminLogin, logout: adminLogout, isAuthenticated, developers, users } = useAdminStore();
 
   const login = async (mobileNumber: string): Promise<boolean> => {
     const isDeveloper = developers.some(d => d.mobileNumber === mobileNumber);
