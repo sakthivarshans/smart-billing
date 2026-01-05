@@ -1,7 +1,6 @@
 
 
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
 
 export type BillItem = {
@@ -141,7 +140,6 @@ type AdminState = {
 
 
 export const useAdminStore = create<AdminState>()(
-  persist(
     (set, get) => ({
         isAuthenticated: false,
         loggedInRole: null,
@@ -166,6 +164,7 @@ export const useAdminStore = create<AdminState>()(
         developers: [
             { mobileNumber: '9999999999', emailId: 'dev@example.com' },
             { mobileNumber: '9655952985', emailId: 'developer@example.com' },
+            { mobileNumber: '9500854664', emailId: 'admin@example.com' },
         ],
         users: [],
         columnMapping: {
@@ -239,12 +238,7 @@ export const useAdminStore = create<AdminState>()(
           }));
         },
         setManagerPermissions: (permissions) => set({ managerPermissions: permissions }),
-      }),
-      {
-        name: 'admin-storage',
-        storage: createJSONStorage(() => localStorage),
-      }
-  )
+      })
 );
   
 // Selector to get specific api keys and prevent unnecessary re-renders
@@ -268,7 +262,6 @@ type CustomerState = {
 };
 
 export const useCustomerStore = create<CustomerState>()(
-  persist(
     (set, get) => ({
         isAuthenticated: true,
         phoneNumber: '',
@@ -277,7 +270,6 @@ export const useCustomerStore = create<CustomerState>()(
           { shopName: 'Admin Operator', emailId: 'admin@example.com', operatorMobileNumber: '9500854664' },
         ], 
         login: (mobileNumber) => {
-          // Always get the latest state from the admin store on login attempt
           const adminStoreState = useAdminStore.getState();
           const customerUser = get().users.find(u => u.operatorMobileNumber === mobileNumber);
           const developerUser = adminStoreState.developers.find(d => d.mobileNumber === mobileNumber);
@@ -314,12 +306,7 @@ export const useCustomerStore = create<CustomerState>()(
             users: state.users.filter(u => u.operatorMobileNumber !== operatorMobile),
           }));
         },
-      }),
-      {
-        name: 'customer-storage',
-        storage: createJSONStorage(() => localStorage),
-      }
-  )
+      })
 );
 
 // This subscription ensures that if the customer list is updated (e.g., in the admin panel),
