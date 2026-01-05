@@ -35,7 +35,7 @@ const whatsAppPdfFlow = ai.defineFlow(
       };
     }
     
-    // Fallback to a default URL if one isn't provided.
+    // Fallback to a default URL if one isn't provided or is empty.
     if (!apiUrl) {
         apiUrl = 'https://api.botbee.ai/v1/messages';
     }
@@ -45,7 +45,7 @@ const whatsAppPdfFlow = ai.defineFlow(
       // E.g., for BotBee, it might require a 'type' field and different parameter names.
       const data = {
         number: to,
-        document: pdfBase64,
+        media: `data:application/pdf;base64,${pdfBase64}`,
         filename: filename,
         caption: message,
       };
