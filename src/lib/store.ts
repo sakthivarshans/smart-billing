@@ -277,8 +277,9 @@ export const useCustomerStore = create<CustomerState>()(
           { shopName: 'Admin Operator', emailId: 'admin@example.com', operatorMobileNumber: '9500854664' },
         ], 
         login: (mobileNumber) => {
-          const customerUser = get().users.find(u => u.operatorMobileNumber === mobileNumber);
+          // Always get the latest state from the admin store on login attempt
           const adminStoreState = useAdminStore.getState();
+          const customerUser = get().users.find(u => u.operatorMobileNumber === mobileNumber);
           const developerUser = adminStoreState.developers.find(d => d.mobileNumber === mobileNumber);
 
           if (customerUser || developerUser) {
@@ -321,9 +322,12 @@ export const useCustomerStore = create<CustomerState>()(
   )
 );
 
-// Add the users array to the admin store state so it can be accessed there
-useAdminStore.setState({ users: useCustomerStore.getState().users });
+// This subscription ensures that if the customer list is updated (e.g., in the admin panel),
+// the admin store's copy of that list is also updated.
 useCustomerStore.subscribe(
-    users => useAdminStore.setState({ users }),
-    state => state.users
+    (state) => useAdminStore.setState({ users: state.users }),
+    (state) => state.users
 );
+
+// This ensures the initial state of users from customer store is loaded into admin store
+useAdminStore.setState({ users: useCustomerStore.getState().users });
