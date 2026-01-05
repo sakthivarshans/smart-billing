@@ -1,5 +1,5 @@
 'use client';
-import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
+import { createContext, useContext, ReactNode } from 'react';
 import type { FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
@@ -16,28 +16,12 @@ export const FirebaseContext = createContext<FirebaseContextValue | undefined>(
 
 export type FirebaseProviderProps = {
   children: ReactNode;
-  value: { app: FirebaseApp | null };
+  value: FirebaseContextValue;
 };
 
 export function FirebaseProvider({ children, value }: FirebaseProviderProps) {
-  const [services, setServices] = useState<Omit<FirebaseContextValue, 'app'>>({ auth: null, firestore: null });
-
-  useEffect(() => {
-    if (value.app) {
-      setServices({
-        auth: getAuth(value.app),
-        firestore: getFirestore(value.app),
-      });
-    }
-  }, [value.app]);
-
-  const contextValue = {
-    ...value,
-    ...services,
-  };
-
   return (
-    <FirebaseContext.Provider value={contextValue}>
+    <FirebaseContext.Provider value={value}>
       {children}
     </FirebaseContext.Provider>
   );
