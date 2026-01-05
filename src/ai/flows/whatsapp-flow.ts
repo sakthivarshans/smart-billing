@@ -26,18 +26,15 @@ const whatsAppPdfFlow = ai.defineFlow(
   },
   async (input) => {
     const { to, pdfBase64, filename, message, whatsappApiKey } = input;
-    let { apiUrl } = input;
+    
+    // Correctly handle the fallback URL.
+    const apiUrl = input.apiUrl || 'https://api.botbee.ai/v1/messages';
 
     if (!whatsappApiKey) {
       return {
         success: false,
         message: 'WhatsApp API Key is not configured in the admin dashboard.',
       };
-    }
-    
-    // Fallback to a default URL if one isn't provided or is empty.
-    if (!apiUrl) {
-        apiUrl = 'https://api.botbee.ai/v1/messages';
     }
 
     try {
