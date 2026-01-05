@@ -130,61 +130,12 @@ export function DashboardClient() {
     }
   };
 
-  if (!isAuthenticated) {
-    return (
-        <div className="container mx-auto p-4 sm:p-6 md:p-8 flex items-center justify-center min-h-screen">
-            <Card className="w-full max-w-sm shadow-2xl">
-                <CardHeader>
-                    <CardTitle className="text-2xl">Operator Login</CardTitle>
-                    <CardDescription>Enter your mobile number to access the billing system.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="mobileNumber">Mobile Number</Label>
-                        <div className="relative">
-                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                            <Input 
-                                id="mobileNumber" 
-                                type="tel" 
-                                placeholder="10-digit mobile number"
-                                className="pl-10"
-                                maxLength={10}
-                                value={loginAttemptMobile}
-                                onChange={(e) => setLoginAttemptMobile(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-                            />
-                        </div>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="password">Password</Label>
-                        <div className="relative">
-                            <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                            <Input 
-                                id="password" 
-                                type="password" 
-                                placeholder="Password" 
-                                className="pl-10"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-                            />
-                        </div>
-                    </div>
-                </CardContent>
-                <CardFooter>
-                    <Button className="w-full" onClick={handleLogin}>Login</Button>
-                </CardFooter>
-            </Card>
-        </div>
-    );
-  }
-
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8">
       <Card className="w-full max-w-4xl mx-auto shadow-2xl">
         <CardHeader className="relative">
           <div className="text-center">
-            <CardTitle className="text-4xl md:text-5xl font-headline font-bold tracking-tight text-accent">
+            <CardTitle className="text-4xl font-bold tracking-tight text-accent md:text-5xl">
               {storeDetails.storeName}
             </CardTitle>
             <CardDescription className="text-lg">
@@ -203,9 +154,9 @@ export function DashboardClient() {
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex flex-col sm:flex-row justify-end gap-2">
-            <div className="flex-grow relative">
-                <ScanLine className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+            <div className="relative flex-grow">
+                <ScanLine className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <Input
                     ref={rfidInputRef}
                     type="text"
@@ -222,7 +173,7 @@ export function DashboardClient() {
                 Clear
             </Button>
           </div>
-          <div className="border rounded-lg overflow-hidden">
+          <div className="overflow-hidden rounded-lg border">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -240,7 +191,7 @@ export function DashboardClient() {
                       <TableCell className="font-medium">{item.id}</TableCell>
                       <TableCell>{item.name}</TableCell>
                       <TableCell>{item.optional1 || ''}</TableCell>
-                      <TableCell className="text-right flex items-center justify-end"><IndianRupee size={14} className="mr-1"/>{item.price.toFixed(2)}</TableCell>
+                      <TableCell className="flex items-center justify-end text-right"><IndianRupee size={14} className="mr-1"/>{item.price.toFixed(2)}</TableCell>
                       <TableCell className="hidden sm:table-cell">{item.timestamp}</TableCell>
                     </TableRow>
                   ))
@@ -257,16 +208,16 @@ export function DashboardClient() {
               </TableBody>
             </Table>
           </div>
-          <div className="flex justify-end items-center gap-4 pt-4 border-t-2 border-dashed">
-            <span className="text-xl sm:text-2xl font-bold">TOTAL:</span>
-            <span className="text-2xl sm:text-3xl font-bold text-primary flex items-center">
+          <div className="flex items-center justify-end gap-4 border-t-2 border-dashed pt-4">
+            <span className="text-xl font-bold sm:text-2xl">TOTAL:</span>
+            <span className="flex items-center text-2xl font-bold text-primary sm:text-3xl">
                 <IndianRupee size={24} className="mr-1"/>{total.toFixed(2)}
             </span>
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col sm:flex-row items-center gap-4 bg-muted/50 p-6 rounded-b-lg">
-            <div className="w-full sm:w-1/2 relative">
-                <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+        <CardFooter className="flex flex-col items-center gap-4 rounded-b-lg bg-muted/50 p-6 sm:flex-row">
+            <div className="relative w-full sm:w-1/2">
+                <Smartphone className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <Input
                     type="tel"
                     placeholder="Customer's WhatsApp Number"

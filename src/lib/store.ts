@@ -270,7 +270,7 @@ type CustomerState = {
 export const useCustomerStore = create<CustomerState>()(
   persist(
     (set, get) => ({
-        isAuthenticated: false,
+        isAuthenticated: true,
         phoneNumber: '',
         users: [
           { shopName: 'Default Shop', emailId: 'default@example.com', operatorMobileNumber: '9999999999' },
