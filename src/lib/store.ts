@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
+import { persist } from 'zustand/middleware';
 
 export type BillItem = {
   id: number;
@@ -140,6 +141,7 @@ type AdminState = {
 
 
 export const useAdminStore = create<AdminState>()(
+  persist(
     (set, get) => ({
         isAuthenticated: false,
         loggedInRole: null,
@@ -235,7 +237,11 @@ export const useAdminStore = create<AdminState>()(
           }));
         },
         setManagerPermissions: (permissions) => set({ managerPermissions: permissions }),
-      })
+      }),
+      {
+        name: 'admin-storage', // unique name for localStorage
+      }
+  )
 );
   
 // Selector to get specific api keys and prevent unnecessary re-renders
@@ -255,6 +261,7 @@ type CustomerState = {
 };
 
 export const useCustomerStore = create<CustomerState>()(
+  persist(
     (set, get) => ({
         users: [
           { shopName: 'Default Shop', emailId: 'default@example.com', operatorMobileNumber: '9999999999' },
@@ -282,7 +289,11 @@ export const useCustomerStore = create<CustomerState>()(
             users: state.users.filter(u => u.operatorMobileNumber !== operatorMobile),
           }));
         },
-      })
+      }),
+      {
+        name: 'customer-storage', // unique name for localStorage
+      }
+  )
 );
 
 // This subscription ensures that if the customer list is updated (e.g., in the admin panel),
