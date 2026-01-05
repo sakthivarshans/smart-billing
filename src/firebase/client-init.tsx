@@ -1,20 +1,15 @@
+
 'use client';
 
-import { useEffect, useState, ReactNode } from 'react';
-import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
-import { getAuth, type Auth } from 'firebase/auth';
-import { getFirestore, type Firestore } from 'firebase/firestore';
+import { useEffect, useState, type ReactNode } from 'react';
+import { getApps, initializeApp, getApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+import { FirebaseProvider, type FirebaseContextValue } from './provider';
 import { firebaseConfig } from './config';
-import { FirebaseProvider } from './provider';
-
-interface FirebaseInstances {
-  app: FirebaseApp;
-  auth: Auth;
-  firestore: Firestore;
-}
 
 export function FirebaseClientInit({ children }: { children: ReactNode }) {
-  const [instances, setInstances] = useState<FirebaseInstances | null>(null);
+  const [instances, setInstances] = useState<FirebaseContextValue | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && !instances) {
@@ -26,13 +21,8 @@ export function FirebaseClientInit({ children }: { children: ReactNode }) {
   }, [instances]);
 
   if (!instances) {
-    // You can return a loader here if you want
-    return null;
+    return null; // or a loading component
   }
 
-  return (
-    <FirebaseProvider value={{ app: instances.app, auth: instances.auth, firestore: instances.firestore }}>
-      {children}
-    </FirebaseProvider>
-  );
+  return <FirebaseProvider value={instances}>{children}</FirebaseProvider>;
 }
