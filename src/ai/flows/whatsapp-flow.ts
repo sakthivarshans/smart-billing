@@ -45,7 +45,7 @@ const whatsAppPdfFlow = ai.defineFlow(
       // This is a generic endpoint structure. The actual data structure may differ based on the provider.
       // E.g., for BotBee, it might require a 'type' field and different parameter names.
       const data = {
-        phone: to,
+        number: to,
         document: pdfBase64,
         filename: filename,
         caption: message,
