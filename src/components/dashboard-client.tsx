@@ -17,7 +17,7 @@ export function DashboardClient() {
   const router = useRouter();
   const { toast } = useToast();
   const { items, total, addItem, setPhoneNumber: setBillPhoneNumber, resetBill, phoneNumber: billPhoneNumber } = useBillStore();
-  const { storeDetails, productCatalog, login: adminLogin, developers, sales } = useAdminStore();
+  const { storeDetails, productCatalog, login: adminLogin, developers, sales, users } = useAdminStore();
   const { user, login, logout, isAuthenticated } = useAuth();
   
   const [loginAttemptMobile, setLoginAttemptMobile] = useState('');
@@ -26,6 +26,7 @@ export function DashboardClient() {
   const rfidInputRef = useRef<HTMLInputElement>(null);
 
   const recentPhoneNumbers = [...new Set(sales.map(s => s.phoneNumber).filter(Boolean))];
+  const registeredUsers = [...new Set([...developers.map(d => d.mobileNumber), ...users.map(u => u.operatorMobileNumber)])];
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -156,7 +157,11 @@ export function DashboardClient() {
                             onChange={(e) => setLoginAttemptMobile(e.target.value)}
                             maxLength={10}
                             onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                            list="registered-users"
                         />
+                        <datalist id="registered-users">
+                            {registeredUsers.map(num => <option key={num} value={num} />)}
+                        </datalist>
                     </div>
                 </CardContent>
                 <CardFooter>
@@ -277,3 +282,5 @@ export function DashboardClient() {
     </div>
   );
 }
+
+    
