@@ -453,7 +453,7 @@ Happy Shopping`;
                         className="w-full" 
                         size="lg" 
                         onClick={handleSendReceipt}
-                        disabled={isSending || !getApiKeys().whatsappApiKey || !getApiKeys().whatsappApiUrl}
+                        disabled={isSending || !getApiKeys().whatsappApiKey}
                     >
                         {isSending ? (
                             <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</>
