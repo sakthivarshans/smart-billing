@@ -31,7 +31,7 @@ const whatsAppTextFlow = ai.defineFlow(
     const { to, message, whatsappApiKey } = input;
     
     // Correctly handle the fallback URL.
-    const apiUrl = input.apiUrl || 'https://api.whatstool.business/developers/v2/messages/{{WHATSAPP_API_NO}}';
+    const apiUrl = input.apiUrl || 'https://api.whatstool.business';
 
     if (!whatsappApiKey) {
       return {
